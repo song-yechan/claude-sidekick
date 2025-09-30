@@ -7,6 +7,7 @@ import { MobileLayout } from "./components/layout/MobileLayout";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
 import Categories from "./pages/Categories";
+import CategoryDetail from "./pages/CategoryDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -22,6 +23,7 @@ const App = () => (
             <Route path="/" element={<Home />} />
             <Route path="/search" element={<Search />} />
             <Route path="/categories" element={<Categories />} />
+            <Route path="/categories/:categoryId" element={<CategoryDetail />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

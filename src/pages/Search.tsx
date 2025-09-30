@@ -1,18 +1,26 @@
 import { useState } from "react";
-import { Search as SearchIcon, Loader2, Plus } from "lucide-react";
+import { Search as SearchIcon, Loader2, Plus, ArrowLeft } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useBooks } from "@/hooks/useBooks";
+import { useCategories } from "@/hooks/useCategories";
 import { searchBooks } from "@/services/bookApi";
 import { BookSearchResult } from "@/types/book";
 import { toast } from "sonner";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function Search() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<BookSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const { addBook, books } = useBooks();
+  const { getCategoryById } = useCategories();
+  
+  const categoryId = location.state?.categoryId as string | undefined;
+  const category = categoryId ? getCategoryById(categoryId) : null;
 
   const handleSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) {
@@ -40,7 +48,7 @@ export default function Search() {
       return;
     }
 
-    addBook({
+    const newBook = addBook({
       isbn: result.isbn,
       title: result.title,
       author: result.author,
@@ -48,17 +56,40 @@ export default function Search() {
       publishDate: result.publishDate,
       coverImage: result.coverImage,
       description: result.description,
-      categoryIds: [],
+      categoryIds: categoryId ? [categoryId] : [],
     });
 
-    toast.success(`"${result.title}"이(가) 추가되었습니다`);
+    if (category) {
+      toast.success(`"${result.title}"이(가) ${category.name}에 추가되었습니다`);
+      navigate(`/categories/${categoryId}`);
+    } else {
+      toast.success(`"${result.title}"이(가) 추가되었습니다`);
+    }
   };
 
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-card border-b border-border px-4 py-4">
-        <h1 className="text-xl font-bold text-foreground">책 검색</h1>
+        <div className="flex items-center gap-3">
+          {category && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate(`/categories/${categoryId}`)}
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+          )}
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-foreground">책 검색</h1>
+            {category && (
+              <p className="text-sm text-muted-foreground">
+                {category.name}에 추가
+              </p>
+            )}
+          </div>
+        </div>
       </header>
 
       {/* Search input */}

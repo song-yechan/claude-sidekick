@@ -86,25 +86,37 @@ export default function Home() {
 
       {/* Content */}
       <div className="p-4 space-y-6">
-        {/* Welcome section */}
-        <section className="text-center py-8">
-          <div className="mb-4">
-            <BookOpen className="h-16 w-16 text-primary mx-auto mb-3" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">
-            독서 노트를 시작하세요
-          </h2>
-          <p className="text-muted-foreground mb-6">
-            책을 검색하고 나만의 독서 기록을 남겨보세요
-          </p>
-          <Button 
-            onClick={() => navigate('/search')} 
-            size="lg" 
-            className="gap-2"
-          >
-            <Plus className="h-5 w-5" />
-            책 추가하기
-          </Button>
+        {/* Activity Calendar */}
+        <section>
+          <Card>
+            <CardContent className="p-4">
+              <ActivityCalendar books={books} />
+            </CardContent>
+          </Card>
+        </section>
+
+        {/* Quick stats */}
+        <section className="grid grid-cols-2 gap-3">
+          <Card>
+            <CardHeader className="p-4">
+              <CardTitle className="text-2xl font-bold text-primary">
+                {books.length}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-xs text-muted-foreground">등록한 책</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="p-4">
+              <CardTitle className="text-2xl font-bold text-accent">
+                {notes.length}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              <p className="text-xs text-muted-foreground">작성한 노트</p>
+            </CardContent>
+          </Card>
         </section>
 
         {/* Recent books section */}
@@ -147,39 +159,6 @@ export default function Home() {
               ))}
             </div>
           )}
-        </section>
-
-        {/* Activity Calendar */}
-        <section>
-          <Card>
-            <CardContent className="p-4">
-              <ActivityCalendar books={books} />
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Quick stats */}
-        <section className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-2xl font-bold text-primary">
-                {books.length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <p className="text-xs text-muted-foreground">등록한 책</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-2xl font-bold text-accent">
-                {notes.length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <p className="text-xs text-muted-foreground">작성한 노트</p>
-            </CardContent>
-          </Card>
         </section>
       </div>
     </div>

@@ -1,9 +1,15 @@
 import { useState } from "react";
-import { FolderOpen, Plus, Edit2, Trash2 } from "lucide-react";
+import { FolderOpen, Plus, Edit2, Trash2, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+
+const categorySchema = z.object({
+  name: z.string().trim().min(1, "카테고리 이름을 입력하세요").max(50, "카테고리 이름은 50자 이하여야 합니다"),
+});
 import {
   Dialog,
   DialogContent,
@@ -29,6 +35,7 @@ import { useBooks } from "@/hooks/useBooks";
 import { toast } from "sonner";
 
 export default function Categories() {
+  const navigate = useNavigate();
   const { categories, addCategory, updateCategory, deleteCategory } = useCategories();
   const { books } = useBooks();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -37,27 +44,33 @@ export default function Categories() {
   const [editingCategory, setEditingCategory] = useState<{ id: string; name: string } | null>(null);
 
   const handleAddCategory = () => {
-    if (!newCategoryName.trim()) {
-      toast.error("카테고리 이름을 입력해주세요");
-      return;
+    try {
+      const validated = categorySchema.parse({ name: newCategoryName });
+      addCategory(validated.name);
+      setNewCategoryName("");
+      setIsAddDialogOpen(false);
+      toast.success("카테고리가 생성되었습니다");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
-
-    addCategory(newCategoryName.trim());
-    setNewCategoryName("");
-    setIsAddDialogOpen(false);
-    toast.success("카테고리가 생성되었습니다");
   };
 
   const handleEditCategory = () => {
-    if (!editingCategory || !editingCategory.name.trim()) {
-      toast.error("카테고리 이름을 입력해주세요");
-      return;
+    if (!editingCategory) return;
+    
+    try {
+      const validated = categorySchema.parse({ name: editingCategory.name });
+      updateCategory(editingCategory.id, { name: validated.name });
+      setEditingCategory(null);
+      setIsEditDialogOpen(false);
+      toast.success("카테고리가 수정되었습니다");
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      }
     }
-
-    updateCategory(editingCategory.id, { name: editingCategory.name.trim() });
-    setEditingCategory(null);
-    setIsEditDialogOpen(false);
-    toast.success("카테고리가 수정되었습니다");
   };
 
   const handleDeleteCategory = (categoryId: string) => {
@@ -102,6 +115,7 @@ export default function Categories() {
                         handleAddCategory();
                       }
                     }}
+                    maxLength={50}
                   />
                 </div>
               </div>
@@ -132,7 +146,11 @@ export default function Categories() {
           </Card>
         ) : (
           categories.map((category) => (
-            <Card key={category.id}>
+            <Card 
+              key={category.id}
+              className="cursor-pointer hover:bg-muted/50 transition-colors"
+              onClick={() => navigate(`/categories/${category.id}`)}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
                   <div 
@@ -152,7 +170,8 @@ export default function Categories() {
                       {getCategoryBookCount(category.id)}권의 책
                     </p>
                   </div>
-                  <div className="flex gap-1">
+                  <ChevronRight className="h-5 w-5 text-muted-foreground flex-shrink-0 mr-2" />
+                  <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <Dialog open={isEditDialogOpen && editingCategory?.id === category.id} onOpenChange={(open) => {
                       setIsEditDialogOpen(open);
                       if (!open) setEditingCategory(null);
@@ -184,6 +203,7 @@ export default function Categories() {
                                   handleEditCategory();
                                 }
                               }}
+                              maxLength={50}
                             />
                           </div>
                         </div>
