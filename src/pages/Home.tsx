@@ -4,13 +4,71 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useBooks } from "@/hooks/useBooks";
 import { useNotes } from "@/hooks/useNotes";
-import { useCategories } from "@/hooks/useCategories";
+import { cn } from "@/lib/utils";
+
+// GitHub contribution calendar 스타일
+const ActivityCalendar = ({ books }: { books: any[] }) => {
+  const weeks = 12; // 12주
+  const today = new Date();
+  
+  // 날짜별 활동 맵 생성
+  const activityMap = new Map<string, number>();
+  books.forEach(book => {
+    const date = new Date(book.addedAt).toISOString().split('T')[0];
+    activityMap.set(date, (activityMap.get(date) || 0) + 1);
+  });
+
+  // 그리드 생성 (12주 x 7일)
+  const grid = [];
+  for (let week = weeks - 1; week >= 0; week--) {
+    const weekDays = [];
+    for (let day = 0; day < 7; day++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - (week * 7 + (6 - day)));
+      const dateStr = date.toISOString().split('T')[0];
+      const count = activityMap.get(dateStr) || 0;
+      weekDays.push({ date: dateStr, count });
+    }
+    grid.push(weekDays);
+  }
+
+  const getIntensity = (count: number) => {
+    if (count === 0) return "bg-muted";
+    if (count === 1) return "bg-primary/30";
+    if (count === 2) return "bg-primary/60";
+    return "bg-primary";
+  };
+
+  return (
+    <div className="space-y-2">
+      <h3 className="text-sm font-medium text-foreground">독서 활동</h3>
+      <div className="flex gap-1 overflow-x-auto pb-2">
+        {grid.map((week, weekIdx) => (
+          <div key={weekIdx} className="flex flex-col gap-1">
+            {week.map((day, dayIdx) => (
+              <div
+                key={`${weekIdx}-${dayIdx}`}
+                className={cn(
+                  "w-3 h-3 rounded-sm transition-colors",
+                  getIntensity(day.count)
+                )}
+                title={`${day.date}: ${day.count}권`}
+              />
+            ))}
+          </div>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        최근 {weeks}주간 독서 활동
+      </p>
+    </div>
+  );
+};
 
 export default function Home() {
   const navigate = useNavigate();
   const { books } = useBooks();
   const { notes } = useNotes();
-  const { categories } = useCategories();
 
   const recentBooks = books.slice(-3).reverse();
 
@@ -91,8 +149,17 @@ export default function Home() {
           )}
         </section>
 
+        {/* Activity Calendar */}
+        <section>
+          <Card>
+            <CardContent className="p-4">
+              <ActivityCalendar books={books} />
+            </CardContent>
+          </Card>
+        </section>
+
         {/* Quick stats */}
-        <section className="grid grid-cols-3 gap-3">
+        <section className="grid grid-cols-2 gap-3">
           <Card>
             <CardHeader className="p-4">
               <CardTitle className="text-2xl font-bold text-primary">
@@ -111,16 +178,6 @@ export default function Home() {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <p className="text-xs text-muted-foreground">작성한 노트</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-2xl font-bold text-foreground">
-                {categories.length}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 pt-0">
-              <p className="text-xs text-muted-foreground">카테고리</p>
             </CardContent>
           </Card>
         </section>
