@@ -14,7 +14,149 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      book_categories: {
+        Row: {
+          book_id: string
+          category_id: string
+          created_at: string
+          id: string
+        }
+        Insert: {
+          book_id: string
+          category_id: string
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          book_id?: string
+          category_id?: string
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_categories_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      books: {
+        Row: {
+          added_at: string
+          author: string
+          cover_image: string | null
+          description: string | null
+          id: string
+          isbn: string | null
+          publish_date: string | null
+          publisher: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          author: string
+          cover_image?: string | null
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          publish_date?: string | null
+          publisher?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          author?: string
+          cover_image?: string | null
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          publish_date?: string | null
+          publisher?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      notes: {
+        Row: {
+          book_id: string
+          content: string
+          created_at: string
+          id: string
+          memo: string | null
+          page_number: number | null
+          tags: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          book_id: string
+          content: string
+          created_at?: string
+          id?: string
+          memo?: string | null
+          page_number?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          book_id?: string
+          content?: string
+          created_at?: string
+          id?: string
+          memo?: string | null
+          page_number?: number | null
+          tags?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

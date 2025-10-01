@@ -1,9 +1,10 @@
-import { BookOpen, Plus } from "lucide-react";
+import { BookOpen, Plus, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useBooks } from "@/hooks/useBooks";
 import { useNotes } from "@/hooks/useNotes";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 // GitHub contribution calendar 스타일
@@ -69,6 +70,7 @@ export default function Home() {
   const navigate = useNavigate();
   const { books } = useBooks();
   const { notes } = useNotes();
+  const { signOut } = useAuth();
 
   const recentBooks = books.slice(-3).reverse();
 
@@ -81,6 +83,14 @@ export default function Home() {
             <BookOpen className="h-6 w-6 text-primary" />
             <h1 className="text-xl font-bold text-foreground">BookScan</h1>
           </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={signOut}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
         </div>
       </header>
 
