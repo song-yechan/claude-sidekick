@@ -4,6 +4,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useNotes } from "@/hooks/useNotes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Plus, Camera, Trash2, Edit, FolderPlus, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -40,6 +41,7 @@ export default function BookDetail() {
   const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [showSummary, setShowSummary] = useState(true);
 
   if (!book) {
     return (
@@ -251,14 +253,23 @@ export default function BookDetail() {
             <h3 className="text-lg font-semibold text-foreground">
               문장 수집 ({notes.length})
             </h3>
-            <Button
-              onClick={() => setIsAddingNote(true)}
-              size="sm"
-              className="gap-1"
-            >
-              <Plus className="h-4 w-4" />
-              추가
-            </Button>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">AI 요약</span>
+                <Switch
+                  checked={showSummary}
+                  onCheckedChange={setShowSummary}
+                />
+              </div>
+              <Button
+                onClick={() => setIsAddingNote(true)}
+                size="sm"
+                className="gap-1"
+              >
+                <Plus className="h-4 w-4" />
+                추가
+              </Button>
+            </div>
           </div>
 
           {notes.length === 0 ? (
@@ -295,8 +306,8 @@ export default function BookDetail() {
                           p. {note.pageNumber}
                         </p>
                       )}
-                      <p className="text-sm text-foreground font-medium leading-relaxed">
-                        {note.summary || note.content}
+                      <p className={`text-sm text-foreground font-medium leading-relaxed ${!showSummary ? 'line-clamp-2' : ''}`}>
+                        {showSummary ? (note.summary || note.content) : note.content}
                       </p>
                     </div>
                   </CardContent>
