@@ -135,12 +135,21 @@ export default function NoteDetail() {
                 </div>
 
                 <div>
-                  <Label htmlFor="memo">생각 메모</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="memo">생각 메모</Label>
+                    <span className="text-xs text-muted-foreground">
+                      {editedMemo.length}/300
+                    </span>
+                  </div>
                   <Textarea
                     id="memo"
                     placeholder="이 문장에 대한 생각을 기록해보세요"
                     value={editedMemo}
-                    onChange={(e) => setEditedMemo(e.target.value)}
+                    onChange={(e) => {
+                      if (e.target.value.length <= 300) {
+                        setEditedMemo(e.target.value);
+                      }
+                    }}
                     className="min-h-[100px] mt-1"
                   />
                 </div>

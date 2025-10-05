@@ -406,12 +406,21 @@ export default function BookDetail() {
             </div>
 
             <div>
-              <Label htmlFor="memo">생각 메모 (선택)</Label>
+              <div className="flex items-center justify-between mb-1">
+                <Label htmlFor="memo">생각 메모 (선택)</Label>
+                <span className="text-xs text-muted-foreground">
+                  {memo.length}/300
+                </span>
+              </div>
               <Textarea
                 id="memo"
                 placeholder="이 문장에 대한 생각을 기록해보세요"
                 value={memo}
-                onChange={(e) => setMemo(e.target.value)}
+                onChange={(e) => {
+                  if (e.target.value.length <= 300) {
+                    setMemo(e.target.value);
+                  }
+                }}
                 className="min-h-[80px]"
                 disabled={isProcessingImage || isSavingNote}
               />
