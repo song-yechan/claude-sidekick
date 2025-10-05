@@ -310,32 +310,55 @@ export default function BookDetail() {
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-3">
-              <Label htmlFor="image-upload" className="cursor-pointer">
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
-                  <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">
-                    {isProcessingImage ? 'OCR 처리 중...' : '이미지를 선택하거나 촬영하세요'}
-                  </p>
-                </div>
-              </Label>
-              <input
-                id="image-upload"
-                type="file"
-                accept="image/*"
-                capture="environment"
-                className="hidden"
-                onChange={handleImageUpload}
-                disabled={isProcessingImage}
-              />
+              <Label className="text-sm font-semibold">이미지 등록 방법</Label>
+              
+              <div className="grid grid-cols-2 gap-3">
+                {/* 앨범에서 추가 */}
+                <Label htmlFor="gallery-upload" className="cursor-pointer">
+                  <div className="border-2 border-border rounded-lg p-4 text-center hover:border-primary hover:bg-primary-light/20 transition-all active:scale-[0.98]">
+                    <Camera className="h-8 w-8 text-primary mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-foreground">
+                      앨범에서 추가
+                    </p>
+                  </div>
+                </Label>
+                <input
+                  id="gallery-upload"
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={isProcessingImage}
+                />
+
+                {/* 사진 촬영 */}
+                <Label htmlFor="camera-upload" className="cursor-pointer">
+                  <div className="border-2 border-border rounded-lg p-4 text-center hover:border-primary hover:bg-primary-light/20 transition-all active:scale-[0.98]">
+                    <Camera className="h-8 w-8 text-primary mx-auto mb-2" />
+                    <p className="text-sm font-semibold text-foreground">
+                      사진 촬영
+                    </p>
+                  </div>
+                </Label>
+                <input
+                  id="camera-upload"
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                  disabled={isProcessingImage}
+                />
+              </div>
               
               {isProcessingImage && (
-                <div className="space-y-3">
+                <div className="space-y-3 p-4 bg-primary-light/20 rounded-lg">
                   <div className="space-y-2">
                     <Skeleton className="h-4 w-full" />
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-5/6" />
                   </div>
-                  <p className="text-xs text-center text-muted-foreground animate-pulse">
+                  <p className="text-xs text-center text-muted-foreground font-medium animate-pulse">
                     텍스트 추출 및 요약 중...
                   </p>
                 </div>
