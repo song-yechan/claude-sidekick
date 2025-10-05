@@ -30,6 +30,7 @@ export default function BookDetail() {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [extractedText, setExtractedText] = useState('');
+  const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
 
   if (!book) {
@@ -65,40 +66,58 @@ export default function BookDetail() {
 
         const extractedContent = ocrData.text || '';
         setExtractedText(extractedContent);
-        
-        // Call summarize edge function
-        const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
-          body: { text: extractedContent },
-        });
-
-        if (summaryError) {
-          console.error('Summarize error:', summaryError);
-          toast.error('요약 생성 중 오류가 발생했습니다');
-          setIsProcessingImage(false);
-          return;
-        }
-
-        const summary = summaryData.summary || '';
-        
-        // Save note with summary
-        await addNote({
-          bookId: book.id,
-          content: extractedContent,
-          summary: summary,
-          pageNumber: pageNumber ? parseInt(pageNumber) : undefined,
-          tags: [],
-        });
-
-        setIsAddingNote(false);
-        setExtractedText('');
-        setPageNumber('');
         setIsProcessingImage(false);
-        toast.success('문장이 저장되었습니다');
+        toast.success('텍스트가 추출되었습니다. 내용을 확인하고 저장해주세요.');
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Image upload error:', error);
       toast.error('이미지 업로드 실패');
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleSaveNote = async () => {
+    if (!extractedText.trim()) {
+      toast.error('내용을 입력해주세요');
+      return;
+    }
+
+    setIsProcessingImage(true);
+    try {
+      // Call summarize edge function
+      const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
+        body: { text: extractedText },
+      });
+
+      if (summaryError) {
+        console.error('Summarize error:', summaryError);
+        toast.error('요약 생성 중 오류가 발생했습니다');
+        setIsProcessingImage(false);
+        return;
+      }
+
+      const summary = summaryData.summary || '';
+      
+      // Save note with summary and memo
+      await addNote({
+        bookId: book.id,
+        content: extractedText,
+        summary: summary,
+        pageNumber: pageNumber ? parseInt(pageNumber) : undefined,
+        memo: memo,
+        tags: [],
+      });
+
+      setIsAddingNote(false);
+      setExtractedText('');
+      setMemo('');
+      setPageNumber('');
+      setIsProcessingImage(false);
+      toast.success('문장이 저장되었습니다');
+    } catch (error) {
+      console.error('Save note error:', error);
+      toast.error('저장 실패');
       setIsProcessingImage(false);
     }
   };
@@ -272,6 +291,30 @@ export default function BookDetail() {
               />
             </div>
 
+            <div>
+              <Label htmlFor="extracted-text">추출된 텍스트</Label>
+              <Textarea
+                id="extracted-text"
+                placeholder="이미지를 업로드하면 텍스트가 자동으로 추출됩니다"
+                value={extractedText}
+                onChange={(e) => setExtractedText(e.target.value)}
+                className="min-h-[120px]"
+                disabled={isProcessingImage}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="memo">생각 메모 (선택)</Label>
+              <Textarea
+                id="memo"
+                placeholder="이 문장에 대한 생각을 기록해보세요"
+                value={memo}
+                onChange={(e) => setMemo(e.target.value)}
+                className="min-h-[80px]"
+                disabled={isProcessingImage}
+              />
+            </div>
+
             <div className="flex gap-2">
               <Button
                 variant="outline"
@@ -279,11 +322,19 @@ export default function BookDetail() {
                 onClick={() => {
                   setIsAddingNote(false);
                   setExtractedText('');
+                  setMemo('');
                   setPageNumber('');
                 }}
                 disabled={isProcessingImage}
               >
                 취소
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleSaveNote}
+                disabled={!extractedText.trim() || isProcessingImage}
+              >
+                저장
               </Button>
             </div>
           </div>

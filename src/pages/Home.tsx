@@ -127,8 +127,8 @@ const ActivityCalendar = ({ notes }: { notes: any[] }) => {
           <div className="flex gap-[2px]">
             {/* 요일 레이블 (월요일, 일요일만) */}
             <div className="flex flex-col gap-[2px] mr-1 flex-shrink-0">
-              <div className="h-[10px]"></div>
               <div className="h-[10px] text-[10px] text-muted-foreground flex items-center">Mon</div>
+              <div className="h-[10px]"></div>
               <div className="h-[10px]"></div>
               <div className="h-[10px]"></div>
               <div className="h-[10px]"></div>
