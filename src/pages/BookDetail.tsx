@@ -290,7 +290,7 @@ export default function BookDetail() {
                           p. {note.pageNumber}
                         </p>
                       )}
-                      <p className="text-base text-foreground font-medium line-clamp-2 leading-relaxed">
+                      <p className="text-sm text-foreground font-medium leading-relaxed">
                         {note.summary || note.content}
                       </p>
                     </div>
