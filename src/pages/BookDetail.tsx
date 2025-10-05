@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useBooks } from "@/hooks/useBooks";
+import { useCategories } from "@/hooks/useCategories";
 import { useNotes } from "@/hooks/useNotes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Plus, Camera, Trash2, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Camera, Trash2, Edit, FolderPlus } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -17,21 +18,25 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { getBookById } = useBooks();
+  const { getBookById, updateBook } = useBooks();
+  const { categories } = useCategories();
   const { getNotesByBook, addNote, deleteNote } = useNotes();
   
   const book = getBookById(bookId || '');
   const notes = getNotesByBook(bookId || '');
 
   const [isAddingNote, setIsAddingNote] = useState(false);
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [extractedText, setExtractedText] = useState('');
   const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   if (!book) {
     return (
@@ -126,6 +131,25 @@ export default function BookDetail() {
     deleteNote(noteId);
   };
 
+  const handleOpenCategoryDialog = () => {
+    setSelectedCategories(book.categoryIds || []);
+    setIsAddingCategory(true);
+  };
+
+  const handleToggleCategory = (categoryId: string) => {
+    setSelectedCategories(prev => 
+      prev.includes(categoryId)
+        ? prev.filter(id => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const handleSaveCategories = () => {
+    updateBook(book.id, { categoryIds: selectedCategories });
+    setIsAddingCategory(false);
+    toast.success('카테고리가 업데이트되었습니다');
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -149,6 +173,44 @@ export default function BookDetail() {
 
       {/* Content */}
       <div className="p-4 space-y-4">
+        {/* Category section */}
+        <Card>
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <h3 className="text-sm font-semibold text-foreground mb-2">카테고리</h3>
+                {book.categoryIds.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">카테고리 없음</p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {book.categoryIds.map(catId => {
+                      const category = categories.find(c => c.id === catId);
+                      return category ? (
+                        <span 
+                          key={catId}
+                          className="text-xs px-2 py-1 rounded"
+                          style={{ backgroundColor: `${category.color}20`, color: category.color }}
+                        >
+                          {category.name}
+                        </span>
+                      ) : null;
+                    })}
+                  </div>
+                )}
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleOpenCategoryDialog}
+                className="gap-1"
+              >
+                <FolderPlus className="h-4 w-4" />
+                편집
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Book Info Card */}
         <Card>
           <CardContent className="p-4">
@@ -333,6 +395,58 @@ export default function BookDetail() {
                 className="flex-1"
                 onClick={handleSaveNote}
                 disabled={!extractedText.trim() || isProcessingImage}
+              >
+                저장
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Dialog */}
+      <Dialog open={isAddingCategory} onOpenChange={setIsAddingCategory}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>카테고리 편집</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3">
+            {categories.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                생성된 카테고리가 없습니다
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {categories.map(category => (
+                  <label
+                    key={category.id}
+                    className="flex items-center gap-3 p-3 rounded-lg border border-border cursor-pointer hover:bg-accent transition-colors"
+                  >
+                    <Checkbox
+                      checked={selectedCategories.includes(category.id)}
+                      onCheckedChange={() => handleToggleCategory(category.id)}
+                    />
+                    <div className="flex-1">
+                      <span className="text-sm font-medium">{category.name}</span>
+                    </div>
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{ backgroundColor: category.color }}
+                    />
+                  </label>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsAddingCategory(false)}
+              >
+                취소
+              </Button>
+              <Button
+                className="flex-1"
+                onClick={handleSaveCategories}
               >
                 저장
               </Button>

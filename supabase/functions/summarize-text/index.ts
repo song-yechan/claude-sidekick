@@ -31,11 +31,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: '당신은 텍스트를 간결하게 요약하는 전문가입니다. 주어진 텍스트의 핵심 내용을 한 문장으로 요약해주세요.'
+            content: 'You are an expert at summarizing text concisely. Summarize the given text in one sentence in the same language as the input. If the input is in Korean, respond in Korean. If the input is in English, respond in English.'
           },
           {
             role: 'user',
-            content: `다음 텍스트를 한 문장으로 요약해주세요:\n\n${text}`
+            content: `Summarize the following text in one sentence:\n\n${text}`
           }
         ],
       }),

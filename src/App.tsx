@@ -11,6 +11,7 @@ import Search from "./pages/Search";
 import Categories from "./pages/Categories";
 import CategoryDetail from "./pages/CategoryDetail";
 import BookDetail from "./pages/BookDetail";
+import AllBooks from "./pages/AllBooks";
 import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
@@ -58,6 +59,13 @@ const App = () => (
               <ProtectedRoute>
                 <MobileLayout>
                   <BookDetail />
+                </MobileLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/books" element={
+              <ProtectedRoute>
+                <MobileLayout>
+                  <AllBooks />
                 </MobileLayout>
               </ProtectedRoute>
             } />

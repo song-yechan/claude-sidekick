@@ -237,9 +237,21 @@ export default function Home() {
 
         {/* Recent books section */}
         <section>
-          <h3 className="text-lg font-semibold text-foreground mb-3">
-            최근 추가한 책
-          </h3>
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-lg font-semibold text-foreground">
+              최근 추가한 책
+            </h3>
+            {books.length > 3 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/books')}
+                className="text-xs"
+              >
+                전체보기
+              </Button>
+            )}
+          </div>
           {recentBooks.length === 0 ? (
             <Card>
               <CardContent className="p-6 text-center">
