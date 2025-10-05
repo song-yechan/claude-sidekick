@@ -241,7 +241,7 @@ export default function Home() {
             <h3 className="text-lg font-semibold text-foreground">
               최근 추가한 책
             </h3>
-            {books.length > 3 && (
+            {books.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"

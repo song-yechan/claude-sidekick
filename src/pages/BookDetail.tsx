@@ -88,7 +88,6 @@ export default function BookDetail() {
       return;
     }
 
-    setIsProcessingImage(true);
     try {
       // Call summarize edge function
       const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
@@ -98,7 +97,6 @@ export default function BookDetail() {
       if (summaryError) {
         console.error('Summarize error:', summaryError);
         toast.error('요약 생성 중 오류가 발생했습니다');
-        setIsProcessingImage(false);
         return;
       }
 
@@ -118,12 +116,10 @@ export default function BookDetail() {
       setExtractedText('');
       setMemo('');
       setPageNumber('');
-      setIsProcessingImage(false);
       toast.success('문장이 저장되었습니다');
     } catch (error) {
       console.error('Save note error:', error);
       toast.error('저장 실패');
-      setIsProcessingImage(false);
     }
   };
 
