@@ -16,6 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
@@ -228,12 +229,12 @@ export default function BookDetail() {
             <DialogTitle>문장 수집</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div>
+            <div className="space-y-3">
               <Label htmlFor="image-upload" className="cursor-pointer">
                 <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary transition-colors">
                   <Camera className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    {isProcessingImage ? '이미지 처리 중...' : '이미지를 선택하거나 촬영하세요'}
+                    {isProcessingImage ? 'OCR 처리 중...' : '이미지를 선택하거나 촬영하세요'}
                   </p>
                 </div>
               </Label>
@@ -246,6 +247,15 @@ export default function BookDetail() {
                 onChange={handleImageUpload}
                 disabled={isProcessingImage}
               />
+              
+              {isProcessingImage && (
+                <div className="space-y-2">
+                  <Progress value={undefined} className="h-2" />
+                  <p className="text-xs text-center text-muted-foreground">
+                    텍스트를 추출하고 있습니다...
+                  </p>
+                </div>
+              )}
             </div>
 
             <div>
