@@ -1,4 +1,4 @@
-import { BookOpen, Plus, LogOut } from "lucide-react";
+import { BookOpen, Plus, LogOut, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
@@ -6,21 +6,27 @@ import { useBooks } from "@/hooks/useBooks";
 import { useNotes } from "@/hooks/useNotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // GitHub contribution calendar 스타일의 연간 활동 히트맵
-const ActivityCalendar = ({ notes }: { notes: any[] }) => {
+const ActivityCalendar = ({ notes, year, onYearChange, userCreatedAt }: { 
+  notes: any[]; 
+  year: number; 
+  onYearChange: (year: number) => void;
+  userCreatedAt: string;
+}) => {
   const scrollRef = useRef<HTMLDivElement>(null);
-  const currentYear = new Date().getFullYear();
-  const startDate = new Date(currentYear, 0, 1); // 1월 1일
-  const endDate = new Date(currentYear, 11, 31); // 12월 31일
+  const startDate = new Date(year, 0, 1); // 1월 1일
+  const endDate = new Date(year, 11, 31); // 12월 31일
   const today = new Date();
+  const currentYear = new Date().getFullYear();
+  const userJoinYear = new Date(userCreatedAt).getFullYear();
   
   // 날짜별 노트 개수 맵 생성
   const activityMap = new Map<string, number>();
   notes.forEach(note => {
     const noteDate = new Date(note.createdAt);
-    if (noteDate.getFullYear() === currentYear) {
+    if (noteDate.getFullYear() === year) {
       const dateStr = noteDate.toISOString().split('T')[0];
       activityMap.set(dateStr, (activityMap.get(dateStr) || 0) + 1);
     }
@@ -71,14 +77,18 @@ const ActivityCalendar = ({ notes }: { notes: any[] }) => {
   
   // 각 월의 시작 주 인덱스 계산
   const monthPositions = months.map((_, idx) => {
-    const monthStart = new Date(currentYear, idx, 1);
+    const monthStart = new Date(year, idx, 1);
     const daysSinceStart = Math.floor((monthStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
     return Math.floor((daysSinceStart + startDay) / 7);
   });
 
+  // 이전/다음 연도 가능 여부 체크
+  const canGoPrev = year > userJoinYear;
+  const canGoNext = year < currentYear;
+
   // 오늘 날짜의 주 인덱스 계산
   useEffect(() => {
-    if (scrollRef.current && today.getFullYear() === currentYear) {
+    if (scrollRef.current && today.getFullYear() === year) {
       const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const todayWeek = Math.floor((daysSinceStart + startDay) / 7);
       
@@ -89,16 +99,36 @@ const ActivityCalendar = ({ notes }: { notes: any[] }) => {
       
       scrollRef.current.scrollLeft = Math.max(0, scrollPosition);
     }
-  }, []);
+  }, [year]);
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-foreground">
-          {currentYear}년 독서 활동
-        </h3>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onYearChange(year - 1)}
+            disabled={!canGoPrev}
+            className="h-7 w-7"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+          <h3 className="text-sm font-medium text-foreground min-w-[80px] text-center">
+            {year}년 독서 활동
+          </h3>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => onYearChange(year + 1)}
+            disabled={!canGoNext}
+            className="h-7 w-7"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
         <p className="text-xs text-muted-foreground">
-          총 {notes.filter(n => new Date(n.createdAt).getFullYear() === currentYear).length}개 문장 수집
+          총 {notes.filter(n => new Date(n.createdAt).getFullYear() === year).length}개 문장 수집
         </p>
       </div>
       
@@ -176,7 +206,8 @@ export default function Home() {
   const navigate = useNavigate();
   const { books } = useBooks();
   const { notes } = useNotes();
-  const { signOut } = useAuth();
+  const { signOut, user } = useAuth();
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // 최근 추가한 책 3권 (생성일 기준 내림차순)
   const recentBooks = [...books]
@@ -209,7 +240,12 @@ export default function Home() {
         <section>
           <Card>
             <CardContent className="p-4">
-              <ActivityCalendar notes={notes} />
+              <ActivityCalendar 
+                notes={notes} 
+                year={selectedYear}
+                onYearChange={setSelectedYear}
+                userCreatedAt={user?.created_at || new Date().toISOString()}
+              />
             </CardContent>
           </Card>
         </section>
