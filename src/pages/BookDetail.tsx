@@ -4,7 +4,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useNotes } from "@/hooks/useNotes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Plus, Camera, Trash2, Edit, FolderPlus } from "lucide-react";
+import { ArrowLeft, Plus, Camera, Trash2, Edit, FolderPlus, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -35,6 +35,7 @@ export default function BookDetail() {
   const [isAddingNote, setIsAddingNote] = useState(false);
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isSavingNote, setIsSavingNote] = useState(false);
   const [extractedText, setExtractedText] = useState('');
   const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
@@ -90,6 +91,7 @@ export default function BookDetail() {
       return;
     }
 
+    setIsSavingNote(true);
     try {
       // Call summarize edge function
       const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
@@ -99,6 +101,7 @@ export default function BookDetail() {
       if (summaryError) {
         console.error('Summarize error:', summaryError);
         toast.error('요약 생성 중 오류가 발생했습니다');
+        setIsSavingNote(false);
         return;
       }
 
@@ -118,10 +121,12 @@ export default function BookDetail() {
       setExtractedText('');
       setMemo('');
       setPageNumber('');
+      setIsSavingNote(false);
       toast.success('문장이 저장되었습니다');
     } catch (error) {
       console.error('Save note error:', error);
-      toast.error('저장 실패');
+      toast.error('저장 중 오류가 발생했습니다');
+      setIsSavingNote(false);
     }
   };
 
@@ -373,7 +378,7 @@ export default function BookDetail() {
                 placeholder="예: 42"
                 value={pageNumber}
                 onChange={(e) => setPageNumber(e.target.value)}
-                disabled={isProcessingImage}
+                disabled={isProcessingImage || isSavingNote}
               />
             </div>
 
@@ -385,7 +390,7 @@ export default function BookDetail() {
                 value={extractedText}
                 onChange={(e) => setExtractedText(e.target.value)}
                 className="min-h-[120px]"
-                disabled={isProcessingImage}
+                disabled={isProcessingImage || isSavingNote}
               />
             </div>
 
@@ -397,7 +402,7 @@ export default function BookDetail() {
                 value={memo}
                 onChange={(e) => setMemo(e.target.value)}
                 className="min-h-[80px]"
-                disabled={isProcessingImage}
+                disabled={isProcessingImage || isSavingNote}
               />
             </div>
 
@@ -411,16 +416,23 @@ export default function BookDetail() {
                   setMemo('');
                   setPageNumber('');
                 }}
-                disabled={isProcessingImage}
+                disabled={isProcessingImage || isSavingNote}
               >
                 취소
               </Button>
               <Button
                 className="flex-1"
                 onClick={handleSaveNote}
-                disabled={!extractedText.trim() || isProcessingImage}
+                disabled={!extractedText.trim() || isProcessingImage || isSavingNote}
               >
-                저장
+                {isSavingNote ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    저장 중...
+                  </>
+                ) : (
+                  '저장'
+                )}
               </Button>
             </div>
           </div>
