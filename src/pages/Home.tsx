@@ -6,12 +6,15 @@ import { useBooks } from "@/hooks/useBooks";
 import { useNotes } from "@/hooks/useNotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 // GitHub contribution calendar 스타일의 연간 활동 히트맵
 const ActivityCalendar = ({ notes }: { notes: any[] }) => {
+  const scrollRef = useRef<HTMLDivElement>(null);
   const currentYear = new Date().getFullYear();
   const startDate = new Date(currentYear, 0, 1); // 1월 1일
   const endDate = new Date(currentYear, 11, 31); // 12월 31일
+  const today = new Date();
   
   // 날짜별 노트 개수 맵 생성
   const activityMap = new Map<string, number>();
@@ -65,6 +68,28 @@ const ActivityCalendar = ({ notes }: { notes: any[] }) => {
   };
 
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  
+  // 각 월의 시작 주 인덱스 계산
+  const monthPositions = months.map((_, idx) => {
+    const monthStart = new Date(currentYear, idx, 1);
+    const daysSinceStart = Math.floor((monthStart.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+    return Math.floor((daysSinceStart + startDay) / 7);
+  });
+
+  // 오늘 날짜의 주 인덱스 계산
+  useEffect(() => {
+    if (scrollRef.current && today.getFullYear() === currentYear) {
+      const daysSinceStart = Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const todayWeek = Math.floor((daysSinceStart + startDay) / 7);
+      
+      // 오늘 날짜가 중앙에 오도록 스크롤
+      const cellWidth = 12; // w-[10px] + gap-[2px]
+      const containerWidth = scrollRef.current.clientWidth;
+      const scrollPosition = (todayWeek * cellWidth) - (containerWidth / 2) + (cellWidth / 2);
+      
+      scrollRef.current.scrollLeft = Math.max(0, scrollPosition);
+    }
+  }, []);
 
   return (
     <div className="space-y-3">
@@ -77,45 +102,43 @@ const ActivityCalendar = ({ notes }: { notes: any[] }) => {
         </p>
       </div>
       
-      <div className="overflow-x-auto">
+      <div ref={scrollRef} className="overflow-x-auto scrollbar-thin">
         <div className="inline-block min-w-full">
           {/* 월 레이블 */}
-          <div className="flex gap-[2px] mb-1 ml-8">
-            {months.map((month, idx) => {
-              const monthStart = new Date(currentYear, idx, 1);
-              const weekOffset = Math.floor((monthStart.getTime() - startDate.getTime() + (startDay * 24 * 60 * 60 * 1000)) / (7 * 24 * 60 * 60 * 1000));
+          <div className="flex gap-[2px] mb-2 pl-8">
+            {grid.map((week, weekIdx) => {
+              const monthIdx = monthPositions.findIndex((pos, idx) => {
+                const nextPos = monthPositions[idx + 1];
+                return pos === weekIdx && (!nextPos || nextPos > weekIdx);
+              });
               
               return (
-                <div 
-                  key={month}
-                  className="text-xs text-muted-foreground"
-                  style={{ 
-                    marginLeft: idx === 0 ? 0 : 'auto',
-                    position: 'absolute',
-                    left: `${32 + weekOffset * 12}px`
-                  }}
-                >
-                  {month}
+                <div key={weekIdx} className="w-[10px] flex-shrink-0">
+                  {monthIdx !== -1 && (
+                    <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                      {months[monthIdx]}
+                    </span>
+                  )}
                 </div>
               );
             })}
           </div>
 
-          <div className="flex gap-[2px] mt-6">
-            {/* 요일 레이블 */}
-            <div className="flex flex-col gap-[2px] mr-1">
-              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Mon</div>
+          <div className="flex gap-[2px]">
+            {/* 요일 레이블 (월요일, 일요일만) */}
+            <div className="flex flex-col gap-[2px] mr-1 flex-shrink-0">
               <div className="h-[10px]"></div>
-              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Wed</div>
-              <div className="h-[10px]"></div>
-              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Fri</div>
+              <div className="h-[10px] text-[10px] text-muted-foreground flex items-center">Mon</div>
               <div className="h-[10px]"></div>
               <div className="h-[10px]"></div>
+              <div className="h-[10px]"></div>
+              <div className="h-[10px]"></div>
+              <div className="h-[10px] text-[10px] text-muted-foreground flex items-center">Sun</div>
             </div>
 
             {/* 히트맵 그리드 */}
             {grid.map((week, weekIdx) => (
-              <div key={weekIdx} className="flex flex-col gap-[2px]">
+              <div key={weekIdx} className="flex flex-col gap-[2px] flex-shrink-0">
                 {week.map((day, dayIdx) => (
                   <div
                     key={`${weekIdx}-${dayIdx}`}
