@@ -145,7 +145,11 @@ export default function Home() {
           ) : (
             <div className="space-y-2">
               {recentBooks.map((book) => (
-                <Card key={book.id}>
+                <Card 
+                  key={book.id}
+                  className="cursor-pointer hover:bg-accent/10 transition-colors"
+                  onClick={() => navigate(`/books/${book.id}`)}
+                >
                   <CardContent className="p-3">
                     <div className="flex gap-2 items-center">
                       {book.coverImage && (
