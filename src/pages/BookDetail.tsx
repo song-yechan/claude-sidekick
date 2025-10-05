@@ -286,11 +286,11 @@ export default function BookDetail() {
                   <CardContent className="p-4">
                     <div className="space-y-2">
                       {note.pageNumber && (
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs font-medium text-muted-foreground">
                           p. {note.pageNumber}
                         </p>
                       )}
-                      <p className="text-sm text-foreground line-clamp-2">
+                      <p className="text-base text-foreground font-medium line-clamp-2 leading-relaxed">
                         {note.summary || note.content}
                       </p>
                     </div>

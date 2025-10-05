@@ -148,8 +148,8 @@ export default function NoteDetail() {
             ) : (
               <>
                 {note.pageNumber && (
-                  <div className="pb-2 border-b border-border">
-                    <p className="text-sm text-muted-foreground">
+                  <div className="pb-3 border-b border-border">
+                    <p className="text-sm font-medium text-muted-foreground">
                       페이지 {note.pageNumber}
                     </p>
                   </div>
@@ -157,30 +157,30 @@ export default function NoteDetail() {
                 
                 {note.summary && (
                   <div className="pb-4 border-b border-border">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                    <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
                       요약
                     </h3>
-                    <p className="text-foreground">
+                    <p className="text-base leading-relaxed text-foreground font-medium">
                       {note.summary}
                     </p>
                   </div>
                 )}
 
                 <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                  <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
                     전체 내용
                   </h3>
-                  <p className="text-foreground whitespace-pre-wrap leading-relaxed">
+                  <p className="text-base text-foreground whitespace-pre-wrap leading-relaxed">
                     {note.content}
                   </p>
                 </div>
 
                 {note.memo && (
-                  <div className="pt-4 border-t border-border">
-                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">
+                  <div className="pt-4 border-t border-border bg-primary-light/30 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+                    <h3 className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">
                       생각 메모
                     </h3>
-                    <p className="text-foreground whitespace-pre-wrap">
+                    <p className="text-base text-foreground whitespace-pre-wrap leading-relaxed">
                       {note.memo}
                     </p>
                   </div>

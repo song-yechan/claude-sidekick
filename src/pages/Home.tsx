@@ -216,24 +216,24 @@ export default function Home() {
 
         {/* Quick stats */}
         <section className="grid grid-cols-2 gap-3">
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-2xl font-bold text-primary">
+          <Card className="border-2">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-3xl font-bold text-primary">
                 {books.length}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-              <p className="text-xs text-muted-foreground">등록한 책</p>
+              <p className="text-sm font-medium text-muted-foreground">등록한 책</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader className="p-4">
-              <CardTitle className="text-2xl font-bold text-accent">
+          <Card className="border-2">
+            <CardHeader className="p-4 pb-2">
+              <CardTitle className="text-3xl font-bold text-primary">
                 {notes.length}
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0">
-              <p className="text-xs text-muted-foreground">작성한 노트</p>
+              <p className="text-sm font-medium text-muted-foreground">작성한 노트</p>
             </CardContent>
           </Card>
         </section>
@@ -270,7 +270,7 @@ export default function Home() {
                   {recentBooks.map((book) => (
                     <div
                       key={book.id}
-                      className="p-3 rounded-lg border border-border cursor-pointer hover:bg-accent/10 transition-colors"
+                      className="p-4 rounded-lg border-2 border-border cursor-pointer hover:border-primary/30 hover:bg-primary-light/20 transition-all active:scale-[0.98]"
                       onClick={() => navigate(`/books/${book.id}`)}
                     >
                       <div className="flex gap-3 items-center">
@@ -278,14 +278,14 @@ export default function Home() {
                           <img 
                             src={book.coverImage} 
                             alt={book.title}
-                            className="w-12 h-16 object-cover rounded"
+                            className="w-14 h-20 object-cover rounded-lg shadow-sm"
                           />
                         )}
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-sm text-foreground line-clamp-1">
+                          <h4 className="font-semibold text-base text-foreground line-clamp-1 mb-1">
                             {book.title}
                           </h4>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                          <p className="text-sm text-muted-foreground font-medium">
                             {book.author}
                           </p>
                         </div>
