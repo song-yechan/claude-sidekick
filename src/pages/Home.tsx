@@ -7,61 +7,144 @@ import { useNotes } from "@/hooks/useNotes";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
-// GitHub contribution calendar 스타일
-const ActivityCalendar = ({ books }: { books: any[] }) => {
-  const weeks = 12; // 12주
-  const today = new Date();
+// GitHub contribution calendar 스타일의 연간 활동 히트맵
+const ActivityCalendar = ({ notes }: { notes: any[] }) => {
+  const currentYear = new Date().getFullYear();
+  const startDate = new Date(currentYear, 0, 1); // 1월 1일
+  const endDate = new Date(currentYear, 11, 31); // 12월 31일
   
-  // 날짜별 활동 맵 생성
+  // 날짜별 노트 개수 맵 생성
   const activityMap = new Map<string, number>();
-  books.forEach(book => {
-    const date = new Date(book.addedAt).toISOString().split('T')[0];
-    activityMap.set(date, (activityMap.get(date) || 0) + 1);
+  notes.forEach(note => {
+    const noteDate = new Date(note.createdAt);
+    if (noteDate.getFullYear() === currentYear) {
+      const dateStr = noteDate.toISOString().split('T')[0];
+      activityMap.set(dateStr, (activityMap.get(dateStr) || 0) + 1);
+    }
   });
 
-  // 그리드 생성 (12주 x 7일)
-  const grid = [];
-  for (let week = weeks - 1; week >= 0; week--) {
-    const weekDays = [];
+  // 연도 시작일의 요일 계산 (0 = 일요일)
+  const startDay = startDate.getDay();
+  
+  // 전체 주 수 계산
+  const totalDays = Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const totalWeeks = Math.ceil((totalDays + startDay) / 7);
+
+  // 그리드 생성
+  const grid: { date: string; count: number; isEmpty: boolean }[][] = [];
+  
+  for (let week = 0; week < totalWeeks; week++) {
+    const weekDays: { date: string; count: number; isEmpty: boolean }[] = [];
+    
     for (let day = 0; day < 7; day++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - (week * 7 + (6 - day)));
-      const dateStr = date.toISOString().split('T')[0];
-      const count = activityMap.get(dateStr) || 0;
-      weekDays.push({ date: dateStr, count });
+      const dayOffset = week * 7 + day - startDay;
+      
+      if (dayOffset < 0 || dayOffset >= totalDays) {
+        // 빈 셀
+        weekDays.push({ date: '', count: 0, isEmpty: true });
+      } else {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + dayOffset);
+        const dateStr = date.toISOString().split('T')[0];
+        const count = activityMap.get(dateStr) || 0;
+        weekDays.push({ date: dateStr, count, isEmpty: false });
+      }
     }
+    
     grid.push(weekDays);
   }
 
+  // 5단계 색상 (연한 주황부터 진한 주황)
   const getIntensity = (count: number) => {
     if (count === 0) return "bg-muted";
-    if (count === 1) return "bg-primary/30";
-    if (count === 2) return "bg-primary/60";
-    return "bg-primary";
+    if (count <= 3) return "bg-orange-200 dark:bg-orange-900/40";
+    if (count <= 8) return "bg-orange-300 dark:bg-orange-800/60";
+    if (count <= 15) return "bg-orange-400 dark:bg-orange-700/80";
+    if (count <= 30) return "bg-orange-500 dark:bg-orange-600";
+    return "bg-orange-600 dark:bg-orange-500";
   };
 
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
   return (
-    <div className="space-y-2">
-      <h3 className="text-sm font-medium text-foreground">독서 활동</h3>
-      <div className="flex gap-1 overflow-x-auto pb-2">
-        {grid.map((week, weekIdx) => (
-          <div key={weekIdx} className="flex flex-col gap-1">
-            {week.map((day, dayIdx) => (
-              <div
-                key={`${weekIdx}-${dayIdx}`}
-                className={cn(
-                  "w-3 h-3 rounded-sm transition-colors",
-                  getIntensity(day.count)
-                )}
-                title={`${day.date}: ${day.count}권`}
-              />
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-foreground">
+          {currentYear}년 독서 활동
+        </h3>
+        <p className="text-xs text-muted-foreground">
+          총 {notes.filter(n => new Date(n.createdAt).getFullYear() === currentYear).length}개 문장 수집
+        </p>
+      </div>
+      
+      <div className="overflow-x-auto">
+        <div className="inline-block min-w-full">
+          {/* 월 레이블 */}
+          <div className="flex gap-[2px] mb-1 ml-8">
+            {months.map((month, idx) => {
+              const monthStart = new Date(currentYear, idx, 1);
+              const weekOffset = Math.floor((monthStart.getTime() - startDate.getTime() + (startDay * 24 * 60 * 60 * 1000)) / (7 * 24 * 60 * 60 * 1000));
+              
+              return (
+                <div 
+                  key={month}
+                  className="text-xs text-muted-foreground"
+                  style={{ 
+                    marginLeft: idx === 0 ? 0 : 'auto',
+                    position: 'absolute',
+                    left: `${32 + weekOffset * 12}px`
+                  }}
+                >
+                  {month}
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="flex gap-[2px] mt-6">
+            {/* 요일 레이블 */}
+            <div className="flex flex-col gap-[2px] mr-1">
+              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Mon</div>
+              <div className="h-[10px]"></div>
+              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Wed</div>
+              <div className="h-[10px]"></div>
+              <div className="h-[10px] text-xs text-muted-foreground flex items-center">Fri</div>
+              <div className="h-[10px]"></div>
+              <div className="h-[10px]"></div>
+            </div>
+
+            {/* 히트맵 그리드 */}
+            {grid.map((week, weekIdx) => (
+              <div key={weekIdx} className="flex flex-col gap-[2px]">
+                {week.map((day, dayIdx) => (
+                  <div
+                    key={`${weekIdx}-${dayIdx}`}
+                    className={cn(
+                      "w-[10px] h-[10px] rounded-sm transition-colors",
+                      day.isEmpty ? "bg-transparent" : getIntensity(day.count)
+                    )}
+                    title={day.isEmpty ? "" : `${day.date}: ${day.count}개 수집`}
+                  />
+                ))}
+              </div>
             ))}
           </div>
-        ))}
+        </div>
       </div>
-      <p className="text-xs text-muted-foreground">
-        최근 {weeks}주간 독서 활동
-      </p>
+
+      {/* 범례 */}
+      <div className="flex items-center gap-2 text-xs">
+        <span className="text-muted-foreground">Less</span>
+        <div className="flex gap-1">
+          <div className="w-3 h-3 rounded-sm bg-muted" />
+          <div className="w-3 h-3 rounded-sm bg-orange-200 dark:bg-orange-900/40" />
+          <div className="w-3 h-3 rounded-sm bg-orange-300 dark:bg-orange-800/60" />
+          <div className="w-3 h-3 rounded-sm bg-orange-400 dark:bg-orange-700/80" />
+          <div className="w-3 h-3 rounded-sm bg-orange-500 dark:bg-orange-600" />
+          <div className="w-3 h-3 rounded-sm bg-orange-600 dark:bg-orange-500" />
+        </div>
+        <span className="text-muted-foreground">More</span>
+      </div>
     </div>
   );
 };
@@ -100,7 +183,7 @@ export default function Home() {
         <section>
           <Card>
             <CardContent className="p-4">
-              <ActivityCalendar books={books} />
+              <ActivityCalendar notes={notes} />
             </CardContent>
           </Card>
         </section>
