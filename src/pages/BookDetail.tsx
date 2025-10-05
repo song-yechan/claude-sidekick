@@ -16,7 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
@@ -249,9 +249,13 @@ export default function BookDetail() {
               />
               
               {isProcessingImage && (
-                <div className="space-y-2">
-                  <Progress value={undefined} className="h-2" />
-                  <p className="text-xs text-center text-muted-foreground">
+                <div className="space-y-3">
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-3/4" />
+                    <Skeleton className="h-4 w-5/6" />
+                  </div>
+                  <p className="text-xs text-center text-muted-foreground animate-pulse">
                     텍스트를 추출하고 있습니다...
                   </p>
                 </div>

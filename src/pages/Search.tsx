@@ -40,15 +40,16 @@ export default function Search() {
     }
   };
 
-  const handleAddBook = (result: BookSearchResult) => {
+  const handleAddBook = async (result: BookSearchResult) => {
     // Check if book already exists
     const existingBook = books.find(b => b.isbn === result.isbn);
     if (existingBook) {
       toast.error("이미 추가된 책입니다");
+      navigate(`/books/${existingBook.id}`);
       return;
     }
 
-    const newBook = addBook({
+    const newBook = await addBook({
       isbn: result.isbn,
       title: result.title,
       author: result.author,
@@ -59,12 +60,8 @@ export default function Search() {
       categoryIds: categoryId ? [categoryId] : [],
     });
 
-    if (category) {
-      toast.success(`"${result.title}"이(가) ${category.name}에 추가되었습니다`);
-      navigate(`/categories/${categoryId}`);
-    } else {
-      toast.success(`"${result.title}"이(가) 추가되었습니다`);
-    }
+    toast.success(`"${result.title}"이(가) 추가되었습니다`);
+    navigate(`/books/${newBook.id}`);
   };
 
   return (
