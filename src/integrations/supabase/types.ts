@@ -121,6 +121,7 @@ export type Database = {
           id: string
           memo: string | null
           page_number: number | null
+          summary: string | null
           tags: string[] | null
           updated_at: string
           user_id: string
@@ -132,6 +133,7 @@ export type Database = {
           id?: string
           memo?: string | null
           page_number?: number | null
+          summary?: string | null
           tags?: string[] | null
           updated_at?: string
           user_id: string
@@ -143,6 +145,7 @@ export type Database = {
           id?: string
           memo?: string | null
           page_number?: number | null
+          summary?: string | null
           tags?: string[] | null
           updated_at?: string
           user_id?: string

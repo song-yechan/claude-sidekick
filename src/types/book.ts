@@ -22,6 +22,7 @@ export interface Note {
   id: string;
   bookId: string;
   content: string;
+  summary?: string;
   pageNumber?: number;
   tags: string[];
   memo?: string;

@@ -26,6 +26,7 @@ export function useNotes() {
         id: note.id,
         bookId: note.book_id,
         content: note.content,
+        summary: note.summary,
         pageNumber: note.page_number,
         tags: note.tags,
         memo: note.memo,
@@ -46,6 +47,7 @@ export function useNotes() {
           user_id: user.id,
           book_id: note.bookId,
           content: note.content,
+          summary: note.summary,
           page_number: note.pageNumber,
           tags: note.tags,
           memo: note.memo,
@@ -68,6 +70,7 @@ export function useNotes() {
         .from("notes")
         .update({
           content: updates.content,
+          summary: updates.summary,
           page_number: updates.pageNumber,
           tags: updates.tags,
           memo: updates.memo,

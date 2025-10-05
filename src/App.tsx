@@ -11,6 +11,7 @@ import Search from "./pages/Search";
 import Categories from "./pages/Categories";
 import CategoryDetail from "./pages/CategoryDetail";
 import BookDetail from "./pages/BookDetail";
+import NoteDetail from "./pages/NoteDetail";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
@@ -57,6 +58,13 @@ const App = () => (
               <ProtectedRoute>
                 <MobileLayout>
                   <BookDetail />
+                </MobileLayout>
+              </ProtectedRoute>
+            } />
+            <Route path="/notes/:noteId" element={
+              <ProtectedRoute>
+                <MobileLayout>
+                  <NoteDetail />
                 </MobileLayout>
               </ProtectedRoute>
             } />

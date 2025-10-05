@@ -52,49 +52,54 @@ export default function BookDetail() {
         const base64 = reader.result as string;
         
         // Call OCR edge function
-        const { data, error } = await supabase.functions.invoke('ocr-image', {
+        const { data: ocrData, error: ocrError } = await supabase.functions.invoke('ocr-image', {
           body: { imageBase64: base64 },
         });
 
-        if (error) {
-          console.error('OCR error:', error);
+        if (ocrError) {
+          console.error('OCR error:', ocrError);
           toast.error('이미지 처리 중 오류가 발생했습니다');
+          setIsProcessingImage(false);
           return;
         }
 
-        setExtractedText(data.text || '');
-        toast.success('텍스트가 추출되었습니다');
+        const extractedContent = ocrData.text || '';
+        setExtractedText(extractedContent);
+        
+        // Call summarize edge function
+        const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
+          body: { text: extractedContent },
+        });
+
+        if (summaryError) {
+          console.error('Summarize error:', summaryError);
+          toast.error('요약 생성 중 오류가 발생했습니다');
+          setIsProcessingImage(false);
+          return;
+        }
+
+        const summary = summaryData.summary || '';
+        
+        // Save note with summary
+        await addNote({
+          bookId: book.id,
+          content: extractedContent,
+          summary: summary,
+          pageNumber: pageNumber ? parseInt(pageNumber) : undefined,
+          tags: [],
+        });
+
+        setIsAddingNote(false);
+        setExtractedText('');
+        setPageNumber('');
+        setIsProcessingImage(false);
+        toast.success('문장이 저장되었습니다');
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Image upload error:', error);
       toast.error('이미지 업로드 실패');
-    } finally {
       setIsProcessingImage(false);
-    }
-  };
-
-  const handleSaveNote = async () => {
-    if (!extractedText.trim()) {
-      toast.error('내용을 입력해주세요');
-      return;
-    }
-
-    try {
-      await addNote({
-        bookId: book.id,
-        content: extractedText,
-        pageNumber: pageNumber ? parseInt(pageNumber) : undefined,
-        tags: [],
-      });
-      
-      setIsAddingNote(false);
-      setExtractedText('');
-      setPageNumber('');
-      toast.success('문장이 저장되었습니다');
-    } catch (error) {
-      console.error('Save note error:', error);
-      toast.error('저장 실패');
     }
   };
 
@@ -191,7 +196,11 @@ export default function BookDetail() {
           ) : (
             <div className="space-y-2">
               {notes.map((note) => (
-                <Card key={note.id}>
+                <Card 
+                  key={note.id}
+                  className="cursor-pointer hover:bg-accent transition-colors"
+                  onClick={() => navigate(`/notes/${note.id}`)}
+                >
                   <CardContent className="p-4">
                     <div className="space-y-2">
                       {note.pageNumber && (
@@ -199,20 +208,9 @@ export default function BookDetail() {
                           p. {note.pageNumber}
                         </p>
                       )}
-                      <p className="text-sm text-foreground whitespace-pre-wrap">
-                        {note.content}
+                      <p className="text-sm text-foreground line-clamp-2">
+                        {note.summary || note.content}
                       </p>
-                      <div className="flex justify-end gap-2 pt-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteNote(note.id)}
-                          className="gap-1 text-destructive hover:text-destructive"
-                        >
-                          <Trash2 className="h-3 w-3" />
-                          삭제
-                        </Button>
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -256,7 +254,7 @@ export default function BookDetail() {
                     <Skeleton className="h-4 w-5/6" />
                   </div>
                   <p className="text-xs text-center text-muted-foreground animate-pulse">
-                    텍스트를 추출하고 있습니다...
+                    텍스트 추출 및 요약 중...
                   </p>
                 </div>
               )}
@@ -270,17 +268,7 @@ export default function BookDetail() {
                 placeholder="예: 42"
                 value={pageNumber}
                 onChange={(e) => setPageNumber(e.target.value)}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="extracted-text">추출된 텍스트</Label>
-              <Textarea
-                id="extracted-text"
-                placeholder="이미지를 업로드하면 텍스트가 자동으로 추출됩니다"
-                value={extractedText}
-                onChange={(e) => setExtractedText(e.target.value)}
-                className="min-h-[150px]"
+                disabled={isProcessingImage}
               />
             </div>
 
@@ -293,15 +281,9 @@ export default function BookDetail() {
                   setExtractedText('');
                   setPageNumber('');
                 }}
+                disabled={isProcessingImage}
               >
                 취소
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleSaveNote}
-                disabled={!extractedText.trim()}
-              >
-                저장
               </Button>
             </div>
           </div>
