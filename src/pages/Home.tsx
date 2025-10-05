@@ -178,7 +178,10 @@ export default function Home() {
   const { notes } = useNotes();
   const { signOut } = useAuth();
 
-  const recentBooks = books.slice(-3).reverse();
+  // 최근 추가한 책 3권 (생성일 기준 내림차순)
+  const recentBooks = [...books]
+    .sort((a, b) => new Date(b.addedAt).getTime() - new Date(a.addedAt).getTime())
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
@@ -237,60 +240,62 @@ export default function Home() {
 
         {/* Recent books section */}
         <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-lg font-semibold text-foreground">
-              최근 추가한 책
-            </h3>
-            {books.length > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => navigate('/books')}
-                className="text-xs"
-              >
-                전체보기
-              </Button>
-            )}
-          </div>
-          {recentBooks.length === 0 ? (
-            <Card>
-              <CardContent className="p-6 text-center">
-                <p className="text-muted-foreground text-sm">
-                  아직 추가된 책이 없습니다
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {recentBooks.map((book) => (
-                <Card 
-                  key={book.id}
-                  className="cursor-pointer hover:bg-accent/10 transition-colors"
-                  onClick={() => navigate(`/books/${book.id}`)}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex gap-2 items-center">
-                      {book.coverImage && (
-                        <img 
-                          src={book.coverImage} 
-                          alt={book.title}
-                          className="w-10 h-14 object-cover rounded"
-                        />
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-sm text-foreground line-clamp-1">
-                          {book.title}
-                        </h4>
-                        <p className="text-xs text-muted-foreground">
-                          {book.author}
-                        </p>
+          <Card>
+            <CardHeader className="p-4 pb-3">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-foreground">
+                  최근 추가한 책
+                </CardTitle>
+                {books.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate('/books')}
+                    className="text-xs h-8"
+                  >
+                    전체보기
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent className="p-4 pt-0">
+              {recentBooks.length === 0 ? (
+                <div className="py-8 text-center">
+                  <p className="text-muted-foreground text-sm">
+                    아직 추가된 책이 없습니다
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {recentBooks.map((book) => (
+                    <div
+                      key={book.id}
+                      className="p-3 rounded-lg border border-border cursor-pointer hover:bg-accent/10 transition-colors"
+                      onClick={() => navigate(`/books/${book.id}`)}
+                    >
+                      <div className="flex gap-3 items-center">
+                        {book.coverImage && (
+                          <img 
+                            src={book.coverImage} 
+                            alt={book.title}
+                            className="w-12 h-16 object-cover rounded"
+                          />
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-sm text-foreground line-clamp-1">
+                            {book.title}
+                          </h4>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {book.author}
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          )}
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </section>
       </div>
     </div>
