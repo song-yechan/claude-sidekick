@@ -3,6 +3,8 @@ import { useBooks } from "@/hooks/useBooks";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function AllBooks() {
   const navigate = useNavigate();
@@ -68,6 +70,9 @@ export default function AllBooks() {
                           {book.publisher}
                         </p>
                       )}
+                      <p className="text-xs text-muted-foreground mt-1">
+                        등록일: {format(new Date(book.addedAt), 'yyyy.MM.dd', { locale: ko })}
+                      </p>
                     </div>
                   </div>
                 </CardContent>

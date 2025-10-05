@@ -19,6 +19,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
@@ -230,6 +232,9 @@ export default function BookDetail() {
                     {book.publisher}
                   </p>
                 )}
+                <p className="text-xs text-muted-foreground mt-2">
+                  등록일: {format(new Date(book.addedAt), 'yyyy년 MM월 dd일', { locale: ko })}
+                </p>
               </div>
             </div>
           </CardContent>
