@@ -4,7 +4,6 @@ import { useCategories } from "@/hooks/useCategories";
 import { useNotes } from "@/hooks/useNotes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Plus, Camera, Trash2, Edit, FolderPlus, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +40,6 @@ export default function BookDetail() {
   const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  const [showSummary, setShowSummary] = useState(true);
 
   if (!book) {
     return (
@@ -51,35 +49,74 @@ export default function BookDetail() {
     );
   }
 
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            reject(new Error('Canvas context not available'));
+            return;
+          }
+
+          // OCR이 가능한 정도로만 압축 (최대 1024px)
+          const maxDimension = 1024;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxDimension || height > maxDimension) {
+            if (width > height) {
+              height = (height / width) * maxDimension;
+              width = maxDimension;
+            } else {
+              width = (width / height) * maxDimension;
+              height = maxDimension;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // JPEG 품질 0.85로 압축 (OCR에 충분한 품질)
+          resolve(canvas.toDataURL('image/jpeg', 0.85));
+        };
+        img.onerror = () => reject(new Error('Image load failed'));
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = () => reject(new Error('File read failed'));
+      reader.readAsDataURL(file);
+    });
+  };
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setIsProcessingImage(true);
     try {
-      // Convert image to base64
-      const reader = new FileReader();
-      reader.onloadend = async () => {
-        const base64 = reader.result as string;
-        
-        // Call OCR edge function
-        const { data: ocrData, error: ocrError } = await supabase.functions.invoke('ocr-image', {
-          body: { imageBase64: base64 },
-        });
+      // 이미지 압축
+      const compressedBase64 = await compressImage(file);
+      
+      // Call OCR edge function
+      const { data: ocrData, error: ocrError } = await supabase.functions.invoke('ocr-image', {
+        body: { imageBase64: compressedBase64 },
+      });
 
-        if (ocrError) {
-          console.error('OCR error:', ocrError);
-          toast.error('이미지 처리 중 오류가 발생했습니다');
-          setIsProcessingImage(false);
-          return;
-        }
-
-        const extractedContent = ocrData.text || '';
-        setExtractedText(extractedContent);
+      if (ocrError) {
+        console.error('OCR error:', ocrError);
+        toast.error('이미지 처리 중 오류가 발생했습니다');
         setIsProcessingImage(false);
-        toast.success('텍스트가 추출되었습니다. 내용을 확인하고 저장해주세요.');
-      };
-      reader.readAsDataURL(file);
+        return;
+      }
+
+      const extractedContent = ocrData.text || '';
+      setExtractedText(extractedContent);
+      setIsProcessingImage(false);
+      toast.success('텍스트가 추출되었습니다. 내용을 확인하고 저장해주세요.');
     } catch (error) {
       console.error('Image upload error:', error);
       toast.error('이미지 업로드 실패');
@@ -95,25 +132,10 @@ export default function BookDetail() {
 
     setIsSavingNote(true);
     try {
-      // Call summarize edge function
-      const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
-        body: { text: extractedText },
-      });
-
-      if (summaryError) {
-        console.error('Summarize error:', summaryError);
-        toast.error('요약 생성 중 오류가 발생했습니다');
-        setIsSavingNote(false);
-        return;
-      }
-
-      const summary = summaryData.summary || '';
-      
-      // Save note with summary and memo
+      // Save note without auto-summary
       await addNote({
         bookId: book.id,
         content: extractedText,
-        summary: summary,
         pageNumber: pageNumber ? parseInt(pageNumber) : undefined,
         memo: memo,
         tags: [],
@@ -253,23 +275,14 @@ export default function BookDetail() {
             <h3 className="text-lg font-semibold text-foreground">
               문장 수집 ({notes.length})
             </h3>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">AI 요약</span>
-                <Switch
-                  checked={showSummary}
-                  onCheckedChange={setShowSummary}
-                />
-              </div>
-              <Button
-                onClick={() => setIsAddingNote(true)}
-                size="sm"
-                className="gap-1"
-              >
-                <Plus className="h-4 w-4" />
-                추가
-              </Button>
-            </div>
+            <Button
+              onClick={() => setIsAddingNote(true)}
+              size="sm"
+              className="gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              추가
+            </Button>
           </div>
 
           {notes.length === 0 ? (
@@ -306,8 +319,8 @@ export default function BookDetail() {
                           p. {note.pageNumber}
                         </p>
                       )}
-                      <p className={`text-sm text-foreground font-medium leading-relaxed ${!showSummary ? 'line-clamp-2' : ''}`}>
-                        {showSummary ? (note.summary || note.content) : note.content}
+                      <p className="text-sm text-foreground font-medium leading-relaxed line-clamp-2">
+                        {note.summary || note.content}
                       </p>
                     </div>
                   </CardContent>
@@ -374,8 +387,8 @@ export default function BookDetail() {
                     <Skeleton className="h-4 w-3/4" />
                     <Skeleton className="h-4 w-5/6" />
                   </div>
-                  <p className="text-xs text-center text-muted-foreground font-medium animate-pulse">
-                    텍스트 추출 및 요약 중...
+                 <p className="text-xs text-center text-muted-foreground font-medium animate-pulse">
+                    텍스트 추출 중...
                   </p>
                 </div>
               )}

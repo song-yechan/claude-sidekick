@@ -2,12 +2,13 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useNotes } from "@/hooks/useNotes";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowLeft, Trash2, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, Trash2, Edit, Save, X, Sparkles, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function NoteDetail() {
   const { noteId } = useParams<{ noteId: string }>();
@@ -17,9 +18,11 @@ export default function NoteDetail() {
   const note = notes.find(n => n.id === noteId);
   
   const [isEditing, setIsEditing] = useState(false);
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false);
   const [editedContent, setEditedContent] = useState(note?.content || '');
   const [editedMemo, setEditedMemo] = useState(note?.memo || '');
   const [editedPageNumber, setEditedPageNumber] = useState(note?.pageNumber?.toString() || '');
+  const [editedSummary, setEditedSummary] = useState(note?.summary || '');
 
   if (!note) {
     return (
@@ -34,11 +37,42 @@ export default function NoteDetail() {
     navigate(-1);
   };
 
+  const handleGenerateSummary = async () => {
+    if (!editedContent.trim()) {
+      toast.error('요약할 내용이 없습니다');
+      return;
+    }
+
+    setIsGeneratingSummary(true);
+    try {
+      const { data: summaryData, error: summaryError } = await supabase.functions.invoke('summarize-text', {
+        body: { text: editedContent },
+      });
+
+      if (summaryError) {
+        console.error('Summarize error:', summaryError);
+        toast.error('요약 생성 중 오류가 발생했습니다');
+        setIsGeneratingSummary(false);
+        return;
+      }
+
+      const summary = summaryData.summary || '';
+      setEditedSummary(summary);
+      setIsGeneratingSummary(false);
+      toast.success('AI 요약이 생성되었습니다');
+    } catch (error) {
+      console.error('Generate summary error:', error);
+      toast.error('요약 생성 중 오류가 발생했습니다');
+      setIsGeneratingSummary(false);
+    }
+  };
+
   const handleSave = () => {
     updateNote(note.id, {
       content: editedContent,
       memo: editedMemo,
       pageNumber: editedPageNumber ? parseInt(editedPageNumber) : undefined,
+      summary: editedSummary,
     });
     setIsEditing(false);
     toast.success('수정되었습니다');
@@ -48,6 +82,7 @@ export default function NoteDetail() {
     setEditedContent(note?.content || '');
     setEditedMemo(note?.memo || '');
     setEditedPageNumber(note?.pageNumber?.toString() || '');
+    setEditedSummary(note?.summary || '');
     setIsEditing(false);
   };
 
@@ -121,6 +156,38 @@ export default function NoteDetail() {
                     value={editedPageNumber}
                     onChange={(e) => setEditedPageNumber(e.target.value)}
                     className="mt-1"
+                  />
+                </div>
+
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <Label htmlFor="summary">AI 요약</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleGenerateSummary}
+                      disabled={isGeneratingSummary || !editedContent.trim()}
+                      className="gap-1"
+                    >
+                      {isGeneratingSummary ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          생성 중...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-3 w-3" />
+                          AI 요약 생성
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                  <Textarea
+                    id="summary"
+                    placeholder="AI 요약 생성 버튼을 눌러 요약을 생성하세요"
+                    value={editedSummary}
+                    onChange={(e) => setEditedSummary(e.target.value)}
+                    className="min-h-[80px] mt-1"
                   />
                 </div>
 
