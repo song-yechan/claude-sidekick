@@ -33,6 +33,14 @@ serve(async (req) => {
       );
     }
 
+    // Query length validation (prevent abuse)
+    if (query.length > 200) {
+      return new Response(
+        JSON.stringify({ error: '검색어가 너무 깁니다. (최대 200자)', items: [] }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const ttbKey = Deno.env.get('ALADIN_TTB_KEY');
     if (!ttbKey) {
       console.error('ALADIN_TTB_KEY is not set');
