@@ -32,8 +32,16 @@ export default function Search() {
     try {
       const searchResults = await searchBooks(searchQuery);
       setResults(searchResults);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Search error:", error);
+      
+      // Handle authentication error
+      if (error?.message?.includes('로그인이 필요합니다')) {
+        toast.error("로그인이 필요합니다");
+        navigate("/auth");
+        return;
+      }
+      
       toast.error("검색 중 오류가 발생했습니다");
     } finally {
       setIsSearching(false);
