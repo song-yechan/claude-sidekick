@@ -14,6 +14,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +36,7 @@ import { ko } from "date-fns/locale";
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
-  const { getBookById, updateBook } = useBooks();
+  const { getBookById, updateBook, deleteBook } = useBooks();
   const { categories } = useCategories();
   const { getNotesByBook, addNote, deleteNote } = useNotes();
   
@@ -40,6 +51,7 @@ export default function BookDetail() {
   const [memo, setMemo] = useState('');
   const [pageNumber, setPageNumber] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   if (!book) {
     return (
@@ -175,6 +187,12 @@ export default function BookDetail() {
     updateBook(book.id, { categoryIds: selectedCategories });
     setIsAddingCategory(false);
     toast.success('카테고리가 업데이트되었습니다');
+  };
+
+  const handleDeleteBook = () => {
+    deleteBook(book.id);
+    navigate('/');
+    toast.success('책이 삭제되었습니다');
   };
 
   return (
@@ -328,6 +346,39 @@ export default function BookDetail() {
               ))}
             </div>
           )}
+        </div>
+
+        {/* Delete Book Section */}
+        <div className="pt-4 pb-8">
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                책 삭제하기
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>정말 삭제하시겠습니까?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  "{book.title}"을(를) 삭제하면 이 책에 저장된 모든 문장 수집도 함께 삭제됩니다. 
+                  이 작업은 되돌릴 수 없습니다.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>취소</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteBook}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  삭제
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 
