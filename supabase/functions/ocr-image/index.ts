@@ -23,6 +23,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Check base64 size (2MB limit for server-side safety)
+    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+    if (imageBase64.length > MAX_SIZE) {
+      return new Response(
+        JSON.stringify({ error: '이미지 크기가 너무 큽니다. 다시 선택해주세요.' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Processing OCR request with Lovable AI...');
 
     // Extract base64 content from data URL

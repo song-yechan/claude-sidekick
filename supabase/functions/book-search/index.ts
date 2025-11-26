@@ -83,9 +83,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Error in book-search function:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: errorMessage, items: [] }), 
+      JSON.stringify({ error: '검색 중 오류가 발생했습니다, 재검색해주세요', items: [] }), 
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
