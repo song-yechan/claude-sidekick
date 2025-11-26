@@ -12,6 +12,18 @@ serve(async (req) => {
   }
 
   try {
+    // Check for authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: '로그인이 필요합니다.', items: [] }), 
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
+
     const { query } = await req.json();
     
     if (!query || !query.trim()) {
