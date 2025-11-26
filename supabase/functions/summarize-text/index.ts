@@ -12,43 +12,48 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_GEMINI_API_KEY = Deno.env.get('GOOGLE_GEMINI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!GOOGLE_GEMINI_API_KEY) {
+      throw new Error('GOOGLE_GEMINI_API_KEY is not configured');
     }
 
-    console.log('Summarizing text...');
+    if (!text || typeof text !== 'string') {
+      throw new Error('Invalid text input');
+    }
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    if (text.length > 10000) {
+      throw new Error('Text too long (max 10,000 characters)');
+    }
+
+    console.log('Summarizing text with Google Gemini...');
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_GEMINI_API_KEY}`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert at creating ultra-concise summaries. Summarize the text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.'
-          },
-          {
-            role: 'user',
-            content: `Summarize this text very concisely (1-2 sentences, under 100 characters):\n\n${text}`
-          }
-        ],
+        contents: [{
+          parts: [{
+            text: `You are an expert at creating ultra-concise summaries. Summarize the following text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.\n\n${text}`
+          }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 100,
+        }
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI gateway error:', response.status, errorText);
-      throw new Error(`AI gateway error: ${response.status}`);
+      console.error('Google Gemini API error:', response.status, errorText);
+      throw new Error('Failed to generate summary');
     }
 
     const data = await response.json();
-    const summary = data.choices?.[0]?.message?.content || '';
+    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     console.log('Summary generated successfully');
 
@@ -63,9 +68,8 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error('Summarize error:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return new Response(
-      JSON.stringify({ error: message }),
+      JSON.stringify({ error: 'An error occurred processing your request' }),
       { 
         status: 500,
         headers: { 
