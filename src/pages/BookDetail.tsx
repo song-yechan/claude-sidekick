@@ -349,7 +349,7 @@ export default function BookDetail() {
         </div>
 
         {/* Delete Book Section */}
-        <div className="pt-4 pb-8">
+        <div className="mt-8 pt-6 border-t border-border">
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button
@@ -362,10 +362,9 @@ export default function BookDetail() {
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>정말 삭제하시겠습니까?</AlertDialogTitle>
+                <AlertDialogTitle>책을 서재에서 제거하시겠어요?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  "{book.title}"을(를) 삭제하면 이 책에 저장된 모든 문장 수집도 함께 삭제됩니다. 
-                  이 작업은 되돌릴 수 없습니다.
+                  책에 기록한 모든 문장도 함께 삭제됩니다.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
