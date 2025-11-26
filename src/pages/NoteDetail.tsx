@@ -29,9 +29,21 @@ export default function NoteDetail() {
   const [editedPageNumber, setEditedPageNumber] = useState(note?.pageNumber?.toString() || '');
   const [editedSummary, setEditedSummary] = useState(note?.summary || '');
   if (!note) {
-    return <div className="min-h-screen bg-background p-4">
-        <p className="text-center text-muted-foreground">문장을 찾을 수 없습니다</p>
-      </div>;
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="sticky top-0 z-40 bg-card border-b border-border px-4 py-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-lg font-bold text-foreground">문장 상세</h1>
+          </div>
+        </header>
+        <div className="p-4">
+          <p className="text-center text-muted-foreground">문장을 찾을 수 없습니다</p>
+        </div>
+      </div>
+    );
   }
   const handleDelete = () => {
     deleteNote(note.id);

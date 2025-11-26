@@ -64,7 +64,7 @@ export default function CategoryDetail() {
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-card border-b border-border px-4 py-4">
-        <div className="flex items-center gap-3 mb-2">
+        <div className="flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
@@ -78,12 +78,10 @@ export default function CategoryDetail() {
               style={{ backgroundColor: category.color }}
             />
             <h1 className="text-xl font-bold text-foreground">{category.name}</h1>
+            <span className="text-sm text-muted-foreground">
+              {books.length}권
+            </span>
           </div>
-        </div>
-        <div className="flex items-center justify-between pl-12">
-          <span className="text-sm text-muted-foreground">
-            {books.length}권
-          </span>
           <Button 
             size="sm"
             onClick={() => navigate('/search', { state: { categoryId } })}
