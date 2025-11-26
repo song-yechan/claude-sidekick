@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_GEMINI_API_KEY = Deno.env.get('GOOGLE_GEMINI_API_KEY');
 
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    if (!GOOGLE_GEMINI_API_KEY) {
+      throw new Error('GOOGLE_GEMINI_API_KEY is not configured');
     }
 
     if (!text || typeof text !== 'string') {
@@ -26,26 +26,34 @@ serve(async (req) => {
       throw new Error('Text too long (max 10,000 characters)');
     }
 
-    console.log('Summarizing text with Lovable AI...');
+    console.log('Summarizing text with Google Gemini API...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [{
-          role: 'user',
-          content: `You are an expert at creating ultra-concise summaries. Summarize the following text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.\n\n${text}`
-        }]
-      }),
-    });
+    const prompt = `You are an expert at creating ultra-concise summaries. Summarize the following text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.\n\n${text}`;
+
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_GEMINI_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            maxOutputTokens: 200,
+            temperature: 0.7,
+          }
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
+      console.error('Google Gemini API error:', response.status, errorText);
       
       if (response.status === 429) {
         return new Response(
@@ -54,10 +62,10 @@ serve(async (req) => {
         );
       }
       
-      if (response.status === 402) {
+      if (response.status === 403) {
         return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'API key quota exceeded. Please check your Google Cloud billing.' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
@@ -65,7 +73,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const summary = data.choices?.[0]?.message?.content || '';
+    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     console.log('Summary generated successfully');
 
