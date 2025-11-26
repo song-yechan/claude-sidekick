@@ -349,20 +349,19 @@ export default function BookDetail() {
         </div>
 
         {/* Delete Book Section */}
-        <div className="mt-8 pt-6 border-t border-border">
+        <div className="mt-6 pt-4 border-t border-border">
           <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogTrigger asChild>
               <Button
                 variant="ghost"
                 className="w-full text-destructive hover:text-destructive hover:bg-destructive/10"
               >
-                <Trash2 className="h-4 w-4 mr-2" />
                 책 삭제하기
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>책을 서재에서 제거하시겠어요?</AlertDialogTitle>
+                <AlertDialogTitle>"{book.title}"을(를) 서재에서 제거하시겠어요?</AlertDialogTitle>
                 <AlertDialogDescription>
                   책에 기록한 모든 문장도 함께 삭제됩니다.
                 </AlertDialogDescription>
