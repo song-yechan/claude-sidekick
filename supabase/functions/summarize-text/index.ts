@@ -12,10 +12,10 @@ serve(async (req) => {
 
   try {
     const { text } = await req.json();
-    const GOOGLE_GEMINI_API_KEY = Deno.env.get('GOOGLE_GEMINI_API_KEY');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
-    if (!GOOGLE_GEMINI_API_KEY) {
-      throw new Error('GOOGLE_GEMINI_API_KEY is not configured');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY is not configured');
     }
 
     if (!text || typeof text !== 'string') {
@@ -26,34 +26,46 @@ serve(async (req) => {
       throw new Error('Text too long (max 10,000 characters)');
     }
 
-    console.log('Summarizing text with Google Gemini...');
+    console.log('Summarizing text with Lovable AI...');
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${GOOGLE_GEMINI_API_KEY}`, {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [{
-          parts: [{
-            text: `You are an expert at creating ultra-concise summaries. Summarize the following text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.\n\n${text}`
-          }]
-        }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 100,
-        }
+        model: 'google/gemini-2.5-flash',
+        messages: [{
+          role: 'user',
+          content: `You are an expert at creating ultra-concise summaries. Summarize the following text in 1-2 short sentences (under 100 characters total if possible). Respond in the same language as the input. Keep it brief and clear.\n\n${text}`
+        }]
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Google Gemini API error:', response.status, errorText);
+      console.error('Lovable AI error:', response.status, errorText);
+      
+      if (response.status === 429) {
+        return new Response(
+          JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
+          { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      if (response.status === 402) {
+        return new Response(
+          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
+          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
       throw new Error('Failed to generate summary');
     }
 
     const data = await response.json();
-    const summary = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+    const summary = data.choices?.[0]?.message?.content || '';
 
     console.log('Summary generated successfully');
 
