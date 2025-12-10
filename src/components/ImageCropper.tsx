@@ -20,26 +20,25 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
   });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Prevent body scroll when cropper is open
+  // Debug logging
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    const originalPosition = document.body.style.position;
-    const originalWidth = document.body.style.width;
-    
-    document.body.style.overflow = 'hidden';
-    document.body.style.position = 'fixed';
-    document.body.style.width = '100%';
-    
-    return () => {
-      document.body.style.overflow = originalOverflow;
-      document.body.style.position = originalPosition;
-      document.body.style.width = originalWidth;
-    };
+    console.log('ImageCropper mounted, imageSrc:', imageSrc ? 'exists' : 'missing');
+    console.log('Initial crop:', crop);
   }, []);
+
+  useEffect(() => {
+    console.log('Crop changed:', crop);
+  }, [crop]);
+
+  useEffect(() => {
+    console.log('CompletedCrop changed:', completedCrop);
+  }, [completedCrop]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
+    console.log('Image loaded, dimensions:', width, height);
     
     // Set completed crop based on initial percentage crop
     const x = width * 0.1;
@@ -59,6 +58,8 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
   const getCroppedImg = useCallback((): Promise<string> => {
     return new Promise((resolve, reject) => {
       const image = imgRef.current;
+      console.log('getCroppedImg called, image:', !!image, 'completedCrop:', !!completedCrop);
+      
       if (!image || !completedCrop) {
         reject(new Error('Image or crop not available'));
         return;
@@ -124,18 +125,35 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     });
   }, [completedCrop]);
 
-  const handleUsePhoto = async () => {
+  const handleUsePhoto = useCallback(async () => {
+    console.log('handleUsePhoto called');
     try {
       const croppedImage = await getCroppedImg();
+      console.log('Cropped image generated, length:', croppedImage.length);
       onCropComplete(croppedImage);
     } catch (error) {
       console.error('Crop error:', error);
     }
-  };
+  }, [getCroppedImg, onCropComplete]);
+
+  const handleCancel = useCallback(() => {
+    console.log('handleCancel called');
+    onCancel();
+  }, [onCancel]);
+
+  const handleCropChange = useCallback((c: Crop, percentCrop: Crop) => {
+    console.log('Crop onChange:', percentCrop);
+    setCrop(percentCrop);
+  }, []);
+
+  const handleCropComplete = useCallback((c: PixelCrop) => {
+    console.log('Crop onComplete:', c);
+    setCompletedCrop(c);
+  }, []);
 
   const cropperContent = (
     <div 
-      id="image-cropper-overlay"
+      ref={containerRef}
       style={{ 
         position: 'fixed',
         top: 0,
@@ -146,6 +164,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
         backgroundColor: '#000',
         display: 'flex',
         flexDirection: 'column',
+        overflow: 'hidden',
       }}
     >
       {/* Header */}
@@ -161,9 +180,24 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
       >
         <button
           type="button"
-          onClick={() => onCancel()}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            console.log('X button pointerdown');
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('X button clicked');
+            handleCancel();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('X button touchend');
+            handleCancel();
+          }}
           style={{ 
-            padding: '8px',
+            padding: '12px',
             color: '#fff',
             background: 'transparent',
             border: 'none',
@@ -172,6 +206,8 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
           }}
         >
           <X size={24} />
@@ -186,7 +222,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
         >
           이미지 자르기
         </h2>
-        <div style={{ width: '40px' }} />
+        <div style={{ width: '48px' }} />
       </div>
 
       {/* Crop Area */}
@@ -203,8 +239,9 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
       >
         <ReactCrop
           crop={crop}
-          onChange={(_, percentCrop) => setCrop(percentCrop)}
-          onComplete={(c) => setCompletedCrop(c)}
+          onChange={handleCropChange}
+          onComplete={handleCropComplete}
+          keepSelection
         >
           <img
             ref={imgRef}
@@ -212,7 +249,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             alt="Crop preview"
             onLoad={onImageLoad}
             style={{ 
-              maxHeight: '60vh', 
+              maxHeight: '55vh', 
               maxWidth: '100%', 
               objectFit: 'contain',
               display: 'block',
@@ -232,7 +269,22 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
       >
         <button
           type="button"
-          onClick={handleUsePhoto}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            console.log('Use photo button pointerdown');
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Use photo button clicked');
+            handleUsePhoto();
+          }}
+          onTouchEnd={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Use photo button touchend');
+            handleUsePhoto();
+          }}
           disabled={!completedCrop?.width || !completedCrop?.height}
           style={{ 
             width: '100%',
@@ -249,6 +301,8 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             justifyContent: 'center',
             gap: '8px',
             opacity: (!completedCrop?.width || !completedCrop?.height) ? 0.5 : 1,
+            WebkitTapHighlightColor: 'transparent',
+            touchAction: 'manipulation',
           }}
         >
           <Check size={20} />
