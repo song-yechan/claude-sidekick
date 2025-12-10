@@ -377,7 +377,10 @@ export default function BookDetail() {
           setIsAddingNote(open);
         }}
       >
-        <DialogContent className="max-w-md">
+        <DialogContent 
+          className="max-w-md max-h-[85vh] overflow-y-auto"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
           <DialogHeader>
             <DialogTitle>문장 수집</DialogTitle>
           </DialogHeader>
