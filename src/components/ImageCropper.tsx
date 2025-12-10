@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { Button } from '@/components/ui/button';
@@ -33,8 +34,6 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     };
     
     setCrop(initialCrop);
-    
-    // Also set completedCrop so button is enabled immediately
     setCompletedCrop({
       unit: 'px',
       x,
@@ -121,45 +120,46 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+  const cropperContent = (
+    <div 
+      className="fixed inset-0 bg-black flex flex-col"
+      style={{ zIndex: 99999 }}
+    >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-card">
-        <Button
-          variant="ghost"
-          size="icon"
+      <div className="flex items-center justify-between px-4 py-3 bg-black">
+        <button
           onClick={onCancel}
+          className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
         >
-          <X className="h-5 w-5" />
-        </Button>
-        <h2 className="text-base font-semibold text-foreground">이미지 자르기</h2>
+          <X className="h-6 w-6" />
+        </button>
+        <h2 className="text-base font-semibold text-white">이미지 자르기</h2>
         <div className="w-10" />
       </div>
 
       {/* Crop Area */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-auto bg-muted/50">
+      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black px-2">
         <ReactCrop
           crop={crop}
           onChange={(c) => setCrop(c)}
           onComplete={(c) => setCompletedCrop(c)}
-          className="max-h-full"
-          style={{ maxHeight: '100%' }}
+          className="max-h-full max-w-full"
         >
           <img
             ref={imgRef}
             src={imageSrc}
             alt="Crop preview"
             onLoad={onImageLoad}
-            style={{ maxHeight: '60vh', maxWidth: '100%', objectFit: 'contain' }}
+            className="max-h-[65vh] max-w-full object-contain"
           />
         </ReactCrop>
       </div>
 
-      {/* Action Buttons */}
-      <div className="p-4 bg-card border-t border-border">
+      {/* Action Button */}
+      <div className="p-4 pb-8 bg-black safe-area-bottom">
         <Button
           onClick={handleUsePhoto}
-          className="w-full gap-2"
+          className="w-full gap-2 h-12 text-base font-semibold"
           size="lg"
           disabled={!completedCrop?.width || !completedCrop?.height}
         >
@@ -169,4 +169,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
       </div>
     </div>
   );
+
+  // Use portal to render at document body level, above all other content
+  return createPortal(cropperContent, document.body);
 }
