@@ -21,30 +21,29 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Prevent body scroll when cropper is open
+  // Prevent body scroll and touch events when cropper is open
   useEffect(() => {
-    const originalOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const originalStyle = document.body.style.cssText;
+    const originalHtmlStyle = document.documentElement.style.cssText;
+    
+    document.body.style.cssText = `${originalStyle}; overflow: hidden !important; position: fixed !important; width: 100% !important;`;
+    document.documentElement.style.cssText = `${originalHtmlStyle}; overflow: hidden !important;`;
     
     return () => {
-      document.body.style.overflow = originalOverflow;
+      document.body.style.cssText = originalStyle;
+      document.documentElement.style.cssText = originalHtmlStyle;
     };
   }, []);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
     
-    const x = width * 0.1;
-    const y = height * 0.1;
-    const cropWidth = width * 0.8;
-    const cropHeight = height * 0.8;
-    
     setCompletedCrop({
       unit: 'px',
-      x,
-      y,
-      width: cropWidth,
-      height: cropHeight,
+      x: width * 0.1,
+      y: height * 0.1,
+      width: width * 0.8,
+      height: height * 0.8,
     });
   }, []);
 
@@ -75,19 +74,9 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
       canvas.width = cropWidth;
       canvas.height = cropHeight;
 
-      ctx.drawImage(
-        image,
-        cropX,
-        cropY,
-        cropWidth,
-        cropHeight,
-        0,
-        0,
-        cropWidth,
-        cropHeight,
-      );
+      ctx.drawImage(image, cropX, cropY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
-      // Compress to max 1024px dimension
+      // Compress to max 1024px
       const maxDimension = 1024;
       let finalWidth = canvas.width;
       let finalHeight = canvas.height;
@@ -126,26 +115,21 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     }
   };
 
-  const handleCancel = () => {
-    onCancel();
-  };
-
-  const cropperContent = (
+  return createPortal(
     <div 
+      className="image-cropper-overlay"
       style={{ 
         position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
+        inset: 0,
         zIndex: 99999,
         backgroundColor: '#000',
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
+        touchAction: 'none',
       }}
     >
-      {/* Header - 명시적으로 클릭 가능하게 */}
+      {/* Header */}
       <div 
         style={{ 
           display: 'flex',
@@ -154,38 +138,28 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
           padding: '12px 16px',
           backgroundColor: '#000',
           flexShrink: 0,
-          position: 'relative',
-          zIndex: 100001,
-          pointerEvents: 'auto',
+          zIndex: 10,
         }}
       >
         <button
           type="button"
-          onClick={handleCancel}
+          onClick={onCancel}
           style={{ 
             padding: '12px',
             color: '#fff',
-            background: 'rgba(255,255,255,0.1)',
+            background: 'rgba(255,255,255,0.15)',
             border: 'none',
             borderRadius: '50%',
             cursor: 'pointer',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-            pointerEvents: 'auto',
+            touchAction: 'manipulation',
           }}
         >
           <X size={24} />
         </button>
-        <h2 
-          style={{ 
-            fontSize: '16px',
-            fontWeight: 600,
-            color: '#fff',
-            margin: 0,
-          }}
-        >
+        <h2 style={{ fontSize: '16px', fontWeight: 600, color: '#fff', margin: 0 }}>
           이미지 자르기
         </h2>
         <div style={{ width: '48px' }} />
@@ -193,6 +167,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
 
       {/* Crop Area */}
       <div 
+        className="crop-container"
         style={{ 
           flex: 1,
           display: 'flex',
@@ -200,9 +175,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
           justifyContent: 'center',
           overflow: 'hidden',
           padding: '8px',
-          backgroundColor: '#000',
-          position: 'relative',
-          zIndex: 100000,
+          touchAction: 'none',
         }}
       >
         <ReactCrop
@@ -210,6 +183,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
           onChange={(_, percentCrop) => setCrop(percentCrop)}
           onComplete={(c) => setCompletedCrop(c)}
           keepSelection
+          className="image-cropper-react-crop"
         >
           <img
             ref={imgRef}
@@ -221,24 +195,20 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
               maxWidth: '100%', 
               objectFit: 'contain',
               display: 'block',
-              userSelect: 'none',
-              WebkitUserSelect: 'none',
             }}
             draggable={false}
           />
         </ReactCrop>
       </div>
 
-      {/* Action Button - 명시적으로 클릭 가능하게 */}
+      {/* Action Button */}
       <div 
         style={{ 
           padding: '16px',
-          paddingBottom: '32px',
+          paddingBottom: 'max(32px, env(safe-area-inset-bottom))',
           backgroundColor: '#000',
           flexShrink: 0,
-          position: 'relative',
-          zIndex: 100001,
-          pointerEvents: 'auto',
+          zIndex: 10,
         }}
       >
         <button
@@ -260,16 +230,14 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             justifyContent: 'center',
             gap: '8px',
             opacity: (!completedCrop?.width || !completedCrop?.height) ? 0.5 : 1,
-            WebkitTapHighlightColor: 'transparent',
-            pointerEvents: 'auto',
+            touchAction: 'manipulation',
           }}
         >
           <Check size={20} />
           사진 사용
         </button>
       </div>
-    </div>
+    </div>,
+    document.body
   );
-
-  return createPortal(cropperContent, document.body);
 }
