@@ -1,1 +1,7 @@
 project_id = "rbwxdnxvkkmahgqjyjsm"
+
+[functions.ocr-image]
+verify_jwt = true
+
+[functions.summarize-text]
+verify_jwt = true
