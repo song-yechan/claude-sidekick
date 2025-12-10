@@ -24,8 +24,10 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     { x: 0, y: 0 },
   ]);
   const [activeCorner, setActiveCorner] = useState<number | null>(null);
+  const [activeEdge, setActiveEdge] = useState<number | null>(null); // 0: top, 1: right, 2: bottom, 3: left
   const [dragStart, setDragStart] = useState<Point>({ x: 0, y: 0 });
   const [initialCorner, setInitialCorner] = useState<Point>({ x: 0, y: 0 });
+  const [initialEdgeCorners, setInitialEdgeCorners] = useState<Point[]>([]);
   
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,13 +48,13 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     
     setImageDimensions({ width, height, naturalWidth, naturalHeight });
     
-    // Initialize corners with 10% margin
-    const margin = 0.1;
+    // Initialize corners at 100% (full image)
+    const padding = 5;
     setCorners([
-      { x: width * margin, y: height * margin }, // top-left
-      { x: width * (1 - margin), y: height * margin }, // top-right
-      { x: width * (1 - margin), y: height * (1 - margin) }, // bottom-right
-      { x: width * margin, y: height * (1 - margin) }, // bottom-left
+      { x: padding, y: padding }, // top-left
+      { x: width - padding, y: padding }, // top-right
+      { x: width - padding, y: height - padding }, // bottom-right
+      { x: padding, y: height - padding }, // bottom-left
     ]);
     setImageLoaded(true);
   }, []);
@@ -75,10 +77,31 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     setDragStart(pos);
     setInitialCorner({ ...corners[cornerIndex] });
     setActiveCorner(cornerIndex);
+    setActiveEdge(null);
+  };
+
+  // Edge indices: 0 = top (corners 0,1), 1 = right (corners 1,2), 2 = bottom (corners 2,3), 3 = left (corners 3,0)
+  const handleEdgeStart = (e: React.TouchEvent | React.MouseEvent, edgeIndex: number) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    const pos = getEventPosition(e);
+    setDragStart(pos);
+    setActiveEdge(edgeIndex);
+    setActiveCorner(null);
+    // Store the two corners that form this edge
+    const edgeCornerIndices = [
+      [0, 1], // top
+      [1, 2], // right
+      [2, 3], // bottom
+      [3, 0], // left
+    ];
+    const [c1, c2] = edgeCornerIndices[edgeIndex];
+    setInitialEdgeCorners([{ ...corners[c1] }, { ...corners[c2] }]);
   };
 
   const handleMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    if (activeCorner === null) return;
+    if (activeCorner === null && activeEdge === null) return;
     
     e.preventDefault();
     const pos = getEventPosition(e);
@@ -86,24 +109,63 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     const deltaY = pos.y - dragStart.y;
     
     const { width: imgWidth, height: imgHeight } = imageDimensions;
-    
-    let newX = initialCorner.x + deltaX;
-    let newY = initialCorner.y + deltaY;
-    
-    // Constrain to image bounds with small padding
     const padding = 10;
-    newX = Math.max(padding, Math.min(newX, imgWidth - padding));
-    newY = Math.max(padding, Math.min(newY, imgHeight - padding));
+
+    // Handle corner drag
+    if (activeCorner !== null) {
+      let newX = initialCorner.x + deltaX;
+      let newY = initialCorner.y + deltaY;
+      
+      newX = Math.max(padding, Math.min(newX, imgWidth - padding));
+      newY = Math.max(padding, Math.min(newY, imgHeight - padding));
+      
+      setCorners(prev => {
+        const newCorners = [...prev];
+        newCorners[activeCorner] = { x: newX, y: newY };
+        return newCorners;
+      });
+    }
     
-    setCorners(prev => {
-      const newCorners = [...prev];
-      newCorners[activeCorner] = { x: newX, y: newY };
-      return newCorners;
-    });
-  }, [activeCorner, dragStart, initialCorner, imageDimensions]);
+    // Handle edge drag
+    if (activeEdge !== null && initialEdgeCorners.length === 2) {
+      const edgeCornerIndices = [
+        [0, 1], // top - moves vertically (y)
+        [1, 2], // right - moves horizontally (x)
+        [2, 3], // bottom - moves vertically (y)
+        [3, 0], // left - moves horizontally (x)
+      ];
+      const [c1, c2] = edgeCornerIndices[activeEdge];
+      const isHorizontalEdge = activeEdge === 0 || activeEdge === 2; // top or bottom
+      
+      setCorners(prev => {
+        const newCorners = [...prev];
+        
+        if (isHorizontalEdge) {
+          // Move both corners vertically
+          let newY1 = initialEdgeCorners[0].y + deltaY;
+          let newY2 = initialEdgeCorners[1].y + deltaY;
+          newY1 = Math.max(padding, Math.min(newY1, imgHeight - padding));
+          newY2 = Math.max(padding, Math.min(newY2, imgHeight - padding));
+          newCorners[c1] = { ...prev[c1], y: newY1 };
+          newCorners[c2] = { ...prev[c2], y: newY2 };
+        } else {
+          // Move both corners horizontally
+          let newX1 = initialEdgeCorners[0].x + deltaX;
+          let newX2 = initialEdgeCorners[1].x + deltaX;
+          newX1 = Math.max(padding, Math.min(newX1, imgWidth - padding));
+          newX2 = Math.max(padding, Math.min(newX2, imgWidth - padding));
+          newCorners[c1] = { ...prev[c1], x: newX1 };
+          newCorners[c2] = { ...prev[c2], x: newX2 };
+        }
+        
+        return newCorners;
+      });
+    }
+  }, [activeCorner, activeEdge, dragStart, initialCorner, initialEdgeCorners, imageDimensions]);
 
   const handleEnd = useCallback(() => {
     setActiveCorner(null);
+    setActiveEdge(null);
   }, []);
 
   const getPolygonPath = () => {
@@ -316,14 +378,44 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
                 strokeWidth="2"
               />
               
-              {/* Connection lines between corners */}
-              <line x1={corners[0].x} y1={corners[0].y} x2={corners[1].x} y2={corners[1].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
-              <line x1={corners[1].x} y1={corners[1].y} x2={corners[2].x} y2={corners[2].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
-              <line x1={corners[2].x} y1={corners[2].y} x2={corners[3].x} y2={corners[3].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
-              <line x1={corners[3].x} y1={corners[3].y} x2={corners[0].x} y2={corners[0].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
+              {/* Draggable edge lines - invisible touch targets with visible lines */}
+              {/* These are separate from the polygon stroke to enable edge dragging */}
             </svg>
           )}
           
+          {/* Edge drag handles - invisible wider touch targets */}
+          {imageLoaded && [
+            { i: 0, x1: corners[0].x, y1: corners[0].y, x2: corners[1].x, y2: corners[1].y }, // top
+            { i: 1, x1: corners[1].x, y1: corners[1].y, x2: corners[2].x, y2: corners[2].y }, // right
+            { i: 2, x1: corners[2].x, y1: corners[2].y, x2: corners[3].x, y2: corners[3].y }, // bottom
+            { i: 3, x1: corners[3].x, y1: corners[3].y, x2: corners[0].x, y2: corners[0].y }, // left
+          ].map(({ i, x1, y1, x2, y2 }) => {
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            const length = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+            const angle = Math.atan2(y2 - y1, x2 - x1) * (180 / Math.PI);
+            const isHorizontal = i === 0 || i === 2;
+            
+            return (
+              <div
+                key={`edge-${i}`}
+                style={{
+                  position: 'absolute',
+                  left: midX,
+                  top: midY,
+                  width: length - 50, // Shorter to avoid overlap with corners
+                  height: '30px',
+                  transform: `translate(-50%, -50%) rotate(${angle}deg)`,
+                  cursor: isHorizontal ? 'ns-resize' : 'ew-resize',
+                  touchAction: 'none',
+                  // background: 'rgba(255,0,0,0.2)', // Uncomment for debugging
+                }}
+                onTouchStart={(e) => handleEdgeStart(e, i)}
+                onMouseDown={(e) => handleEdgeStart(e, i)}
+              />
+            );
+          })}
+
           {/* Corner handles - separate from SVG for better touch handling */}
           {imageLoaded && corners.map((corner, index) => (
             <div
