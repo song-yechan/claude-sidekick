@@ -146,3 +146,26 @@ All colors MUST be HSL.
     -webkit-backdrop-filter: blur(10px);
   }
 }
+
+/* React Image Crop - Mobile Touch Support */
+.ReactCrop {
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.ReactCrop__crop-selection {
+  touch-action: none !important;
+}
+
+.ReactCrop__drag-handle {
+  touch-action: none !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ReactCrop__child-wrapper > img {
+  touch-action: none !important;
+  -webkit-user-drag: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
