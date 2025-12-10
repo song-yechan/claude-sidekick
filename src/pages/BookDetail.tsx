@@ -32,6 +32,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
+import { ImageCropper } from "@/components/ImageCropper";
 
 export default function BookDetail() {
   const { bookId } = useParams<{ bookId: string }>();
@@ -52,6 +53,7 @@ export default function BookDetail() {
   const [pageNumber, setPageNumber] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [imageToCrop, setImageToCrop] = useState<string | null>(null);
 
   if (!book) {
     return (
@@ -61,61 +63,41 @@ export default function BookDetail() {
     );
   }
 
-  const compressImage = (file: File): Promise<string> => {
+  const loadImageAsBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            reject(new Error('Canvas context not available'));
-            return;
-          }
-
-          // OCR이 가능한 정도로만 압축 (최대 1024px)
-          const maxDimension = 1024;
-          let width = img.width;
-          let height = img.height;
-
-          if (width > maxDimension || height > maxDimension) {
-            if (width > height) {
-              height = (height / width) * maxDimension;
-              width = maxDimension;
-            } else {
-              width = (width / height) * maxDimension;
-              height = maxDimension;
-            }
-          }
-
-          canvas.width = width;
-          canvas.height = height;
-          ctx.drawImage(img, 0, 0, width, height);
-
-          // JPEG 품질 0.85로 압축 (OCR에 충분한 품질)
-          resolve(canvas.toDataURL('image/jpeg', 0.85));
-        };
-        img.onerror = () => reject(new Error('Image load failed'));
-        img.src = e.target?.result as string;
+        resolve(e.target?.result as string);
       };
       reader.onerror = () => reject(new Error('File read failed'));
       reader.readAsDataURL(file);
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setIsProcessingImage(true);
     try {
-      // 이미지 압축
-      const compressedBase64 = await compressImage(file);
-      
+      const base64 = await loadImageAsBase64(file);
+      setImageToCrop(base64);
+    } catch (error) {
+      console.error('Image load error:', error);
+      toast.error('이미지를 불러올 수 없습니다');
+    }
+    
+    // Reset input value to allow selecting the same file again
+    e.target.value = '';
+  };
+
+  const handleCropComplete = async (croppedImageBase64: string) => {
+    setImageToCrop(null);
+    setIsProcessingImage(true);
+    
+    try {
       // Call OCR edge function
       const { data: ocrData, error: ocrError } = await supabase.functions.invoke('ocr-image', {
-        body: { imageBase64: compressedBase64 },
+        body: { imageBase64: croppedImageBase64 },
       });
 
       if (ocrError) {
@@ -130,10 +112,14 @@ export default function BookDetail() {
       setIsProcessingImage(false);
       toast.success('텍스트가 추출되었습니다. 내용을 확인하고 저장해주세요.');
     } catch (error) {
-      console.error('Image upload error:', error);
-      toast.error('이미지 업로드 실패');
+      console.error('OCR error:', error);
+      toast.error('이미지 처리 실패');
       setIsProcessingImage(false);
     }
+  };
+
+  const handleCropCancel = () => {
+    setImageToCrop(null);
   };
 
   const handleSaveNote = async () => {
@@ -405,7 +391,7 @@ export default function BookDetail() {
                   type="file"
                   accept="image/*"
                   className="hidden"
-                  onChange={handleImageUpload}
+                  onChange={handleImageSelect}
                   disabled={isProcessingImage}
                 />
 
@@ -424,7 +410,7 @@ export default function BookDetail() {
                   accept="image/*"
                   capture="environment"
                   className="hidden"
-                  onChange={handleImageUpload}
+                  onChange={handleImageSelect}
                   disabled={isProcessingImage}
                 />
               </div>
@@ -572,6 +558,15 @@ export default function BookDetail() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Image Cropper */}
+      {imageToCrop && (
+        <ImageCropper
+          imageSrc={imageToCrop}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
     </div>
   );
 }
