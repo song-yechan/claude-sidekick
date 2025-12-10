@@ -367,7 +367,16 @@ export default function BookDetail() {
       </div>
 
       {/* Add Note Dialog */}
-      <Dialog open={isAddingNote} onOpenChange={setIsAddingNote}>
+      <Dialog 
+        open={isAddingNote} 
+        onOpenChange={(open) => {
+          // 이미지 처리 중에는 다이얼로그 닫기 방지
+          if (!open && (isProcessingImage || imageToCrop)) {
+            return;
+          }
+          setIsAddingNote(open);
+        }}
+      >
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>문장 수집</DialogTitle>
