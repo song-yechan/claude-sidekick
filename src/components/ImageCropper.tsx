@@ -1,8 +1,7 @@
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
-import { Button } from '@/components/ui/button';
 import { X, Check } from 'lucide-react';
 
 interface ImageCropperProps {
@@ -12,28 +11,42 @@ interface ImageCropperProps {
 }
 
 export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCropperProps) {
-  const [crop, setCrop] = useState<Crop>();
+  const [crop, setCrop] = useState<Crop>({
+    unit: '%',
+    x: 10,
+    y: 10,
+    width: 80,
+    height: 80,
+  });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const imgRef = useRef<HTMLImageElement>(null);
+
+  // Prevent body scroll when cropper is open
+  useEffect(() => {
+    const originalOverflow = document.body.style.overflow;
+    const originalPosition = document.body.style.position;
+    const originalWidth = document.body.style.width;
+    
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    
+    return () => {
+      document.body.style.overflow = originalOverflow;
+      document.body.style.position = originalPosition;
+      document.body.style.width = originalWidth;
+    };
+  }, []);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const { width, height } = e.currentTarget;
     
-    // Set initial crop to 80% of the image, centered
+    // Set completed crop based on initial percentage crop
+    const x = width * 0.1;
+    const y = height * 0.1;
     const cropWidth = width * 0.8;
     const cropHeight = height * 0.8;
-    const x = (width - cropWidth) / 2;
-    const y = (height - cropHeight) / 2;
     
-    const initialCrop: Crop = {
-      unit: 'px',
-      x,
-      y,
-      width: cropWidth,
-      height: cropHeight,
-    };
-    
-    setCrop(initialCrop);
     setCompletedCrop({
       unit: 'px',
       x,
@@ -122,54 +135,128 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
 
   const cropperContent = (
     <div 
-      className="fixed inset-0 bg-black flex flex-col"
-      style={{ zIndex: 99999 }}
+      id="image-cropper-overlay"
+      style={{ 
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        zIndex: 99999,
+        backgroundColor: '#000',
+        display: 'flex',
+        flexDirection: 'column',
+      }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-black">
+      <div 
+        style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '12px 16px',
+          backgroundColor: '#000',
+          flexShrink: 0,
+        }}
+      >
         <button
-          onClick={onCancel}
-          className="p-2 text-white hover:bg-white/20 rounded-full transition-colors"
+          type="button"
+          onClick={() => onCancel()}
+          style={{ 
+            padding: '8px',
+            color: '#fff',
+            background: 'transparent',
+            border: 'none',
+            borderRadius: '50%',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
-          <X className="h-6 w-6" />
+          <X size={24} />
         </button>
-        <h2 className="text-base font-semibold text-white">이미지 자르기</h2>
-        <div className="w-10" />
+        <h2 
+          style={{ 
+            fontSize: '16px',
+            fontWeight: 600,
+            color: '#fff',
+            margin: 0,
+          }}
+        >
+          이미지 자르기
+        </h2>
+        <div style={{ width: '40px' }} />
       </div>
 
       {/* Crop Area */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden bg-black px-2">
+      <div 
+        style={{ 
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          overflow: 'hidden',
+          padding: '8px',
+          backgroundColor: '#000',
+        }}
+      >
         <ReactCrop
           crop={crop}
-          onChange={(c) => setCrop(c)}
+          onChange={(_, percentCrop) => setCrop(percentCrop)}
           onComplete={(c) => setCompletedCrop(c)}
-          className="max-h-full max-w-full"
         >
           <img
             ref={imgRef}
             src={imageSrc}
             alt="Crop preview"
             onLoad={onImageLoad}
-            className="max-h-[65vh] max-w-full object-contain"
+            style={{ 
+              maxHeight: '60vh', 
+              maxWidth: '100%', 
+              objectFit: 'contain',
+              display: 'block',
+            }}
           />
         </ReactCrop>
       </div>
 
       {/* Action Button */}
-      <div className="p-4 pb-8 bg-black safe-area-bottom">
-        <Button
+      <div 
+        style={{ 
+          padding: '16px',
+          paddingBottom: '32px',
+          backgroundColor: '#000',
+          flexShrink: 0,
+        }}
+      >
+        <button
+          type="button"
           onClick={handleUsePhoto}
-          className="w-full gap-2 h-12 text-base font-semibold"
-          size="lg"
           disabled={!completedCrop?.width || !completedCrop?.height}
+          style={{ 
+            width: '100%',
+            height: '48px',
+            borderRadius: '8px',
+            border: 'none',
+            backgroundColor: '#f97316',
+            color: '#fff',
+            fontSize: '16px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            opacity: (!completedCrop?.width || !completedCrop?.height) ? 0.5 : 1,
+          }}
         >
-          <Check className="h-5 w-5" />
+          <Check size={20} />
           사진 사용
-        </Button>
+        </button>
       </div>
     </div>
   );
 
-  // Use portal to render at document body level, above all other content
   return createPortal(cropperContent, document.body);
 }
