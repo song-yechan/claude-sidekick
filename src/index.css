@@ -147,6 +147,22 @@ All colors MUST be HSL.
 }
 
 /* React Image Crop - Mobile Touch Support */
+.image-cropper-overlay {
+  touch-action: none !important;
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none !important;
+  user-select: none !important;
+}
+
+.image-cropper-overlay .crop-container {
+  touch-action: none !important;
+}
+
+.image-cropper-react-crop,
+.image-cropper-react-crop * {
+  touch-action: none !important;
+}
+
 .ReactCrop {
   touch-action: none !important;
   user-select: none !important;
@@ -155,18 +171,26 @@ All colors MUST be HSL.
 
 .ReactCrop__crop-selection {
   touch-action: none !important;
+  cursor: move !important;
 }
 
 .ReactCrop__drag-handle {
   touch-action: none !important;
   -webkit-tap-highlight-color: transparent;
-  width: 20px !important;
-  height: 20px !important;
+  width: 24px !important;
+  height: 24px !important;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border: 2px solid #f97316 !important;
+}
+
+.ReactCrop__child-wrapper {
+  touch-action: none !important;
 }
 
 .ReactCrop__child-wrapper > img {
   touch-action: none !important;
-  -webkit-user-drag: none;
-  user-select: none;
-  -webkit-user-select: none;
+  -webkit-user-drag: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  pointer-events: none !important;
 }
