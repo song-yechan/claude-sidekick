@@ -23,11 +23,11 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
 
   // Prevent body scroll when cropper is open
   useEffect(() => {
-    const originalStyle = document.body.style.cssText;
-    document.body.style.cssText = `${originalStyle}; overflow: hidden !important; touch-action: none !important;`;
+    const originalOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     
     return () => {
-      document.body.style.cssText = originalStyle;
+      document.body.style.overflow = originalOverflow;
     };
   }, []);
 
@@ -126,6 +126,10 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     }
   };
 
+  const handleCancel = () => {
+    onCancel();
+  };
+
   const cropperContent = (
     <div 
       style={{ 
@@ -139,10 +143,9 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        touchAction: 'none',
       }}
     >
-      {/* Header */}
+      {/* Header - 명시적으로 클릭 가능하게 */}
       <div 
         style={{ 
           display: 'flex',
@@ -151,15 +154,18 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
           padding: '12px 16px',
           backgroundColor: '#000',
           flexShrink: 0,
+          position: 'relative',
+          zIndex: 100001,
+          pointerEvents: 'auto',
         }}
       >
         <button
           type="button"
-          onClick={() => onCancel()}
+          onClick={handleCancel}
           style={{ 
             padding: '12px',
             color: '#fff',
-            background: 'transparent',
+            background: 'rgba(255,255,255,0.1)',
             border: 'none',
             borderRadius: '50%',
             cursor: 'pointer',
@@ -167,6 +173,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             alignItems: 'center',
             justifyContent: 'center',
             WebkitTapHighlightColor: 'transparent',
+            pointerEvents: 'auto',
           }}
         >
           <X size={24} />
@@ -194,43 +201,44 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
           overflow: 'hidden',
           padding: '8px',
           backgroundColor: '#000',
+          position: 'relative',
+          zIndex: 100000,
         }}
       >
-        <div style={{ touchAction: 'none' }}>
-          <ReactCrop
-            crop={crop}
-            onChange={(_, percentCrop) => setCrop(percentCrop)}
-            onComplete={(c) => setCompletedCrop(c)}
-            keepSelection
-            style={{ touchAction: 'none' }}
-          >
-            <img
-              ref={imgRef}
-              src={imageSrc}
-              alt="Crop preview"
-              onLoad={onImageLoad}
-              style={{ 
-                maxHeight: '55vh', 
-                maxWidth: '100%', 
-                objectFit: 'contain',
-                display: 'block',
-                touchAction: 'none',
-                userSelect: 'none',
-                WebkitUserSelect: 'none',
-              }}
-              draggable={false}
-            />
-          </ReactCrop>
-        </div>
+        <ReactCrop
+          crop={crop}
+          onChange={(_, percentCrop) => setCrop(percentCrop)}
+          onComplete={(c) => setCompletedCrop(c)}
+          keepSelection
+        >
+          <img
+            ref={imgRef}
+            src={imageSrc}
+            alt="Crop preview"
+            onLoad={onImageLoad}
+            style={{ 
+              maxHeight: '55vh', 
+              maxWidth: '100%', 
+              objectFit: 'contain',
+              display: 'block',
+              userSelect: 'none',
+              WebkitUserSelect: 'none',
+            }}
+            draggable={false}
+          />
+        </ReactCrop>
       </div>
 
-      {/* Action Button */}
+      {/* Action Button - 명시적으로 클릭 가능하게 */}
       <div 
         style={{ 
           padding: '16px',
           paddingBottom: '32px',
           backgroundColor: '#000',
           flexShrink: 0,
+          position: 'relative',
+          zIndex: 100001,
+          pointerEvents: 'auto',
         }}
       >
         <button
@@ -253,6 +261,7 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             gap: '8px',
             opacity: (!completedCrop?.width || !completedCrop?.height) ? 0.5 : 1,
             WebkitTapHighlightColor: 'transparent',
+            pointerEvents: 'auto',
           }}
         >
           <Check size={20} />
