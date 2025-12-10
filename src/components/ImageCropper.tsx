@@ -8,24 +8,27 @@ interface ImageCropperProps {
   onCancel: () => void;
 }
 
-interface CropArea {
+interface Point {
   x: number;
   y: number;
-  width: number;
-  height: number;
 }
 
 export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCropperProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageDimensions, setImageDimensions] = useState({ width: 0, height: 0, naturalWidth: 0, naturalHeight: 0 });
-  const [cropArea, setCropArea] = useState<CropArea>({ x: 0, y: 0, width: 0, height: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState<string | null>(null);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [initialCrop, setInitialCrop] = useState<CropArea>({ x: 0, y: 0, width: 0, height: 0 });
+  // 4 corners: top-left, top-right, bottom-right, bottom-left
+  const [corners, setCorners] = useState<Point[]>([
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+    { x: 0, y: 0 },
+  ]);
+  const [activeCorner, setActiveCorner] = useState<number | null>(null);
+  const [dragStart, setDragStart] = useState<Point>({ x: 0, y: 0 });
+  const [initialCorner, setInitialCorner] = useState<Point>({ x: 0, y: 0 });
   
-  const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Prevent body scroll
   useEffect(() => {
@@ -43,17 +46,18 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     
     setImageDimensions({ width, height, naturalWidth, naturalHeight });
     
-    // Initialize crop area to 80% of image, centered
-    const cropWidth = width * 0.8;
-    const cropHeight = height * 0.8;
-    const cropX = (width - cropWidth) / 2;
-    const cropY = (height - cropHeight) / 2;
-    
-    setCropArea({ x: cropX, y: cropY, width: cropWidth, height: cropHeight });
+    // Initialize corners with 10% margin
+    const margin = 0.1;
+    setCorners([
+      { x: width * margin, y: height * margin }, // top-left
+      { x: width * (1 - margin), y: height * margin }, // top-right
+      { x: width * (1 - margin), y: height * (1 - margin) }, // bottom-right
+      { x: width * margin, y: height * (1 - margin) }, // bottom-left
+    ]);
     setImageLoaded(true);
   }, []);
 
-  const getEventPosition = (e: React.TouchEvent | React.MouseEvent) => {
+  const getEventPosition = (e: React.TouchEvent | React.MouseEvent | TouchEvent | MouseEvent): Point => {
     if ('touches' in e && e.touches.length > 0) {
       return { x: e.touches[0].clientX, y: e.touches[0].clientY };
     }
@@ -63,71 +67,48 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     return { x: 0, y: 0 };
   };
 
-  const handleCropStart = (e: React.TouchEvent | React.MouseEvent, type: 'move' | string) => {
+  const handleCornerStart = (e: React.TouchEvent | React.MouseEvent, cornerIndex: number) => {
     e.preventDefault();
     e.stopPropagation();
     
     const pos = getEventPosition(e);
     setDragStart(pos);
-    setInitialCrop({ ...cropArea });
-    
-    if (type === 'move') {
-      setIsDragging(true);
-    } else {
-      setIsResizing(type);
-    }
+    setInitialCorner({ ...corners[cornerIndex] });
+    setActiveCorner(cornerIndex);
   };
 
-  const handleCropMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
-    if (!isDragging && !isResizing) return;
+  const handleMove = useCallback((e: React.TouchEvent | React.MouseEvent) => {
+    if (activeCorner === null) return;
     
     e.preventDefault();
     const pos = getEventPosition(e);
     const deltaX = pos.x - dragStart.x;
     const deltaY = pos.y - dragStart.y;
     
-    const minSize = 50;
     const { width: imgWidth, height: imgHeight } = imageDimensions;
     
-    if (isDragging) {
-      let newX = initialCrop.x + deltaX;
-      let newY = initialCrop.y + deltaY;
-      
-      // Constrain to image bounds
-      newX = Math.max(0, Math.min(newX, imgWidth - cropArea.width));
-      newY = Math.max(0, Math.min(newY, imgHeight - cropArea.height));
-      
-      setCropArea(prev => ({ ...prev, x: newX, y: newY }));
-    } else if (isResizing) {
-      let { x, y, width, height } = initialCrop;
-      
-      if (isResizing.includes('e')) {
-        width = Math.max(minSize, Math.min(initialCrop.width + deltaX, imgWidth - x));
-      }
-      if (isResizing.includes('w')) {
-        const newWidth = Math.max(minSize, initialCrop.width - deltaX);
-        const maxWidth = initialCrop.x + initialCrop.width;
-        width = Math.min(newWidth, maxWidth);
-        x = initialCrop.x + initialCrop.width - width;
-      }
-      if (isResizing.includes('s')) {
-        height = Math.max(minSize, Math.min(initialCrop.height + deltaY, imgHeight - y));
-      }
-      if (isResizing.includes('n')) {
-        const newHeight = Math.max(minSize, initialCrop.height - deltaY);
-        const maxHeight = initialCrop.y + initialCrop.height;
-        height = Math.min(newHeight, maxHeight);
-        y = initialCrop.y + initialCrop.height - height;
-      }
-      
-      setCropArea({ x, y, width, height });
-    }
-  }, [isDragging, isResizing, dragStart, initialCrop, imageDimensions, cropArea.width, cropArea.height]);
+    let newX = initialCorner.x + deltaX;
+    let newY = initialCorner.y + deltaY;
+    
+    // Constrain to image bounds with small padding
+    const padding = 10;
+    newX = Math.max(padding, Math.min(newX, imgWidth - padding));
+    newY = Math.max(padding, Math.min(newY, imgHeight - padding));
+    
+    setCorners(prev => {
+      const newCorners = [...prev];
+      newCorners[activeCorner] = { x: newX, y: newY };
+      return newCorners;
+    });
+  }, [activeCorner, dragStart, initialCorner, imageDimensions]);
 
-  const handleCropEnd = useCallback(() => {
-    setIsDragging(false);
-    setIsResizing(null);
+  const handleEnd = useCallback(() => {
+    setActiveCorner(null);
   }, []);
+
+  const getPolygonPath = () => {
+    return corners.map(c => `${c.x},${c.y}`).join(' ');
+  };
 
   const getCroppedImage = useCallback((): string => {
     const img = imageRef.current;
@@ -136,14 +117,25 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     const scaleX = imageDimensions.naturalWidth / imageDimensions.width;
     const scaleY = imageDimensions.naturalHeight / imageDimensions.height;
     
+    // Scale corners to natural image size
+    const scaledCorners = corners.map(c => ({
+      x: c.x * scaleX,
+      y: c.y * scaleY,
+    }));
+    
+    // Calculate bounding box of the quadrilateral
+    const minX = Math.min(...scaledCorners.map(c => c.x));
+    const minY = Math.min(...scaledCorners.map(c => c.y));
+    const maxX = Math.max(...scaledCorners.map(c => c.x));
+    const maxY = Math.max(...scaledCorners.map(c => c.y));
+    
+    const cropWidth = maxX - minX;
+    const cropHeight = maxY - minY;
+    
+    // Create canvas for perspective transform
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     if (!ctx) return '';
-    
-    const cropX = cropArea.x * scaleX;
-    const cropY = cropArea.y * scaleY;
-    const cropWidth = cropArea.width * scaleX;
-    const cropHeight = cropArea.height * scaleY;
     
     // Compress to max 1024px
     const maxDimension = 1024;
@@ -162,10 +154,35 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     
     canvas.width = finalWidth;
     canvas.height = finalHeight;
-    ctx.drawImage(img, cropX, cropY, cropWidth, cropHeight, 0, 0, finalWidth, finalHeight);
+    
+    // For simple quadrilateral crop, we'll use the bounding box approach
+    // with clipping path for the actual shape
+    ctx.save();
+    
+    // Create clipping path based on scaled corners relative to crop area
+    ctx.beginPath();
+    const relativeCorners = scaledCorners.map(c => ({
+      x: (c.x - minX) * (finalWidth / cropWidth),
+      y: (c.y - minY) * (finalHeight / cropHeight),
+    }));
+    ctx.moveTo(relativeCorners[0].x, relativeCorners[0].y);
+    ctx.lineTo(relativeCorners[1].x, relativeCorners[1].y);
+    ctx.lineTo(relativeCorners[2].x, relativeCorners[2].y);
+    ctx.lineTo(relativeCorners[3].x, relativeCorners[3].y);
+    ctx.closePath();
+    ctx.clip();
+    
+    // Draw the cropped portion
+    ctx.drawImage(
+      img,
+      minX, minY, cropWidth, cropHeight,
+      0, 0, finalWidth, finalHeight
+    );
+    
+    ctx.restore();
     
     return canvas.toDataURL('image/jpeg', 0.85);
-  }, [cropArea, imageDimensions]);
+  }, [corners, imageDimensions]);
 
   const handleConfirm = () => {
     const croppedImage = getCroppedImage();
@@ -178,14 +195,16 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
     onCancel();
   };
 
-  const handleContainerTouch = (e: React.TouchEvent | React.MouseEvent) => {
-    if (isDragging || isResizing) {
-      handleCropMove(e);
-    }
-  };
-
-  const handleContainerTouchEnd = () => {
-    handleCropEnd();
+  // Create overlay mask path (full image with quadrilateral hole)
+  const getMaskPath = () => {
+    const { width, height } = imageDimensions;
+    // Outer rectangle (clockwise)
+    // Inner quadrilateral (counter-clockwise to create hole)
+    return `M 0,0 L ${width},0 L ${width},${height} L 0,${height} Z 
+            M ${corners[0].x},${corners[0].y} 
+            L ${corners[3].x},${corners[3].y} 
+            L ${corners[2].x},${corners[2].y} 
+            L ${corners[1].x},${corners[1].y} Z`;
   };
 
   return createPortal(
@@ -205,18 +224,18 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
         userSelect: 'none',
         WebkitUserSelect: 'none',
       }}
-      onTouchMove={handleContainerTouch}
-      onMouseMove={handleContainerTouch}
-      onTouchEnd={handleContainerTouchEnd}
-      onMouseUp={handleContainerTouchEnd}
-      onMouseLeave={handleContainerTouchEnd}
+      onTouchMove={handleMove}
+      onMouseMove={handleMove}
+      onTouchEnd={handleEnd}
+      onMouseUp={handleEnd}
+      onMouseLeave={handleEnd}
     >
       {/* Header */}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
-        padding: '16px',
+        padding: '12px 16px',
         backgroundColor: '#000',
         flexShrink: 0,
       }}>
@@ -246,13 +265,13 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
         <div style={{ width: '44px' }} />
       </div>
 
-      {/* Crop Area */}
+      {/* Crop Area - Maximized */}
       <div style={{
         flex: 1,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '16px',
+        padding: '8px',
         overflow: 'hidden',
         position: 'relative',
       }}>
@@ -263,108 +282,77 @@ export function ImageCropper({ imageSrc, onCropComplete, onCancel }: ImageCroppe
             alt="Crop"
             onLoad={handleImageLoad}
             style={{
-              maxWidth: '100%',
-              maxHeight: '70vh',
+              maxWidth: 'calc(100vw - 16px)',
+              maxHeight: 'calc(100vh - 160px)',
               display: 'block',
               pointerEvents: 'none',
             }}
             draggable={false}
           />
           
-          {imageLoaded && (
-            <>
-              {/* Dark overlay - top */}
-              <div style={{
+          {imageLoaded && imageDimensions.width > 0 && (
+            <svg
+              style={{
                 position: 'absolute',
                 top: 0,
                 left: 0,
-                right: 0,
-                height: cropArea.y,
-                backgroundColor: 'rgba(0,0,0,0.6)',
+                width: imageDimensions.width,
+                height: imageDimensions.height,
                 pointerEvents: 'none',
-              }} />
-              {/* Dark overlay - bottom */}
-              <div style={{
-                position: 'absolute',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                height: imageDimensions.height - cropArea.y - cropArea.height,
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                pointerEvents: 'none',
-              }} />
-              {/* Dark overlay - left */}
-              <div style={{
-                position: 'absolute',
-                top: cropArea.y,
-                left: 0,
-                width: cropArea.x,
-                height: cropArea.height,
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                pointerEvents: 'none',
-              }} />
-              {/* Dark overlay - right */}
-              <div style={{
-                position: 'absolute',
-                top: cropArea.y,
-                right: 0,
-                width: imageDimensions.width - cropArea.x - cropArea.width,
-                height: cropArea.height,
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                pointerEvents: 'none',
-              }} />
+              }}
+            >
+              {/* Dark overlay with hole for crop area */}
+              <path
+                d={getMaskPath()}
+                fill="rgba(0,0,0,0.6)"
+                fillRule="evenodd"
+              />
               
-              {/* Crop selection box */}
-              <div
-                style={{
-                  position: 'absolute',
-                  top: cropArea.y,
-                  left: cropArea.x,
-                  width: cropArea.width,
-                  height: cropArea.height,
-                  border: '2px solid #fff',
-                  boxSizing: 'border-box',
-                  cursor: 'move',
-                }}
-                onTouchStart={(e) => handleCropStart(e, 'move')}
-                onMouseDown={(e) => handleCropStart(e, 'move')}
-              >
-                {/* Grid lines */}
-                <div style={{ position: 'absolute', top: '33%', left: 0, right: 0, height: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }} />
-                <div style={{ position: 'absolute', top: '66%', left: 0, right: 0, height: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }} />
-                <div style={{ position: 'absolute', left: '33%', top: 0, bottom: 0, width: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }} />
-                <div style={{ position: 'absolute', left: '66%', top: 0, bottom: 0, width: '1px', backgroundColor: 'rgba(255,255,255,0.4)' }} />
-                
-                {/* Corner handles */}
-                {['nw', 'ne', 'sw', 'se'].map((corner) => (
-                  <div
-                    key={corner}
-                    style={{
-                      position: 'absolute',
-                      width: '28px',
-                      height: '28px',
-                      backgroundColor: '#fff',
-                      borderRadius: '50%',
-                      border: '3px solid #f97316',
-                      transform: 'translate(-50%, -50%)',
-                      cursor: `${corner}-resize`,
-                      ...(corner.includes('n') ? { top: 0 } : { bottom: 0, top: 'auto', transform: 'translate(-50%, 50%)' }),
-                      ...(corner.includes('w') ? { left: 0 } : { right: 0, left: 'auto', transform: corner.includes('n') ? 'translate(50%, -50%)' : 'translate(50%, 50%)' }),
-                    }}
-                    onTouchStart={(e) => handleCropStart(e, corner)}
-                    onMouseDown={(e) => handleCropStart(e, corner)}
-                  />
-                ))}
-              </div>
-            </>
+              {/* Border of selection */}
+              <polygon
+                points={getPolygonPath()}
+                fill="none"
+                stroke="#fff"
+                strokeWidth="2"
+              />
+              
+              {/* Connection lines between corners */}
+              <line x1={corners[0].x} y1={corners[0].y} x2={corners[1].x} y2={corners[1].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
+              <line x1={corners[1].x} y1={corners[1].y} x2={corners[2].x} y2={corners[2].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
+              <line x1={corners[2].x} y1={corners[2].y} x2={corners[3].x} y2={corners[3].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
+              <line x1={corners[3].x} y1={corners[3].y} x2={corners[0].x} y2={corners[0].y} stroke="rgba(255,255,255,0.5)" strokeWidth="1" strokeDasharray="4,4" />
+            </svg>
           )}
+          
+          {/* Corner handles - separate from SVG for better touch handling */}
+          {imageLoaded && corners.map((corner, index) => (
+            <div
+              key={index}
+              style={{
+                position: 'absolute',
+                left: corner.x,
+                top: corner.y,
+                width: '36px',
+                height: '36px',
+                transform: 'translate(-50%, -50%)',
+                backgroundColor: '#fff',
+                borderRadius: '50%',
+                border: '3px solid #f97316',
+                cursor: 'grab',
+                touchAction: 'none',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+              }}
+              onTouchStart={(e) => handleCornerStart(e, index)}
+              onMouseDown={(e) => handleCornerStart(e, index)}
+            />
+          ))}
         </div>
       </div>
 
       {/* Bottom button */}
       <div style={{
-        padding: '16px',
-        paddingBottom: 'max(24px, env(safe-area-inset-bottom))',
+        padding: '12px 16px',
+        paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
         backgroundColor: '#000',
         flexShrink: 0,
       }}>
