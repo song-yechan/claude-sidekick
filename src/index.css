@@ -116,10 +116,9 @@ All colors MUST be HSL.
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* Mobile-optimized scrolling */
+/* Mobile-optimized scrolling */
   html {
     -webkit-tap-highlight-color: transparent;
-    touch-action: manipulation;
   }
 }
 
@@ -152,15 +151,24 @@ All colors MUST be HSL.
   touch-action: none !important;
   user-select: none !important;
   -webkit-user-select: none !important;
+  position: relative !important;
 }
 
 .ReactCrop__crop-selection {
   touch-action: none !important;
+  pointer-events: auto !important;
 }
 
 .ReactCrop__drag-handle {
   touch-action: none !important;
+  pointer-events: auto !important;
   -webkit-tap-highlight-color: transparent;
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.ReactCrop__child-wrapper {
+  touch-action: none !important;
 }
 
 .ReactCrop__child-wrapper > img {
@@ -168,4 +176,5 @@ All colors MUST be HSL.
   -webkit-user-drag: none;
   user-select: none;
   -webkit-user-select: none;
+  pointer-events: none !important;
 }
