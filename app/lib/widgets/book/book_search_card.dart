@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 import '../../models/book.dart';
 
-/// 토스 스타일 검색 결과 책 카드 위젯
+/// 검색 결과 책 카드 위젯
 class BookSearchCard extends StatelessWidget {
   final BookSearchResult book;
   final VoidCallback? onAdd;
@@ -16,29 +16,29 @@ class BookSearchCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       decoration: BoxDecoration(
-        color: TossColors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: context.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppShapes.large),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // 책 표지
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(AppShapes.small),
             child: book.coverImage.isNotEmpty
                 ? Image.network(
                     book.coverImage,
                     width: 56,
                     height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => _buildPlaceholder(),
+                    errorBuilder: (_, __, ___) => _buildPlaceholder(context),
                   )
-                : _buildPlaceholder(),
+                : _buildPlaceholder(context),
           ),
-          const SizedBox(width: 16),
+          const SizedBox(width: AppSpacing.lg),
           // 책 정보
           Expanded(
             child: Column(
@@ -46,10 +46,10 @@ class BookSearchCard extends StatelessWidget {
               children: [
                 Text(
                   book.title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
-                    color: TossColors.gray900,
+                    color: context.colors.onSurface,
                     height: 1.3,
                   ),
                   maxLines: 2,
@@ -58,9 +58,9 @@ class BookSearchCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   book.author,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
-                    color: TossColors.gray600,
+                    color: context.colors.onSurfaceVariant,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -69,9 +69,9 @@ class BookSearchCard extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     book.publisher,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 13,
-                      color: TossColors.gray500,
+                      color: context.colors.outline,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -80,7 +80,7 @@ class BookSearchCard extends StatelessWidget {
               ],
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           // 추가 버튼
           GestureDetector(
             onTap: onAdd,
@@ -88,13 +88,13 @@ class BookSearchCard extends StatelessWidget {
               width: 36,
               height: 36,
               decoration: BoxDecoration(
-                color: TossColors.blueLight,
+                color: context.colors.primaryContainer,
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add_rounded,
                 size: 22,
-                color: TossColors.blue,
+                color: context.colors.onPrimaryContainer,
               ),
             ),
           ),
@@ -103,18 +103,18 @@ class BookSearchCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(BuildContext context) {
     return Container(
       width: 56,
       height: 80,
       decoration: BoxDecoration(
-        color: TossColors.gray100,
-        borderRadius: BorderRadius.circular(8),
+        color: context.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(AppShapes.small),
       ),
-      child: const Icon(
+      child: Icon(
         Icons.menu_book_rounded,
         size: 28,
-        color: TossColors.gray400,
+        color: context.colors.outline,
       ),
     );
   }

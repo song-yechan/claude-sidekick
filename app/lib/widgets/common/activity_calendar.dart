@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 
-/// 토스 스타일 활동 캘린더 위젯
+/// GitHub 스타일 활동 캘린더 위젯
 class ActivityCalendar extends StatelessWidget {
   final int year;
   final Map<DateTime, int> data;
@@ -14,14 +14,44 @@ class ActivityCalendar extends StatelessWidget {
     this.onYearChanged,
   });
 
-  /// 활동량에 따른 색상 반환
-  Color _getColor(int count) {
-    if (count == 0) return TossColors.gray100;
-    if (count <= 2) return TossColors.blue.withValues(alpha: 0.2);
-    if (count <= 5) return TossColors.blue.withValues(alpha: 0.4);
-    if (count <= 10) return TossColors.blue.withValues(alpha: 0.6);
-    if (count <= 20) return TossColors.blue.withValues(alpha: 0.8);
-    return TossColors.blue;
+  /// 월 영어 약어
+  static const _monthLabels = [
+    'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+    'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+  ];
+
+  /// 요일 라벨 (일, 월, 화, 수, 목, 금, 토 중 월, 수, 금만 표시)
+  static const _dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
+
+  /// 활동량에 따른 색상 반환 (다크모드 대응)
+  Color _getColor(BuildContext context, int count) {
+    final isDark = context.isDark;
+    final baseColor = context.colors.primary;
+    final emptyColor = isDark
+        ? const Color(0xFF2B292D)
+        : context.surfaceContainerHigh;
+
+    if (count == 0) return emptyColor;
+    if (count <= 2) return baseColor.withValues(alpha: 0.25);
+    if (count <= 5) return baseColor.withValues(alpha: 0.45);
+    if (count <= 10) return baseColor.withValues(alpha: 0.65);
+    if (count <= 20) return baseColor.withValues(alpha: 0.85);
+    return baseColor;
+  }
+
+  /// 주어진 주가 새로운 달의 시작인지 확인하고, 해당 월 반환
+  int? _getMonthForWeek(List<DateTime?> week, List<DateTime?> previousWeek) {
+    for (final date in week) {
+      if (date != null && date.day <= 7) {
+        // 이전 주에 같은 월이 없으면 새로운 달의 시작
+        final hasSameMonthInPrevWeek = previousWeek.any(
+            (d) => d != null && d.month == date.month && d.year == date.year);
+        if (!hasSameMonthInPrevWeek) {
+          return date.month;
+        }
+      }
+    }
+    return null;
   }
 
   @override
@@ -60,6 +90,17 @@ class ActivityCalendar extends StatelessWidget {
       weeks.add(currentWeek);
     }
 
+    // 각 주의 월 라벨 계산
+    final monthLabelsForWeeks = <int?>[];
+    for (var i = 0; i < weeks.length; i++) {
+      final previousWeek = i > 0 ? weeks[i - 1] : <DateTime?>[];
+      monthLabelsForWeeks.add(_getMonthForWeek(weeks[i], previousWeek));
+    }
+
+    const cellSize = 11.0;
+    const cellMargin = 1.5;
+    const dayLabelWidth = 28.0;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -69,10 +110,10 @@ class ActivityCalendar extends StatelessWidget {
           children: [
             Text(
               '$year년 독서 활동',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: TossColors.gray900,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
               ),
             ),
             Row(
@@ -92,60 +133,125 @@ class ActivityCalendar extends StatelessWidget {
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSpacing.lg),
 
-        // 캘린더 그리드
+        // 캘린더 그리드 (요일 라벨 + 스크롤 가능한 그래프)
         SizedBox(
-          height: 110,
-          child: SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            reverse: true,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: weeks.map((week) {
-                return Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: week.map((date) {
-                    if (date == null) {
-                      return Container(
-                        width: 11,
-                        height: 11,
-                        margin: const EdgeInsets.all(1.5),
+          height: 130,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 고정된 요일 라벨
+              SizedBox(
+                width: dayLabelWidth,
+                child: Column(
+                  children: [
+                    // 월 라벨 영역과 높이 맞추기
+                    const SizedBox(height: 16),
+                    // 요일 라벨
+                    ...List.generate(7, (index) {
+                      return SizedBox(
+                        height: cellSize + cellMargin * 2,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            _dayLabels[index],
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: context.colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ),
                       );
-                    }
+                    }),
+                  ],
+                ),
+              ),
 
-                    final dateKey = DateTime(date.year, date.month, date.day);
-                    final count = data[dateKey] ?? 0;
-
-                    return Tooltip(
-                      message: '${date.month}월 ${date.day}일: $count개',
-                      child: Container(
-                        width: 11,
-                        height: 11,
-                        margin: const EdgeInsets.all(1.5),
-                        decoration: BoxDecoration(
-                          color: _getColor(count),
-                          borderRadius: BorderRadius.circular(2),
+              // 스크롤 가능한 캘린더 영역
+              Expanded(
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  reverse: true,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 월 라벨 행
+                      SizedBox(
+                        height: 16,
+                        child: Row(
+                          children: weeks.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final month = monthLabelsForWeeks[index];
+                            return SizedBox(
+                              width: cellSize + cellMargin * 2,
+                              child: month != null
+                                  ? Text(
+                                      _monthLabels[month - 1],
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: context.colors.onSurfaceVariant,
+                                      ),
+                                    )
+                                  : null,
+                            );
+                          }).toList(),
                         ),
                       ),
-                    );
-                  }).toList(),
-                );
-              }).toList(),
-            ),
+
+                      // 캘린더 그리드
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: weeks.map((week) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: week.map((date) {
+                              if (date == null) {
+                                return Container(
+                                  width: cellSize,
+                                  height: cellSize,
+                                  margin: const EdgeInsets.all(cellMargin),
+                                );
+                              }
+
+                              final dateKey =
+                                  DateTime(date.year, date.month, date.day);
+                              final count = data[dateKey] ?? 0;
+
+                              return Tooltip(
+                                message: '${date.month}월 ${date.day}일: $count개',
+                                child: Container(
+                                  width: cellSize,
+                                  height: cellSize,
+                                  margin: const EdgeInsets.all(cellMargin),
+                                  decoration: BoxDecoration(
+                                    color: _getColor(context, count),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          );
+                        }).toList(),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: AppSpacing.md),
 
         // 범례
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            const Text(
+            Text(
               '적음',
               style: TextStyle(
                 fontSize: 11,
-                color: TossColors.gray500,
+                color: context.colors.onSurfaceVariant,
               ),
             ),
             const SizedBox(width: 6),
@@ -155,17 +261,17 @@ class ActivityCalendar extends StatelessWidget {
                 height: 11,
                 margin: const EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color: _getColor(count),
+                  color: _getColor(context, count),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
             const SizedBox(width: 6),
-            const Text(
+            Text(
               '많음',
               style: TextStyle(
                 fontSize: 11,
-                color: TossColors.gray500,
+                color: context.colors.onSurfaceVariant,
               ),
             ),
           ],
@@ -192,13 +298,17 @@ class _YearButton extends StatelessWidget {
         width: 32,
         height: 32,
         decoration: BoxDecoration(
-          color: onTap != null ? TossColors.gray100 : TossColors.gray50,
-          borderRadius: BorderRadius.circular(8),
+          color: onTap != null
+              ? context.surfaceContainerHigh
+              : context.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(AppShapes.small),
         ),
         child: Icon(
           icon,
           size: 20,
-          color: onTap != null ? TossColors.gray700 : TossColors.gray300,
+          color: onTap != null
+              ? context.colors.onSurfaceVariant
+              : context.colors.outlineVariant,
         ),
       ),
     );

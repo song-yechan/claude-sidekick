@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
@@ -18,15 +19,34 @@ class CategoryDetailScreen extends ConsumerWidget {
     if (category == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('카테고리를 찾을 수 없습니다')),
+        body: Center(
+          child: Text(
+            '카테고리를 찾을 수 없습니다',
+            style: TextStyle(color: context.colors.onSurfaceVariant),
+          ),
+        ),
       );
     }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(category.name),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 12,
+              height: 12,
+              decoration: BoxDecoration(
+                color: category.colorValue,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Text(category.name),
+          ],
+        ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
       ),
@@ -35,23 +55,42 @@ class CategoryDetailScreen extends ConsumerWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.library_books,
-                    size: 64,
-                    color: Colors.grey.shade400,
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      color: context.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(40),
+                    ),
+                    child: Icon(
+                      Icons.menu_book_rounded,
+                      size: 40,
+                      color: context.colors.outline,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.xl),
                   Text(
-                    '이 카테고리에 책이 없습니다',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey,
-                        ),
+                    '이 카테고리에 책이 없어요',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: context.colors.onSurface,
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    '검색에서 책을 추가할 때 이 카테고리를 선택해보세요',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
                   ),
                 ],
               ),
             )
           : GridView.builder(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
                 childAspectRatio: 0.55,

@@ -9,6 +9,7 @@ import '../screens/categories/categories_screen.dart';
 import '../screens/categories/category_detail_screen.dart';
 import '../screens/book/book_detail_screen.dart';
 import '../screens/note/note_detail_screen.dart';
+import '../screens/settings/settings_screen.dart';
 import '../widgets/layout/main_layout.dart';
 
 /// 라우터 프로바이더
@@ -87,6 +88,10 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           return NoteDetailScreen(noteId: id);
         },
+      ),
+      GoRoute(
+        path: '/settings',
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

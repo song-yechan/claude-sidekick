@@ -48,9 +48,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${book.title}이(가) 추가되었습니다'),
-            backgroundColor: TossColors.green,
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppShapes.small),
+            ),
           ),
         );
         ref.read(bookSearchProvider.notifier).clear();
@@ -61,9 +63,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: const Text('책 추가에 실패했습니다'),
-            backgroundColor: TossColors.red,
+            backgroundColor: context.colors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppShapes.small),
+            ),
           ),
         );
       }
@@ -72,9 +76,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('오류: $e'),
-            backgroundColor: TossColors.red,
+            backgroundColor: context.colors.error,
             behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppShapes.small),
+            ),
           ),
         );
       }
@@ -87,17 +93,19 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: TossColors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      backgroundColor: context.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
       ),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setModalState) => Padding(
+      builder: (modalContext) => StatefulBuilder(
+        builder: (modalContext, setModalState) => Padding(
           padding: EdgeInsets.only(
             left: 20,
             right: 20,
             top: 20,
-            bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+            bottom: MediaQuery.of(modalContext).viewInsets.bottom + 20,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -109,33 +117,33 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   width: 40,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: TossColors.gray300,
+                    color: context.colors.outlineVariant,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
               const SizedBox(height: 20),
-              const Text(
+              Text(
                 '서재에 추가',
                 style: TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: TossColors.gray900,
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.onSurface,
                 ),
               ),
               const SizedBox(height: 20),
               // 책 정보
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: TossColors.gray50,
-                  borderRadius: BorderRadius.circular(12),
+                  color: context.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
                 ),
                 child: Row(
                   children: [
                     if (book.coverImage.isNotEmpty)
                       ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppShapes.small),
                         child: Image.network(
                           book.coverImage,
                           width: 50,
@@ -148,25 +156,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                         width: 50,
                         height: 70,
                         decoration: BoxDecoration(
-                          color: TossColors.gray200,
-                          borderRadius: BorderRadius.circular(8),
+                          color: context.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(AppShapes.small),
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.menu_book_rounded,
-                          color: TossColors.gray400,
+                          color: context.colors.outline,
                         ),
                       ),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: AppSpacing.lg),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             book.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.w600,
                               fontSize: 15,
-                              color: TossColors.gray900,
+                              color: context.colors.onSurface,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -174,8 +182,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           const SizedBox(height: 4),
                           Text(
                             book.author,
-                            style: const TextStyle(
-                              color: TossColors.gray600,
+                            style: TextStyle(
+                              color: context.colors.onSurfaceVariant,
                               fontSize: 13,
                             ),
                           ),
@@ -187,20 +195,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: 20),
               // 카테고리 선택
-              const Text(
+              Text(
                 '카테고리 선택 (선택사항)',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: TossColors.gray700,
+                  color: context.colors.onSurface,
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               categoriesAsync.when(
                 data: (categories) => categories.isEmpty
-                    ? const Text(
+                    ? Text(
                         '카테고리가 없습니다',
-                        style: TextStyle(color: TossColors.gray500),
+                        style: TextStyle(color: context.colors.onSurfaceVariant),
                       )
                     : Wrap(
                         spacing: 8,
@@ -224,23 +232,23 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                           );
                         }).toList(),
                       ),
-                loading: () => const CircularProgressIndicator(
-                  color: TossColors.blue,
+                loading: () => CircularProgressIndicator(
+                  color: context.colors.primary,
                   strokeWidth: 2,
                 ),
-                error: (_, __) => const Text(
+                error: (_, __) => Text(
                   '카테고리 로딩 실패',
-                  style: TextStyle(color: TossColors.red),
+                  style: TextStyle(color: context.colors.error),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
               // 추가 버튼
               SizedBox(
                 width: double.infinity,
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pop(modalContext);
                     _addBook(book);
                   },
                   child: const Text(
@@ -252,7 +260,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
             ],
           ),
         ),
@@ -272,37 +280,37 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             // 헤더
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
-              child: const Text(
+              child: Text(
                 '책 검색',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
-                  color: TossColors.gray900,
+                  color: context.colors.onSurface,
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 검색바
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: TextField(
                 controller: _searchController,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 16,
-                  color: TossColors.gray900,
+                  color: context.colors.onSurface,
                 ),
                 decoration: InputDecoration(
                   hintText: '책 제목, 저자, ISBN으로 검색',
-                  prefixIcon: const Icon(
+                  prefixIcon: Icon(
                     Icons.search_rounded,
-                    color: TossColors.gray500,
+                    color: context.colors.onSurfaceVariant,
                   ),
                   suffixIcon: _searchController.text.isNotEmpty
                       ? IconButton(
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.close_rounded,
-                            color: TossColors.gray500,
+                            color: context.colors.onSurfaceVariant,
                             size: 20,
                           ),
                           onPressed: () {
@@ -318,14 +326,14 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 textInputAction: TextInputAction.search,
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 검색 결과
             Expanded(
               child: searchState.isLoading
-                  ? const Center(
+                  ? Center(
                       child: CircularProgressIndicator(
-                        color: TossColors.blue,
+                        color: context.colors.primary,
                         strokeWidth: 2,
                       ),
                     )
@@ -338,30 +346,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                 width: 64,
                                 height: 64,
                                 decoration: BoxDecoration(
-                                  color: TossColors.redLight,
+                                  color: context.colors.errorContainer,
                                   borderRadius: BorderRadius.circular(32),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.error_outline_rounded,
                                   size: 32,
-                                  color: TossColors.red,
+                                  color: context.colors.onErrorContainer,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
+                              const SizedBox(height: AppSpacing.lg),
+                              Text(
                                 '검색에 실패했어요',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: TossColors.gray700,
+                                  color: context.colors.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
                               Text(
                                 searchState.error!,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
-                                  color: TossColors.gray500,
+                                  color: context.colors.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -376,30 +384,30 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                     width: 64,
                                     height: 64,
                                     decoration: BoxDecoration(
-                                      color: TossColors.gray100,
+                                      color: context.surfaceContainerHigh,
                                       borderRadius: BorderRadius.circular(32),
                                     ),
-                                    child: const Icon(
+                                    child: Icon(
                                       Icons.search_rounded,
                                       size: 32,
-                                      color: TossColors.gray400,
+                                      color: context.colors.outline,
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
-                                  const Text(
+                                  const SizedBox(height: AppSpacing.lg),
+                                  Text(
                                     '책을 검색해보세요',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: TossColors.gray700,
+                                      color: context.colors.onSurface,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
-                                  const Text(
+                                  Text(
                                     '제목, 저자, ISBN으로 검색할 수 있어요',
                                     style: TextStyle(
                                       fontSize: 14,
-                                      color: TossColors.gray500,
+                                      color: context.colors.onSurfaceVariant,
                                     ),
                                   ),
                                 ],

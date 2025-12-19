@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/theme.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/category/category_chip.dart';
@@ -22,44 +23,99 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   }
 
   void _showAddDialog() {
-    showDialog(
+    _nameController.clear();
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('새 카테고리'),
-        content: TextField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: '카테고리 이름',
-            hintText: '예: 소설, 에세이, 자기계발',
-          ),
-          autofocus: true,
-          onSubmitted: (_) => _addCategory(),
+      isScrollControlled: true,
+      backgroundColor: context.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-          ElevatedButton(
-            onPressed: _addCategory,
-            child: const Text('추가'),
-          ),
-        ],
+      ),
+      builder: (dialogContext) => Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(dialogContext).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 핸들
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.colors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '새 카테고리',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              style: TextStyle(
+                fontSize: 16,
+                color: context.colors.onSurface,
+              ),
+              decoration: const InputDecoration(
+                hintText: '예: 소설, 에세이, 자기계발',
+              ),
+              onSubmitted: (_) => _addCategory(dialogContext),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => _addCategory(dialogContext),
+                child: const Text(
+                  '추가하기',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _addCategory() async {
+  Future<void> _addCategory(BuildContext dialogContext) async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
-    Navigator.pop(context);
-    _nameController.clear();
+    Navigator.pop(dialogContext);
 
     final result = await addCategory(ref, name);
     if (result != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('$name 카테고리가 추가되었습니다')),
+        SnackBar(
+          content: Text('$name 카테고리가 추가되었습니다'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppShapes.small),
+          ),
+        ),
       );
     }
   }
@@ -67,27 +123,45 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
   void _showDeleteDialog(String categoryId, String name) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('카테고리 삭제'),
-        content: Text('$name 카테고리를 삭제하시겠습니까?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          '카테고리 삭제',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.colors.onSurface,
+          ),
+        ),
+        content: Text(
+          '$name 카테고리를 삭제하시겠습니까?',
+          style: TextStyle(
+            fontSize: 15,
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final success = await deleteCategory(ref, categoryId);
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('$name 카테고리가 삭제되었습니다')),
+                  SnackBar(
+                    content: Text('$name 카테고리가 삭제되었습니다'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppShapes.small),
+                    ),
+                  ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.error,
             ),
             child: const Text('삭제'),
           ),
@@ -102,84 +176,159 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     final booksAsync = ref.watch(booksProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('카테고리'),
-      ),
-      body: categoriesAsync.when(
-        data: (categories) {
-          if (categories.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.category,
-                    size: 64,
-                    color: Colors.grey.shade400,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    '아직 카테고리가 없습니다',
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: Colors.grey,
-                        ),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _showAddDialog,
-                    icon: const Icon(Icons.add),
-                    label: const Text('카테고리 추가'),
-                  ),
-                ],
-              ),
-            );
-          }
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              final category = categories[index];
-              final bookCount = booksAsync.whenOrNull(
-                    data: (books) => books
-                        .where((b) => b.categoryIds.contains(category.id))
-                        .length,
-                  ) ??
-                  0;
-
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: CategoryCard(
-                  category: category,
-                  bookCount: bookCount,
-                  onTap: () => context.push('/categories/${category.id}'),
-                  onDelete: () =>
-                      _showDeleteDialog(category.id, category.name),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 헤더
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
+              child: Text(
+                '카테고리',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w700,
+                  color: context.colors.onSurface,
                 ),
-              );
-            },
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, _) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              const SizedBox(height: 16),
-              Text('오류 발생: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(categoriesProvider),
-                child: const Text('다시 시도'),
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 콘텐츠
+            Expanded(
+              child: categoriesAsync.when(
+                data: (categories) {
+                  if (categories.isEmpty) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 80,
+                            height: 80,
+                            decoration: BoxDecoration(
+                              color: context.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(40),
+                            ),
+                            child: Icon(
+                              Icons.category_rounded,
+                              size: 40,
+                              color: context.colors.outline,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          Text(
+                            '아직 카테고리가 없어요',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          Text(
+                            '카테고리를 추가해서 책을 정리해보세요',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: context.colors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: AppSpacing.xl),
+                          SizedBox(
+                            height: 48,
+                            child: ElevatedButton.icon(
+                              onPressed: _showAddDialog,
+                              icon: const Icon(Icons.add_rounded, size: 20),
+                              label: const Text('카테고리 추가'),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: categories.length,
+                    itemBuilder: (context, index) {
+                      final category = categories[index];
+                      final bookCount = booksAsync.whenOrNull(
+                            data: (books) => books
+                                .where((b) => b.categoryIds.contains(category.id))
+                                .length,
+                          ) ??
+                          0;
+
+                      return Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: CategoryCard(
+                          category: category,
+                          bookCount: bookCount,
+                          onTap: () => context.push('/categories/${category.id}'),
+                          onDelete: () =>
+                              _showDeleteDialog(category.id, category.name),
+                        ),
+                      );
+                    },
+                  );
+                },
+                loading: () => Center(
+                  child: CircularProgressIndicator(
+                    color: context.colors.primary,
+                    strokeWidth: 2,
+                  ),
+                ),
+                error: (error, _) => Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: context.colors.errorContainer,
+                          borderRadius: BorderRadius.circular(32),
+                        ),
+                        child: Icon(
+                          Icons.error_outline_rounded,
+                          size: 32,
+                          color: context.colors.onErrorContainer,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      Text(
+                        '불러오기에 실패했어요',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.onSurface,
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        '$error',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      OutlinedButton(
+                        onPressed: () => ref.invalidate(categoriesProvider),
+                        child: const Text('다시 시도'),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }

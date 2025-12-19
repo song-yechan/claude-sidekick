@@ -3,49 +3,69 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/core/theme.dart';
 
 void main() {
-  group('TossColors', () {
+  group('AppColors', () {
     test('primary colors are defined correctly', () {
-      expect(TossColors.blue, const Color(0xFF3182F6));
-      expect(TossColors.blueLight, const Color(0xFFE8F3FF));
+      expect(AppColors.primary, const Color(0xFF5B6BBF));
+      expect(AppColors.onPrimary, const Color(0xFFFFFFFF));
+      expect(AppColors.primaryContainer, const Color(0xFFDEE0FF));
+      expect(AppColors.onPrimaryContainer, const Color(0xFF151B4D));
+    });
+
+    test('secondary colors are defined correctly', () {
+      expect(AppColors.secondary, const Color(0xFF5D5C71));
+      expect(AppColors.onSecondary, const Color(0xFFFFFFFF));
+      expect(AppColors.secondaryContainer, const Color(0xFFE2E0F9));
+    });
+
+    test('error colors are defined correctly', () {
+      expect(AppColors.error, const Color(0xFFBA1A1A));
+      expect(AppColors.onError, const Color(0xFFFFFFFF));
+      expect(AppColors.errorContainer, const Color(0xFFFFDAD6));
+    });
+
+    test('surface colors are defined correctly', () {
+      expect(AppColors.surface, const Color(0xFFFCF8FF));
+      expect(AppColors.onSurface, const Color(0xFF1C1B1F));
+      expect(AppColors.surfaceContainerLowest, const Color(0xFFFFFFFF));
+      expect(AppColors.surfaceContainerHigh, const Color(0xFFEBE6EE));
     });
 
     test('semantic colors are defined correctly', () {
-      expect(TossColors.red, const Color(0xFFF04452));
-      expect(TossColors.redLight, const Color(0xFFFFEBED));
-      expect(TossColors.green, const Color(0xFF30B566));
-      expect(TossColors.greenLight, const Color(0xFFE8F8EF));
-      expect(TossColors.orange, const Color(0xFFFF8A00));
-      expect(TossColors.orangeLight, const Color(0xFFFFF4E5));
+      expect(AppColors.success, const Color(0xFF2E7D32));
+      expect(AppColors.warning, const Color(0xFFED6C02));
     });
 
-    test('gray scale colors are defined correctly', () {
-      expect(TossColors.gray950, const Color(0xFF191F28));
-      expect(TossColors.gray900, const Color(0xFF212529));
-      expect(TossColors.gray800, const Color(0xFF333D4B));
-      expect(TossColors.gray700, const Color(0xFF4E5968));
-      expect(TossColors.gray600, const Color(0xFF6B7684));
-      expect(TossColors.gray500, const Color(0xFF8B95A1));
-      expect(TossColors.gray400, const Color(0xFFB0B8C1));
-      expect(TossColors.gray300, const Color(0xFFD1D6DB));
-      expect(TossColors.gray200, const Color(0xFFE5E8EB));
-      expect(TossColors.gray100, const Color(0xFFF2F4F6));
-      expect(TossColors.gray50, const Color(0xFFF9FAFB));
-      expect(TossColors.white, const Color(0xFFFFFFFF));
+    test('neutral palette maintains proper ordering (lighter values have higher numbers)', () {
+      expect(AppColors.neutral10.computeLuminance(),
+             lessThan(AppColors.neutral20.computeLuminance()));
+      expect(AppColors.neutral20.computeLuminance(),
+             lessThan(AppColors.neutral30.computeLuminance()));
+      expect(AppColors.neutral80.computeLuminance(),
+             lessThan(AppColors.neutral90.computeLuminance()));
     });
+  });
 
-    test('background colors are defined correctly', () {
-      expect(TossColors.bgLight, const Color(0xFFF9FAFB));
-      expect(TossColors.bgDark, const Color(0xFF17171C));
+  group('AppShapes', () {
+    test('shape scale tokens are defined correctly', () {
+      expect(AppShapes.none, 0);
+      expect(AppShapes.extraSmall, 4);
+      expect(AppShapes.small, 8);
+      expect(AppShapes.medium, 12);
+      expect(AppShapes.large, 16);
+      expect(AppShapes.extraLarge, 28);
+      expect(AppShapes.full, 9999);
     });
+  });
 
-    test('gray scale maintains proper ordering (lighter values have higher numbers)', () {
-      // Verify that gray scale follows expected brightness pattern
-      expect(TossColors.gray950.computeLuminance(),
-             lessThan(TossColors.gray900.computeLuminance()));
-      expect(TossColors.gray900.computeLuminance(),
-             lessThan(TossColors.gray800.computeLuminance()));
-      expect(TossColors.gray100.computeLuminance(),
-             lessThan(TossColors.gray50.computeLuminance()));
+  group('AppSpacing', () {
+    test('spacing scale is defined correctly', () {
+      expect(AppSpacing.xs, 4);
+      expect(AppSpacing.sm, 8);
+      expect(AppSpacing.md, 12);
+      expect(AppSpacing.lg, 16);
+      expect(AppSpacing.xl, 24);
+      expect(AppSpacing.xxl, 32);
+      expect(AppSpacing.xxxl, 48);
     });
   });
 
@@ -65,55 +85,55 @@ void main() {
     });
 
     test('uses correct scaffold background color', () {
-      expect(lightTheme.scaffoldBackgroundColor, TossColors.bgLight);
+      expect(lightTheme.scaffoldBackgroundColor, AppColors.background);
     });
 
     test('has correct color scheme', () {
-      expect(lightTheme.colorScheme.primary, TossColors.blue);
-      expect(lightTheme.colorScheme.onPrimary, TossColors.white);
-      expect(lightTheme.colorScheme.error, TossColors.red);
+      expect(lightTheme.colorScheme.primary, AppColors.primary);
+      expect(lightTheme.colorScheme.onPrimary, AppColors.onPrimary);
+      expect(lightTheme.colorScheme.error, AppColors.error);
     });
 
     test('appbar theme is configured correctly', () {
       expect(lightTheme.appBarTheme.elevation, 0);
-      expect(lightTheme.appBarTheme.backgroundColor, TossColors.bgLight);
+      expect(lightTheme.appBarTheme.backgroundColor, AppColors.surface);
       expect(lightTheme.appBarTheme.centerTitle, isFalse);
     });
 
     test('card theme has no elevation', () {
       expect(lightTheme.cardTheme.elevation, 0);
-      expect(lightTheme.cardTheme.color, TossColors.white);
+      expect(lightTheme.cardTheme.color, AppColors.surfaceContainerLowest);
     });
 
     test('elevated button theme is configured correctly', () {
       final buttonStyle = lightTheme.elevatedButtonTheme.style!;
       expect(
         buttonStyle.backgroundColor?.resolve({}),
-        TossColors.blue,
+        AppColors.primary,
       );
     });
 
     test('bottom navigation bar theme is configured correctly', () {
       expect(
         lightTheme.bottomNavigationBarTheme.backgroundColor,
-        TossColors.white,
+        AppColors.surfaceContainerLowest,
       );
       expect(
         lightTheme.bottomNavigationBarTheme.selectedItemColor,
-        TossColors.gray900,
+        AppColors.primary,
       );
     });
 
     test('text theme has correct heading styles', () {
-      expect(lightTheme.textTheme.headlineLarge?.fontSize, 28);
-      expect(lightTheme.textTheme.headlineMedium?.fontSize, 24);
-      expect(lightTheme.textTheme.headlineSmall?.fontSize, 20);
+      expect(lightTheme.textTheme.headlineLarge?.fontSize, 32);
+      expect(lightTheme.textTheme.headlineMedium?.fontSize, 28);
+      expect(lightTheme.textTheme.headlineSmall?.fontSize, 24);
     });
 
     test('text theme has correct body styles', () {
       expect(lightTheme.textTheme.bodyLarge?.fontSize, 16);
       expect(lightTheme.textTheme.bodyMedium?.fontSize, 14);
-      expect(lightTheme.textTheme.bodySmall?.fontSize, 13);
+      expect(lightTheme.textTheme.bodySmall?.fontSize, 12);
     });
   });
 
@@ -133,18 +153,17 @@ void main() {
     });
 
     test('uses correct scaffold background color', () {
-      expect(darkTheme.scaffoldBackgroundColor, TossColors.bgDark);
+      expect(darkTheme.scaffoldBackgroundColor, AppColors.surfaceDark);
     });
 
     test('has correct color scheme', () {
-      expect(darkTheme.colorScheme.primary, TossColors.blue);
-      expect(darkTheme.colorScheme.onPrimary, TossColors.white);
-      expect(darkTheme.colorScheme.error, TossColors.red);
+      expect(darkTheme.colorScheme.primary, AppColors.primaryDark);
+      expect(darkTheme.colorScheme.onPrimary, AppColors.onPrimaryDark);
     });
 
     test('appbar theme uses dark background', () {
-      expect(darkTheme.appBarTheme.backgroundColor, TossColors.bgDark);
-      expect(darkTheme.appBarTheme.foregroundColor, TossColors.gray100);
+      expect(darkTheme.appBarTheme.backgroundColor, AppColors.surfaceDark);
+      expect(darkTheme.appBarTheme.foregroundColor, AppColors.onSurfaceDark);
     });
   });
 
@@ -159,7 +178,6 @@ void main() {
         ),
       );
 
-      // Scaffold should use theme's background
       expect(find.byType(Scaffold), findsOneWidget);
     });
 

@@ -19,8 +19,8 @@ class BookCard extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: TossColors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: context.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(AppShapes.large),
         ),
         clipBehavior: Clip.antiAlias,
         child: Column(
@@ -34,21 +34,22 @@ class BookCard extends StatelessWidget {
                       fit: BoxFit.cover,
                       width: double.infinity,
                       placeholder: (context, url) => Container(
-                        color: TossColors.gray100,
-                        child: const Center(
+                        color: context.surfaceContainerHigh,
+                        child: Center(
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            color: TossColors.blue,
+                            color: context.colors.primary,
                           ),
                         ),
                       ),
-                      errorWidget: (context, url, error) => _buildPlaceholder(),
+                      errorWidget: (context, url, error) =>
+                          _buildPlaceholder(context),
                     )
-                  : _buildPlaceholder(),
+                  : _buildPlaceholder(context),
             ),
             // 책 정보
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.md),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
@@ -57,10 +58,10 @@ class BookCard extends StatelessWidget {
                     book.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 14,
-                      color: TossColors.gray900,
+                      color: context.colors.onSurface,
                       height: 1.3,
                     ),
                   ),
@@ -69,8 +70,8 @@ class BookCard extends StatelessWidget {
                     book.author,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: TossColors.gray500,
+                    style: TextStyle(
+                      color: context.colors.onSurfaceVariant,
                       fontSize: 12,
                     ),
                   ),
@@ -83,14 +84,14 @@ class BookCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPlaceholder() {
+  Widget _buildPlaceholder(BuildContext context) {
     return Container(
-      color: TossColors.gray100,
-      child: const Center(
+      color: context.surfaceContainerHigh,
+      child: Center(
         child: Icon(
           Icons.menu_book_rounded,
           size: 40,
-          color: TossColors.gray400,
+          color: context.colors.outline,
         ),
       ),
     );

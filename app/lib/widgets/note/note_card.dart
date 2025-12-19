@@ -26,10 +26,10 @@ class NoteCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: TossColors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: context.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(AppShapes.large),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,15 +47,15 @@ class NoteCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: TossColors.blueLight,
+                          color: context.colors.primaryContainer,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
                           'p.${note.pageNumber}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: TossColors.blue,
+                            color: context.colors.onPrimaryContainer,
                           ),
                         ),
                       ),
@@ -69,8 +69,8 @@ class NoteCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: showSummary
-                              ? TossColors.orangeLight
-                              : TossColors.gray100,
+                              ? context.colors.tertiaryContainer
+                              : context.surfaceContainerHigh,
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Row(
@@ -82,8 +82,8 @@ class NoteCard extends StatelessWidget {
                                   : Icons.format_quote_rounded,
                               size: 12,
                               color: showSummary
-                                  ? TossColors.orange
-                                  : TossColors.gray600,
+                                  ? context.colors.onTertiaryContainer
+                                  : context.colors.onSurfaceVariant,
                             ),
                             const SizedBox(width: 4),
                             Text(
@@ -92,8 +92,8 @@ class NoteCard extends StatelessWidget {
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: showSummary
-                                    ? TossColors.orange
-                                    : TossColors.gray600,
+                                    ? context.colors.onTertiaryContainer
+                                    : context.colors.onSurfaceVariant,
                               ),
                             ),
                           ],
@@ -103,43 +103,43 @@ class NoteCard extends StatelessWidget {
                 ),
                 Text(
                   dateFormat.format(note.createdAt),
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: TossColors.gray500,
+                    color: context.colors.onSurfaceVariant,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: AppSpacing.md),
 
             // 내용
             Text(
               displayText,
               maxLines: 4,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 15,
                 height: 1.6,
-                color: TossColors.gray800,
+                color: context.colors.onSurface,
               ),
             ),
 
             // 메모
             if (note.memo != null && note.memo!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: TossColors.gray50,
+                  color: context.surfaceContainerLow,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.edit_note_rounded,
                       size: 18,
-                      color: TossColors.gray500,
+                      color: context.colors.onSurfaceVariant,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -147,9 +147,9 @@ class NoteCard extends StatelessWidget {
                         note.memo!,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 13,
-                          color: TossColors.gray600,
+                          color: context.colors.onSurfaceVariant,
                           height: 1.4,
                         ),
                       ),
@@ -161,7 +161,7 @@ class NoteCard extends StatelessWidget {
 
             // 태그
             if (note.tags.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
               Wrap(
                 spacing: 8,
                 runSpacing: 6,
@@ -173,15 +173,15 @@ class NoteCard extends StatelessWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: TossColors.gray100,
-                          borderRadius: BorderRadius.circular(12),
+                          color: context.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(AppShapes.medium),
                         ),
                         child: Text(
                           '#$tag',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w500,
-                            color: TossColors.gray600,
+                            color: context.colors.onSurfaceVariant,
                           ),
                         ),
                       ),

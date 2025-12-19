@@ -23,8 +23,8 @@ class CategoryChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? category.colorValue.withValues(alpha: 0.15)
-              : TossColors.gray100,
-          borderRadius: BorderRadius.circular(20),
+              : context.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(AppShapes.full),
           border: Border.all(
             color: isSelected ? category.colorValue : Colors.transparent,
             width: 1.5,
@@ -47,7 +47,9 @@ class CategoryChip extends StatelessWidget {
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                color: isSelected ? category.colorValue : TossColors.gray700,
+                color: isSelected
+                    ? category.colorValue
+                    : context.colors.onSurfaceVariant,
               ),
             ),
           ],
@@ -76,10 +78,10 @@ class CategoryCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         decoration: BoxDecoration(
-          color: TossColors.white,
-          borderRadius: BorderRadius.circular(16),
+          color: context.surfaceContainerLowest,
+          borderRadius: BorderRadius.circular(AppShapes.large),
         ),
         child: Row(
           children: [
@@ -89,7 +91,7 @@ class CategoryCard extends StatelessWidget {
               height: 44,
               decoration: BoxDecoration(
                 color: category.colorValue.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppShapes.medium),
               ),
               child: Center(
                 child: Container(
@@ -97,12 +99,12 @@ class CategoryCard extends StatelessWidget {
                   height: 16,
                   decoration: BoxDecoration(
                     color: category.colorValue,
-                    borderRadius: BorderRadius.circular(4),
+                    borderRadius: BorderRadius.circular(AppShapes.extraSmall),
                   ),
                 ),
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: AppSpacing.lg),
             // 카테고리 정보
             Expanded(
               child: Column(
@@ -110,17 +112,17 @@ class CategoryCard extends StatelessWidget {
                 children: [
                   Text(
                     category.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,
-                      color: TossColors.gray900,
+                      color: context.colors.onSurface,
                     ),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     '$bookCount권',
-                    style: const TextStyle(
-                      color: TossColors.gray500,
+                    style: TextStyle(
+                      color: context.colors.onSurfaceVariant,
                       fontSize: 14,
                     ),
                   ),
@@ -135,20 +137,20 @@ class CategoryCard extends StatelessWidget {
                   width: 32,
                   height: 32,
                   decoration: BoxDecoration(
-                    color: TossColors.gray100,
-                    borderRadius: BorderRadius.circular(8),
+                    color: context.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(AppShapes.small),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.delete_outline_rounded,
                     size: 18,
-                    color: TossColors.gray500,
+                    color: context.colors.onSurfaceVariant,
                   ),
                 ),
               ),
-            const SizedBox(width: 8),
-            const Icon(
+            const SizedBox(width: AppSpacing.sm),
+            Icon(
               Icons.chevron_right_rounded,
-              color: TossColors.gray400,
+              color: context.colors.outline,
             ),
           ],
         ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/theme.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
 import '../../widgets/note/note_card.dart';
@@ -24,19 +25,71 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final picker = ImagePicker();
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
+      backgroundColor: context.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
+            const SizedBox(height: 8),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.colors.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('카메라'),
-              onTap: () => Navigator.pop(context, ImageSource.camera),
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: context.colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
+                ),
+                child: Icon(
+                  Icons.camera_alt_rounded,
+                  color: context.colors.onPrimaryContainer,
+                ),
+              ),
+              title: Text(
+                '카메라',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: context.colors.onSurface,
+                ),
+              ),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('갤러리'),
-              onTap: () => Navigator.pop(context, ImageSource.gallery),
+              leading: Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: context.colors.secondaryContainer,
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
+                ),
+                child: Icon(
+                  Icons.photo_library_rounded,
+                  color: context.colors.onSecondaryContainer,
+                ),
+              ),
+              title: Text(
+                '갤러리',
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: context.colors.onSurface,
+                ),
+              ),
+              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
             ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -63,8 +116,8 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => Consumer(
-        builder: (context, ref, _) {
+      builder: (dialogContext) => Consumer(
+        builder: (dialogContext, ref, _) {
           final ocrState = ref.watch(ocrProvider);
 
           if (ocrState.isProcessing) {
@@ -87,7 +140,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               actions: [
                 TextButton(
                   onPressed: () {
-                    Navigator.pop(context);
+                    Navigator.pop(dialogContext);
                     ref.read(ocrProvider.notifier).clear();
                   },
                   child: const Text('확인'),
@@ -102,7 +155,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             extractedText: ocrState.extractedText ?? '',
             summary: ocrState.summary,
             onSaved: () {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               ref.read(ocrProvider.notifier).clear();
             },
           );
@@ -117,28 +170,46 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('책 삭제'),
-        content: Text('${book.title}을(를) 삭제하시겠습니까?\n모든 노트도 함께 삭제됩니다.'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          '책 삭제',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.colors.onSurface,
+          ),
+        ),
+        content: Text(
+          '${book.title}을(를) 삭제하시겠습니까?\n모든 노트도 함께 삭제됩니다.',
+          style: TextStyle(
+            fontSize: 15,
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final success = await deleteBook(ref, widget.bookId);
               if (success && mounted) {
                 context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('책이 삭제되었습니다')),
+                  SnackBar(
+                    content: const Text('책이 삭제되었습니다'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppShapes.small),
+                    ),
+                  ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.error,
             ),
             child: const Text('삭제'),
           ),
@@ -159,6 +230,8 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
       );
     }
 
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -166,13 +239,38 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           SliverAppBar(
             expandedHeight: 200,
             pinned: true,
+            backgroundColor: surfaceColor,
             leading: IconButton(
-              icon: const Icon(Icons.arrow_back),
+              icon: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: surfaceColor.withValues(alpha: 0.8),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(
+                  Icons.arrow_back_rounded,
+                  size: 20,
+                  color: context.colors.onSurface,
+                ),
+              ),
               onPressed: () => context.pop(),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.delete_outline),
+                icon: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: surfaceColor.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Icon(
+                    Icons.delete_outline_rounded,
+                    size: 20,
+                    color: context.colors.onSurface,
+                  ),
+                ),
                 onPressed: _showDeleteDialog,
               ),
             ],
@@ -185,7 +283,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                       colorBlendMode: BlendMode.darken,
                     )
                   : Container(
-                      color: Theme.of(context).colorScheme.primaryContainer,
+                      color: context.colors.primaryContainer,
                     ),
             ),
           ),
@@ -193,35 +291,39 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           // 책 정보
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     book.title,
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: context.colors.onSurface,
+                    ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     book.author,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.grey.shade600,
-                        ),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: context.colors.onSurfaceVariant,
+                    ),
                   ),
                   if (book.publisher != null) ...[
                     const SizedBox(height: 4),
                     Text(
                       book.publisher!,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey.shade500,
-                          ),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: context.colors.outline,
+                      ),
                     ),
                   ],
-                  const SizedBox(height: 16),
-                  const Divider(),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.lg),
+                  Divider(color: context.colors.outlineVariant),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // 노트 헤더
                   Row(
@@ -229,24 +331,58 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                     children: [
                       Text(
                         '수집한 문장',
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.onSurface,
+                        ),
                       ),
                       // 요약/원문 토글
-                      Row(
-                        children: [
-                          const Text('AI 요약'),
-                          Switch(
-                            value: _showSummary,
-                            onChanged: (value) {
-                              setState(() {
-                                _showSummary = value;
-                              });
-                            },
-                          ),
-                        ],
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(AppShapes.full),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _showSummary
+                                  ? Icons.auto_awesome
+                                  : Icons.format_quote_rounded,
+                              size: 16,
+                              color: _showSummary
+                                  ? context.colors.primary
+                                  : context.colors.onSurfaceVariant,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              _showSummary ? 'AI 요약' : '원문',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                                color: _showSummary
+                                    ? context.colors.primary
+                                    : context.colors.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Switch(
+                              value: _showSummary,
+                              onChanged: (value) {
+                                setState(() {
+                                  _showSummary = value;
+                                });
+                              },
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
+                          ],
+                        ),
                       ),
                     ],
                   ),
@@ -265,26 +401,35 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.note_add,
-                          size: 64,
-                          color: Colors.grey.shade400,
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: context.surfaceContainerHigh,
+                            borderRadius: BorderRadius.circular(40),
+                          ),
+                          child: Icon(
+                            Icons.format_quote_rounded,
+                            size: 40,
+                            color: context.colors.outline,
+                          ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: AppSpacing.xl),
                         Text(
-                          '아직 수집한 문장이 없습니다',
-                          style:
-                              Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                    color: Colors.grey,
-                                  ),
+                          '아직 수집한 문장이 없어요',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.onSurface,
+                          ),
                         ),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: AppSpacing.sm),
                         Text(
                           '카메라 버튼을 눌러 문장을 수집해보세요',
-                          style:
-                              Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.grey,
-                                  ),
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.colors.onSurfaceVariant,
+                          ),
                         ),
                       ],
                     ),
@@ -293,7 +438,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               }
 
               return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 sliver: SliverList(
                   delegate: SliverChildBuilderDelegate(
                     (context, index) {
@@ -312,11 +457,21 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                 ),
               );
             },
-            loading: () => const SliverFillRemaining(
-              child: Center(child: CircularProgressIndicator()),
+            loading: () => SliverFillRemaining(
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: context.colors.primary,
+                  strokeWidth: 2,
+                ),
+              ),
             ),
             error: (error, _) => SliverFillRemaining(
-              child: Center(child: Text('오류: $error')),
+              child: Center(
+                child: Text(
+                  '오류: $error',
+                  style: TextStyle(color: context.colors.onSurfaceVariant),
+                ),
+              ),
             ),
           ),
 
@@ -422,10 +577,10 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
 
             // 추출된 텍스트 / 요약
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(8),
+                color: context.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(AppShapes.medium),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -435,26 +590,34 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                       Icon(
                         _showSummary && widget.summary != null
                             ? Icons.auto_awesome
-                            : Icons.format_quote,
+                            : Icons.format_quote_rounded,
                         size: 16,
-                        color: Colors.grey.shade600,
+                        color: _showSummary && widget.summary != null
+                            ? context.colors.tertiary
+                            : context.colors.onSurfaceVariant,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         _showSummary && widget.summary != null ? 'AI 요약' : '원문',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.w500,
+                          color: _showSummary && widget.summary != null
+                              ? context.colors.tertiary
+                              : context.colors.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.md),
                   Text(
                     _showSummary && widget.summary != null
                         ? widget.summary!
                         : widget.extractedText,
-                    style: const TextStyle(height: 1.5),
+                    style: TextStyle(
+                      height: 1.6,
+                      color: context.colors.onSurface,
+                    ),
                   ),
                 ],
               ),

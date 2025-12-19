@@ -43,9 +43,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMessage ?? '오류가 발생했습니다'),
-          backgroundColor: TossColors.red,
+          backgroundColor: context.colors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppShapes.small),
+          ),
         ),
       );
     }
@@ -56,11 +58,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
-      backgroundColor: TossColors.white,
+      backgroundColor: context.surfaceContainerLowest,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
             child: Form(
               key: _formKey,
               child: Column(
@@ -71,40 +73,40 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   // 헤더
                   Text(
                     _isSignUp ? '회원가입' : '로그인',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 28,
                       fontWeight: FontWeight.w700,
-                      color: TossColors.gray900,
+                      color: context.colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   Text(
                     _isSignUp
                         ? '책 속 문장을 수집하고 기록해보세요'
                         : '다시 만나서 반가워요',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: TossColors.gray600,
+                      color: context.colors.onSurfaceVariant,
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.xxxl),
 
                   // 이메일 입력
-                  const Text(
+                  Text(
                     '이메일',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: TossColors.gray700,
+                      color: context.colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: TossColors.gray900,
+                      color: context.colors.onSurface,
                     ),
                     decoration: const InputDecoration(
                       hintText: 'example@email.com',
@@ -119,24 +121,24 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // 비밀번호 입력
-                  const Text(
+                  Text(
                     '비밀번호',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: TossColors.gray700,
+                      color: context.colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.sm),
                   TextFormField(
                     controller: _passwordController,
                     obscureText: _obscurePassword,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
-                      color: TossColors.gray900,
+                      color: context.colors.onSurface,
                     ),
                     decoration: InputDecoration(
                       hintText: '6자 이상 입력해주세요',
@@ -145,7 +147,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                           _obscurePassword
                               ? Icons.visibility_off_outlined
                               : Icons.visibility_outlined,
-                          color: TossColors.gray500,
+                          color: context.colors.onSurfaceVariant,
                           size: 20,
                         ),
                         onPressed: () {
@@ -165,7 +167,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: AppSpacing.xxl),
 
                   // 로그인/회원가입 버튼
                   SizedBox(
@@ -174,12 +176,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     child: ElevatedButton(
                       onPressed: authState.isLoading ? null : _submit,
                       child: authState.isLoading
-                          ? const SizedBox(
+                          ? SizedBox(
                               height: 20,
                               width: 20,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2,
-                                color: TossColors.white,
+                                color: context.colors.onPrimary,
                               ),
                             )
                           : Text(
@@ -191,7 +193,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                             ),
                     ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.lg),
 
                   // 모드 전환 버튼
                   Center(
@@ -205,14 +207,14 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         _isSignUp
                             ? '이미 계정이 있으신가요? 로그인'
                             : '계정이 없으신가요? 회원가입',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
-                          color: TossColors.gray600,
+                          color: context.colors.onSurfaceVariant,
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: AppSpacing.xxxl),
                 ],
               ),
             ),

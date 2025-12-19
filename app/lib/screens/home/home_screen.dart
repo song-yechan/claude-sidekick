@@ -23,49 +23,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _selectedYear = DateTime.now().year;
   }
 
-  void _showLogoutDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '로그아웃',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: TossColors.gray900,
-          ),
-        ),
-        content: const Text(
-          '정말 로그아웃 하시겠습니까?',
-          style: TextStyle(
-            fontSize: 15,
-            color: TossColors.gray700,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              '취소',
-              style: TextStyle(color: TossColors.gray600),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).signOut();
-            },
-            child: const Text(
-              '로그아웃',
-              style: TextStyle(color: TossColors.red),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
@@ -88,35 +45,35 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           '안녕하세요',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
-                            color: TossColors.gray900,
+                            color: context.colors.onSurface,
                           ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           authState.user?.email ?? '',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
-                            color: TossColors.gray500,
+                            color: context.colors.onSurfaceVariant,
                           ),
                         ),
                       ],
                     ),
                     IconButton(
-                      onPressed: _showLogoutDialog,
-                      icon: const Icon(
-                        Icons.logout_rounded,
-                        color: TossColors.gray500,
+                      onPressed: () => context.push('/settings'),
+                      icon: Icon(
+                        Icons.settings_rounded,
+                        color: context.colors.onSurfaceVariant,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               // 통계 카드
               Padding(
@@ -131,11 +88,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               data: (books) => books.length.toString(),
                             ) ??
                             '-',
-                        color: TossColors.blue,
-                        bgColor: TossColors.blueLight,
+                        color: context.colors.primary,
+                        bgColor: context.colors.primaryContainer,
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: _StatCard(
                         icon: Icons.format_quote_rounded,
@@ -144,14 +101,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               data: (notes) => notes.length.toString(),
                             ) ??
                             '-',
-                        color: TossColors.orange,
-                        bgColor: TossColors.orangeLight,
+                        color: context.colors.tertiary,
+                        bgColor: context.colors.tertiaryContainer,
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               // 활동 캘린더
               Padding(
@@ -159,8 +116,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: TossColors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    color: context.surfaceContainerLowest,
+                    borderRadius: BorderRadius.circular(AppShapes.large),
                   ),
                   child: noteCountsAsync.when(
                     data: (counts) => ActivityCalendar(
@@ -170,42 +127,42 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         setState(() => _selectedYear = year);
                       },
                     ),
-                    loading: () => const SizedBox(
+                    loading: () => SizedBox(
                       height: 140,
                       child: Center(
                         child: CircularProgressIndicator(
-                          color: TossColors.blue,
+                          color: context.colors.primary,
                           strokeWidth: 2,
                         ),
                       ),
                     ),
-                    error: (_, __) => const SizedBox(
+                    error: (_, __) => SizedBox(
                       height: 140,
                       child: Center(
                         child: Text(
                           '캘린더를 불러오지 못했습니다',
-                          style: TextStyle(color: TossColors.gray500),
+                          style: TextStyle(color: context.colors.onSurfaceVariant),
                         ),
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.xl),
 
               // 최근 활동 섹션
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                child: const Text(
+                child: Text(
                   '최근 수집한 문장',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: TossColors.gray900,
+                    fontWeight: FontWeight.w600,
+                    color: context.colors.onSurface,
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: AppSpacing.md),
 
               // 최근 노트 목록
               notesAsync.when(
@@ -216,8 +173,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(32),
                         decoration: BoxDecoration(
-                          color: TossColors.white,
-                          borderRadius: BorderRadius.circular(16),
+                          color: context.surfaceContainerLowest,
+                          borderRadius: BorderRadius.circular(AppShapes.large),
                         ),
                         child: Center(
                           child: Column(
@@ -226,30 +183,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 width: 64,
                                 height: 64,
                                 decoration: BoxDecoration(
-                                  color: TossColors.gray100,
+                                  color: context.surfaceContainerHigh,
                                   borderRadius: BorderRadius.circular(32),
                                 ),
-                                child: const Icon(
+                                child: Icon(
                                   Icons.format_quote_rounded,
                                   size: 32,
-                                  color: TossColors.gray400,
+                                  color: context.colors.outline,
                                 ),
                               ),
-                              const SizedBox(height: 16),
-                              const Text(
+                              const SizedBox(height: AppSpacing.lg),
+                              Text(
                                 '아직 수집한 문장이 없어요',
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
-                                  color: TossColors.gray700,
+                                  color: context.colors.onSurface,
                                 ),
                               ),
                               const SizedBox(height: 4),
-                              const Text(
+                              Text(
                                 '책을 등록하고 마음에 드는 문장을 저장해보세요',
                                 style: TextStyle(
                                   fontSize: 14,
-                                  color: TossColors.gray500,
+                                  color: context.colors.onSurfaceVariant,
                                 ),
                               ),
                             ],
@@ -264,8 +221,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Container(
                       decoration: BoxDecoration(
-                        color: TossColors.white,
-                        borderRadius: BorderRadius.circular(16),
+                        color: context.surfaceContainerLowest,
+                        borderRadius: BorderRadius.circular(AppShapes.large),
                       ),
                       child: Column(
                         children: recentNotes.asMap().entries.map((entry) {
@@ -278,7 +235,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 onTap: () => context.push('/notes/${note.id}'),
                                 behavior: HitTestBehavior.opaque,
                                 child: Padding(
-                                  padding: const EdgeInsets.all(16),
+                                  padding: const EdgeInsets.all(AppSpacing.lg),
                                   child: Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -286,16 +243,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
-                                        color: TossColors.blueLight,
+                                        color: context.colors.primaryContainer,
                                         borderRadius: BorderRadius.circular(10),
                                       ),
-                                      child: const Icon(
+                                      child: Icon(
                                         Icons.format_quote_rounded,
                                         size: 20,
-                                        color: TossColors.blue,
+                                        color: context.colors.onPrimaryContainer,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: AppSpacing.md),
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
@@ -305,10 +262,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             note.summary ?? note.content,
                                             maxLines: 2,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w500,
-                                              color: TossColors.gray800,
+                                              color: context.colors.onSurface,
                                               height: 1.4,
                                             ),
                                           ),
@@ -317,9 +274,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                             book?.title ?? '',
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 13,
-                                              color: TossColors.gray500,
+                                              color: context.colors.onSurfaceVariant,
                                             ),
                                           ),
                                         ],
@@ -330,10 +287,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 ),
                               ),
                               if (index < recentNotes.length - 1)
-                                const Divider(
+                                Divider(
                                   height: 1,
                                   indent: 68,
-                                  color: TossColors.gray200,
+                                  color: context.colors.outlineVariant,
                                 ),
                             ],
                           );
@@ -342,26 +299,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   );
                 },
-                loading: () => const Padding(
-                  padding: EdgeInsets.all(32),
+                loading: () => Padding(
+                  padding: const EdgeInsets.all(32),
                   child: Center(
                     child: CircularProgressIndicator(
-                      color: TossColors.blue,
+                      color: context.colors.primary,
                       strokeWidth: 2,
                     ),
                   ),
                 ),
-                error: (_, __) => const Padding(
-                  padding: EdgeInsets.all(32),
+                error: (_, __) => Padding(
+                  padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
                       '불러오기 실패',
-                      style: TextStyle(color: TossColors.gray500),
+                      style: TextStyle(color: context.colors.onSurfaceVariant),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: AppSpacing.xxl),
             ],
           ),
         ),
@@ -390,8 +347,8 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: TossColors.white,
-        borderRadius: BorderRadius.circular(16),
+        color: context.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppShapes.large),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -401,25 +358,25 @@ class _StatCard extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: bgColor,
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AppShapes.medium),
             ),
             child: Icon(icon, size: 24, color: color),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSpacing.lg),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 28,
               fontWeight: FontWeight.w700,
-              color: TossColors.gray900,
+              color: context.colors.onSurface,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
-              color: TossColors.gray500,
+              color: context.colors.onSurfaceVariant,
             ),
           ),
         ],

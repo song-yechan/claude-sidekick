@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import '../../core/theme.dart';
 import '../../providers/note_provider.dart';
 import '../../providers/book_provider.dart';
 
@@ -34,28 +35,46 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   void _showDeleteDialog() {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('노트 삭제'),
-        content: const Text('이 노트를 삭제하시겠습니까?'),
+      builder: (dialogContext) => AlertDialog(
+        title: Text(
+          '노트 삭제',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: context.colors.onSurface,
+          ),
+        ),
+        content: Text(
+          '이 노트를 삭제하시겠습니까?',
+          style: TextStyle(
+            fontSize: 15,
+            color: context.colors.onSurfaceVariant,
+          ),
+        ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('취소'),
           ),
-          ElevatedButton(
+          TextButton(
             onPressed: () async {
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
               final success = await deleteNote(ref, widget.noteId);
               if (success && mounted) {
                 context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('노트가 삭제되었습니다')),
+                  SnackBar(
+                    content: const Text('노트가 삭제되었습니다'),
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppShapes.small),
+                    ),
+                  ),
                 );
               }
             },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
-              foregroundColor: Colors.white,
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.error,
             ),
             child: const Text('삭제'),
           ),
@@ -87,7 +106,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (note == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('노트를 찾을 수 없습니다')),
+        body: Center(
+          child: Text(
+            '노트를 찾을 수 없습니다',
+            style: TextStyle(color: context.colors.onSurfaceVariant),
+          ),
+        ),
       );
     }
 
@@ -102,94 +126,144 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       appBar: AppBar(
         title: const Text('노트'),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.delete_outline),
+            icon: const Icon(Icons.delete_outline_rounded),
             onPressed: _showDeleteDialog,
           ),
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 책 정보
             if (book != null)
-              Card(
-                child: ListTile(
-                  leading: book.coverImage != null
-                      ? ClipRRect(
-                          borderRadius: BorderRadius.circular(4),
-                          child: Image.network(
-                            book.coverImage!,
-                            width: 40,
-                            height: 56,
-                            fit: BoxFit.cover,
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: context.surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(AppShapes.large),
+                ),
+                child: Row(
+                  children: [
+                    book.coverImage != null
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(AppShapes.small),
+                            child: Image.network(
+                              book.coverImage!,
+                              width: 44,
+                              height: 60,
+                              fit: BoxFit.cover,
+                            ),
+                          )
+                        : Container(
+                            width: 44,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: context.surfaceContainerHigh,
+                              borderRadius: BorderRadius.circular(AppShapes.small),
+                            ),
+                            child: Icon(
+                              Icons.menu_book_rounded,
+                              color: context.colors.outline,
+                            ),
                           ),
-                        )
-                      : Container(
-                          width: 40,
-                          height: 56,
-                          color: Colors.grey.shade200,
-                          child: const Icon(Icons.menu_book),
+                    const SizedBox(width: AppSpacing.lg),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            book.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: context.colors.onSurface,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            book.author,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: context.colors.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    if (note.pageNumber != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
                         ),
-                  title: Text(
-                    book.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(book.author),
-                  trailing: note.pageNumber != null
-                      ? Chip(label: Text('p.${note.pageNumber}'))
-                      : null,
+                        decoration: BoxDecoration(
+                          color: context.colors.primaryContainer,
+                          borderRadius: BorderRadius.circular(AppShapes.small),
+                        ),
+                        child: Text(
+                          'p.${note.pageNumber}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.onPrimaryContainer,
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 날짜
             Text(
               dateFormat.format(note.createdAt),
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.grey,
-                  ),
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.onSurfaceVariant,
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSpacing.lg),
 
             // 요약/원문 토글
             if (note.summary != null) ...[
               Row(
                 children: [
-                  ChoiceChip(
-                    label: const Text('AI 요약'),
-                    selected: _showSummary,
-                    onSelected: (selected) {
-                      if (selected) setState(() => _showSummary = true);
-                    },
+                  _buildToggleChip(
+                    context: context,
+                    label: 'AI 요약',
+                    icon: Icons.auto_awesome,
+                    isSelected: _showSummary,
+                    onTap: () => setState(() => _showSummary = true),
                   ),
                   const SizedBox(width: 8),
-                  ChoiceChip(
-                    label: const Text('원문'),
-                    selected: !_showSummary,
-                    onSelected: (selected) {
-                      if (selected) setState(() => _showSummary = false);
-                    },
+                  _buildToggleChip(
+                    context: context,
+                    label: '원문',
+                    icon: Icons.format_quote_rounded,
+                    isSelected: !_showSummary,
+                    onTap: () => setState(() => _showSummary = false),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
             ],
 
             // 내용
             Container(
               width: double.infinity,
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12),
+                color: context.surfaceContainerLowest,
+                borderRadius: BorderRadius.circular(AppShapes.large),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -199,34 +273,39 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       Icon(
                         _showSummary && note.summary != null
                             ? Icons.auto_awesome
-                            : Icons.format_quote,
+                            : Icons.format_quote_rounded,
                         size: 18,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: _showSummary && note.summary != null
+                            ? context.colors.tertiary
+                            : context.colors.primary,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         _showSummary && note.summary != null ? 'AI 요약' : '원문',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                          color: _showSummary && note.summary != null
+                              ? context.colors.tertiary
+                              : context.colors.primary,
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: AppSpacing.md),
                   SelectableText(
                     _showSummary && note.summary != null
                         ? note.summary!
                         : note.content,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 16,
                       height: 1.8,
+                      color: context.colors.onSurface,
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
 
             // 메모
             Row(
@@ -234,30 +313,36 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               children: [
                 Text(
                   '내 메모',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: context.colors.onSurface,
+                  ),
                 ),
                 if (!_isEditing)
                   TextButton.icon(
-                    icon: const Icon(Icons.edit, size: 18),
+                    icon: const Icon(Icons.edit_rounded, size: 18),
                     label: const Text('수정'),
                     onPressed: () => setState(() => _isEditing = true),
                   ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             if (_isEditing)
               Column(
                 children: [
                   TextField(
                     controller: _memoController,
                     maxLines: 4,
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: context.colors.onSurface,
+                    ),
                     decoration: const InputDecoration(
                       hintText: '이 문장에 대한 생각을 적어보세요...',
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: AppSpacing.md),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -280,46 +365,120 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             else
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(AppSpacing.lg),
                 decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey.shade300),
-                  borderRadius: BorderRadius.circular(12),
+                  color: note.memo?.isNotEmpty == true
+                      ? context.surfaceContainerLowest
+                      : context.surfaceContainerLow,
+                  borderRadius: BorderRadius.circular(AppShapes.large),
+                  border: note.memo?.isNotEmpty == true
+                      ? null
+                      : Border.all(
+                          color: context.colors.outlineVariant,
+                          style: BorderStyle.solid,
+                        ),
                 ),
                 child: Text(
                   note.memo?.isNotEmpty == true
                       ? note.memo!
                       : '아직 메모가 없습니다. 수정 버튼을 눌러 메모를 추가해보세요.',
                   style: TextStyle(
+                    fontSize: 15,
                     color: note.memo?.isNotEmpty == true
-                        ? null
-                        : Colors.grey.shade500,
+                        ? context.colors.onSurface
+                        : context.colors.onSurfaceVariant,
                     height: 1.5,
                   ),
                 ),
               ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.xl),
 
             // 태그
             if (note.tags.isNotEmpty) ...[
               Text(
                 '태그',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: context.colors.onSurface,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: AppSpacing.sm),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: note.tags
                     .map(
-                      (tag) => Chip(
-                        label: Text('#$tag'),
+                      (tag) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: context.surfaceContainerHigh,
+                          borderRadius: BorderRadius.circular(AppShapes.medium),
+                        ),
+                        child: Text(
+                          '#$tag',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
                       ),
                     )
                     .toList(),
               ),
             ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildToggleChip({
+    required BuildContext context,
+    required String label,
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? context.colors.primaryContainer
+              : context.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(AppShapes.full),
+          border: Border.all(
+            color: isSelected ? context.colors.primary : Colors.transparent,
+            width: 1.5,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: isSelected
+                  ? context.colors.primary
+                  : context.colors.onSurfaceVariant,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                color: isSelected
+                    ? context.colors.primary
+                    : context.colors.onSurfaceVariant,
+              ),
+            ),
           ],
         ),
       ),
