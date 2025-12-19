@@ -15,6 +15,9 @@ on:
           - apk
           - appbundle
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     name: Build Android
