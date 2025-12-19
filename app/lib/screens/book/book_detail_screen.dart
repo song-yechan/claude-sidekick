@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,15 +47,18 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final image = await picker.pickImage(source: source);
     if (image == null) return;
 
+    // 이미지를 바이트로 읽기 (웹 호환성)
+    final imageBytes = await image.readAsBytes();
+
     // OCR 처리 시작
     if (mounted) {
-      _showOcrDialog(File(image.path));
+      _showOcrDialog(imageBytes);
     }
   }
 
-  void _showOcrDialog(File imageFile) {
+  void _showOcrDialog(Uint8List imageBytes) {
     // OCR 처리 시작
-    ref.read(ocrProvider.notifier).processImage(imageFile);
+    ref.read(ocrProvider.notifier).processImage(imageBytes);
 
     showDialog(
       context: context,
@@ -178,7 +181,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                   ? CachedNetworkImage(
                       imageUrl: book.coverImage!,
                       fit: BoxFit.cover,
-                      color: Colors.black.withOpacity(0.3),
+                      color: Colors.black.withValues(alpha: 0.3),
                       colorBlendMode: BlendMode.darken,
                     )
                   : Container(

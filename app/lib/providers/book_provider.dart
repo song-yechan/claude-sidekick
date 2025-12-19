@@ -3,6 +3,8 @@ import '../models/book.dart';
 import '../services/book_service.dart';
 import 'auth_provider.dart';
 
+export '../models/book.dart' show BookSearchResult;
+
 /// BookService 프로바이더
 final bookServiceProvider = Provider<BookService>((ref) => BookService());
 
@@ -109,7 +111,9 @@ Future<Book?> addBook(
   final authState = ref.read(authProvider);
   final bookService = ref.read(bookServiceProvider);
 
-  if (authState.user == null) return null;
+  if (authState.user == null) {
+    return null;
+  }
 
   try {
     final book = await bookService.addBook(

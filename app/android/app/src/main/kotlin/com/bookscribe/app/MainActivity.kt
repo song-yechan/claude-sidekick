@@ -1,4 +1,4 @@
-package com.booknote.app
+package com.bookscribe.app
 
 import io.flutter.embedding.android.FlutterActivity
 

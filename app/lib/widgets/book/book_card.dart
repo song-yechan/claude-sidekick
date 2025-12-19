@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../core/theme.dart';
 import '../../models/book.dart';
 
 class BookCard extends StatelessWidget {
@@ -14,24 +15,31 @@ class BookCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: onTap,
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          color: TossColors.white,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        clipBehavior: Clip.antiAlias,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // 책 표지
-            AspectRatio(
-              aspectRatio: 0.7,
+            Expanded(
               child: book.coverImage != null && book.coverImage!.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: book.coverImage!,
                       fit: BoxFit.cover,
+                      width: double.infinity,
                       placeholder: (context, url) => Container(
-                        color: Colors.grey.shade200,
+                        color: TossColors.gray100,
                         child: const Center(
-                          child: CircularProgressIndicator(),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: TossColors.blue,
+                          ),
                         ),
                       ),
                       errorWidget: (context, url, error) => _buildPlaceholder(),
@@ -40,17 +48,20 @@ class BookCard extends StatelessWidget {
             ),
             // 책 정보
             Padding(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     book.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w600,
                       fontSize: 14,
+                      color: TossColors.gray900,
+                      height: 1.3,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -58,8 +69,8 @@ class BookCard extends StatelessWidget {
                     book.author,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
+                    style: const TextStyle(
+                      color: TossColors.gray500,
                       fontSize: 12,
                     ),
                   ),
@@ -74,114 +85,13 @@ class BookCard extends StatelessWidget {
 
   Widget _buildPlaceholder() {
     return Container(
-      color: Colors.grey.shade200,
-      child: Center(
+      color: TossColors.gray100,
+      child: const Center(
         child: Icon(
-          Icons.menu_book,
-          size: 48,
-          color: Colors.grey.shade400,
+          Icons.menu_book_rounded,
+          size: 40,
+          color: TossColors.gray400,
         ),
-      ),
-    );
-  }
-}
-
-/// 검색 결과용 책 카드
-class BookSearchCard extends StatelessWidget {
-  final BookSearchResult book;
-  final VoidCallback? onTap;
-  final VoidCallback? onAdd;
-
-  const BookSearchCard({
-    super.key,
-    required this.book,
-    this.onTap,
-    this.onAdd,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: onTap,
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 책 표지
-              ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: SizedBox(
-                  width: 60,
-                  height: 85,
-                  child: book.coverImage.isNotEmpty
-                      ? CachedNetworkImage(
-                          imageUrl: book.coverImage,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => _buildPlaceholder(),
-                        )
-                      : _buildPlaceholder(),
-                ),
-              ),
-              const SizedBox(width: 12),
-              // 책 정보
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      book.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 14,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      book.author,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.grey.shade600,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      book.publisher,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        color: Colors.grey.shade500,
-                        fontSize: 11,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              // 추가 버튼
-              if (onAdd != null)
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline),
-                  onPressed: onAdd,
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder() {
-    return Container(
-      color: Colors.grey.shade200,
-      child: Icon(
-        Icons.menu_book,
-        color: Colors.grey.shade400,
       ),
     );
   }

@@ -1,4 +1,4 @@
-import 'dart:io';
+import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../services/note_service.dart';
@@ -82,11 +82,11 @@ class OcrNotifier extends StateNotifier<OcrState> {
 
   OcrNotifier(this._ocrService) : super(const OcrState());
 
-  Future<void> processImage(File imageFile) async {
+  Future<void> processImage(Uint8List imageBytes) async {
     state = const OcrState(isProcessing: true);
 
     try {
-      final result = await _ocrService.processImage(imageFile);
+      final result = await _ocrService.processImage(imageBytes);
       state = OcrState(
         extractedText: result.originalText,
         summary: result.summary,

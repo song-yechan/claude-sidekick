@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -14,6 +15,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isSignUp = false;
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -39,7 +41,12 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     if (!success && mounted) {
       final errorMessage = ref.read(authProvider).errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(errorMessage ?? '오류가 발생했습니다')),
+        SnackBar(
+          content: Text(errorMessage ?? '오류가 발생했습니다'),
+          backgroundColor: TossColors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
       );
     }
   }
@@ -49,47 +56,58 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     final authState = ref.watch(authProvider);
 
     return Scaffold(
+      backgroundColor: TossColors.white,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Form(
               key: _formKey,
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 로고
-                  const Icon(
-                    Icons.menu_book,
-                    size: 80,
-                    color: Colors.orange,
-                  ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 80),
+
+                  // 헤더
                   Text(
-                    'BookScan',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
+                    _isSignUp ? '회원가입' : '로그인',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: TossColors.gray900,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    _isSignUp ? '새 계정을 만들어보세요' : '로그인하여 시작하세요',
-                    textAlign: TextAlign.center,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Colors.grey,
-                        ),
+                    _isSignUp
+                        ? '책 속 문장을 수집하고 기록해보세요'
+                        : '다시 만나서 반가워요',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: TossColors.gray600,
+                    ),
                   ),
                   const SizedBox(height: 48),
 
                   // 이메일 입력
+                  const Text(
+                    '이메일',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: TossColors.gray700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _emailController,
                     keyboardType: TextInputType.emailAddress,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: TossColors.gray900,
+                    ),
                     decoration: const InputDecoration(
-                      labelText: '이메일',
-                      prefixIcon: Icon(Icons.email_outlined),
+                      hintText: 'example@email.com',
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -101,15 +119,41 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 20),
 
                   // 비밀번호 입력
+                  const Text(
+                    '비밀번호',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: TossColors.gray700,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   TextFormField(
                     controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: '비밀번호',
-                      prefixIcon: Icon(Icons.lock_outlined),
+                    obscureText: _obscurePassword,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: TossColors.gray900,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: '6자 이상 입력해주세요',
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: TossColors.gray500,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            _obscurePassword = !_obscurePassword;
+                          });
+                        },
+                      ),
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
@@ -121,34 +165,54 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       return null;
                     },
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
 
                   // 로그인/회원가입 버튼
-                  ElevatedButton(
-                    onPressed: authState.isLoading ? null : _submit,
-                    child: authState.isLoading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Text(_isSignUp ? '회원가입' : '로그인'),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: authState.isLoading ? null : _submit,
+                      child: authState.isLoading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: TossColors.white,
+                              ),
+                            )
+                          : Text(
+                              _isSignUp ? '회원가입' : '로그인',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                    ),
                   ),
                   const SizedBox(height: 16),
 
                   // 모드 전환 버튼
-                  TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _isSignUp = !_isSignUp;
-                      });
-                    },
-                    child: Text(
-                      _isSignUp
-                          ? '이미 계정이 있으신가요? 로그인'
-                          : '계정이 없으신가요? 회원가입',
+                  Center(
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          _isSignUp = !_isSignUp;
+                        });
+                      },
+                      child: Text(
+                        _isSignUp
+                            ? '이미 계정이 있으신가요? 로그인'
+                            : '계정이 없으신가요? 회원가입',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: TossColors.gray600,
+                        ),
+                      ),
                     ),
                   ),
+                  const SizedBox(height: 48),
                 ],
               ),
             ),

@@ -36,3 +36,8 @@ app/.metadata
 # Environment files
 web/.env
 app/.env
+
+# Android signing
+app/android/key.properties
+app/android/*.jks
+*.keystore

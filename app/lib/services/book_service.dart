@@ -124,9 +124,11 @@ class BookService {
       body: {'query': query},
     );
 
-    if (response.data == null) return [];
+    if (response.data == null) {
+      return [];
+    }
 
     final items = response.data['items'] as List? ?? [];
-    return items.map((json) => BookSearchResult.fromJson(json)).toList();
+    return items.map((json) => BookSearchResult.fromJson(json as Map<String, dynamic>)).toList();
   }
 }

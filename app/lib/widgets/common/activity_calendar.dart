@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import '../../core/theme.dart';
 
-/// GitHub 스타일 활동 캘린더 위젯
+/// 토스 스타일 활동 캘린더 위젯
 class ActivityCalendar extends StatelessWidget {
   final int year;
   final Map<DateTime, int> data;
@@ -14,13 +15,13 @@ class ActivityCalendar extends StatelessWidget {
   });
 
   /// 활동량에 따른 색상 반환
-  Color _getColor(int count, BuildContext context) {
-    if (count == 0) return Colors.grey.shade200;
-    if (count <= 3) return Colors.orange.shade100;
-    if (count <= 8) return Colors.orange.shade200;
-    if (count <= 15) return Colors.orange.shade300;
-    if (count <= 30) return Colors.orange.shade400;
-    return Colors.orange.shade600;
+  Color _getColor(int count) {
+    if (count == 0) return TossColors.gray100;
+    if (count <= 2) return TossColors.blue.withValues(alpha: 0.2);
+    if (count <= 5) return TossColors.blue.withValues(alpha: 0.4);
+    if (count <= 10) return TossColors.blue.withValues(alpha: 0.6);
+    if (count <= 20) return TossColors.blue.withValues(alpha: 0.8);
+    return TossColors.blue;
   }
 
   @override
@@ -68,133 +69,138 @@ class ActivityCalendar extends StatelessWidget {
           children: [
             Text(
               '$year년 독서 활동',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: TossColors.gray900,
+              ),
             ),
             Row(
               children: [
-                IconButton(
-                  icon: const Icon(Icons.chevron_left),
-                  onPressed: () => onYearChanged?.call(year - 1),
-                  visualDensity: VisualDensity.compact,
+                _YearButton(
+                  icon: Icons.chevron_left_rounded,
+                  onTap: () => onYearChanged?.call(year - 1),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.chevron_right),
-                  onPressed: year < now.year
+                const SizedBox(width: 4),
+                _YearButton(
+                  icon: Icons.chevron_right_rounded,
+                  onTap: year < now.year
                       ? () => onYearChanged?.call(year + 1)
                       : null,
-                  visualDensity: VisualDensity.compact,
                 ),
               ],
             ),
           ],
         ),
-        const SizedBox(height: 8),
-
-        // 요일 레이블
-        Row(
-          children: [
-            const SizedBox(width: 24),
-            ...['일', '월', '화', '수', '목', '금', '토'].map(
-              (day) => Expanded(
-                child: Center(
-                  child: Text(
-                    day,
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 16),
 
         // 캘린더 그리드
         SizedBox(
-          height: 100,
+          height: 110,
           child: SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            reverse: true, // 최근 날짜가 오른쪽에 오도록
+            reverse: true,
             child: Row(
-              children: [
-                // 월 레이블
-                SizedBox(
-                  width: 24,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: List.generate(7, (index) => const SizedBox()),
-                  ),
-                ),
-                // 주별 컬럼
-                ...weeks.map((week) {
-                  return Column(
-                    children: week.map((date) {
-                      if (date == null) {
-                        return Container(
-                          width: 12,
-                          height: 12,
-                          margin: const EdgeInsets.all(1),
-                        );
-                      }
-
-                      final dateKey =
-                          DateTime(date.year, date.month, date.day);
-                      final count = data[dateKey] ?? 0;
-
-                      return Tooltip(
-                        message:
-                            '${date.month}/${date.day}: $count개',
-                        child: Container(
-                          width: 12,
-                          height: 12,
-                          margin: const EdgeInsets.all(1),
-                          decoration: BoxDecoration(
-                            color: _getColor(count, context),
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: weeks.map((week) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: week.map((date) {
+                    if (date == null) {
+                      return Container(
+                        width: 11,
+                        height: 11,
+                        margin: const EdgeInsets.all(1.5),
                       );
-                    }).toList(),
-                  );
-                }),
-              ],
+                    }
+
+                    final dateKey = DateTime(date.year, date.month, date.day);
+                    final count = data[dateKey] ?? 0;
+
+                    return Tooltip(
+                      message: '${date.month}월 ${date.day}일: $count개',
+                      child: Container(
+                        width: 11,
+                        height: 11,
+                        margin: const EdgeInsets.all(1.5),
+                        decoration: BoxDecoration(
+                          color: _getColor(count),
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              }).toList(),
             ),
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
 
         // 범례
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            Text(
+            const Text(
               '적음',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 11,
+                color: TossColors.gray500,
+              ),
             ),
-            const SizedBox(width: 4),
-            ...[0, 3, 8, 15, 31].map(
+            const SizedBox(width: 6),
+            ...[0, 2, 5, 10, 21].map(
               (count) => Container(
-                width: 12,
-                height: 12,
-                margin: const EdgeInsets.symmetric(horizontal: 1),
+                width: 11,
+                height: 11,
+                margin: const EdgeInsets.symmetric(horizontal: 2),
                 decoration: BoxDecoration(
-                  color: _getColor(count, context),
+                  color: _getColor(count),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(width: 4),
-            Text(
+            const SizedBox(width: 6),
+            const Text(
               '많음',
-              style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+              style: TextStyle(
+                fontSize: 11,
+                color: TossColors.gray500,
+              ),
             ),
           ],
         ),
       ],
+    );
+  }
+}
+
+class _YearButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback? onTap;
+
+  const _YearButton({
+    required this.icon,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 32,
+        height: 32,
+        decoration: BoxDecoration(
+          color: onTap != null ? TossColors.gray100 : TossColors.gray50,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: onTap != null ? TossColors.gray700 : TossColors.gray300,
+        ),
+      ),
     );
   }
 }

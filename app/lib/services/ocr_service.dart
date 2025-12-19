@@ -1,13 +1,12 @@
 import 'dart:convert';
-import 'dart:io';
+import 'dart:typed_data';
 import '../core/supabase.dart';
 
 class OcrService {
   /// 이미지에서 텍스트 추출 (OCR)
-  Future<String> extractText(File imageFile) async {
+  Future<String> extractText(Uint8List imageBytes) async {
     // 이미지를 base64로 인코딩
-    final bytes = await imageFile.readAsBytes();
-    final base64Image = base64Encode(bytes);
+    final base64Image = base64Encode(imageBytes);
 
     final response = await supabase.functions.invoke(
       'ocr-image',
@@ -42,8 +41,8 @@ class OcrService {
   }
 
   /// 이미지에서 텍스트 추출 후 요약까지 수행
-  Future<OcrResult> processImage(File imageFile) async {
-    final extractedText = await extractText(imageFile);
+  Future<OcrResult> processImage(Uint8List imageBytes) async {
+    final extractedText = await extractText(imageBytes);
 
     if (extractedText.isEmpty) {
       return OcrResult(
