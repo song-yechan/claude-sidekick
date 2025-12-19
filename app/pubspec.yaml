@@ -1,5 +1,5 @@
 name: bookscribe
-description: "책 속 문장을 촬영하고 AI로 요약하여 나만의 독서 기록을 만드는 앱"
+description: "책 속 문장을 촬영하고 AI로 요약하여 나만의 독서 노트를 만드는 앱"
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
