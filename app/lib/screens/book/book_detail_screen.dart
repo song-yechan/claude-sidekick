@@ -1,8 +1,10 @@
+import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme.dart';
@@ -106,16 +108,55 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     );
     if (image == null) return;
 
-    // 이미지를 바이트로 읽기 (image_picker가 JPEG으로 변환)
-    final originalBytes = await image.readAsBytes();
+    // 이미지 크롭 화면 표시
+    final croppedFile = await _cropImage(image.path);
+    if (croppedFile == null) return;
+
+    // 크롭된 이미지를 바이트로 읽기
+    final croppedBytes = await croppedFile.readAsBytes();
 
     // 이미지 리사이즈 (OCR 최적화)
-    final resizedBytes = await _resizeImageForOcr(originalBytes);
+    final resizedBytes = await _resizeImageForOcr(croppedBytes);
 
     // OCR 처리 시작
     if (mounted) {
       _showOcrDialog(resizedBytes);
     }
+  }
+
+  /// 이미지 크롭 화면을 표시합니다.
+  Future<File?> _cropImage(String imagePath) async {
+    final croppedFile = await ImageCropper().cropImage(
+      sourcePath: imagePath,
+      compressFormat: ImageCompressFormat.jpg,
+      compressQuality: 85,
+      uiSettings: [
+        AndroidUiSettings(
+          toolbarTitle: '이미지 자르기',
+          toolbarColor: context.colors.surface,
+          toolbarWidgetColor: context.colors.onSurface,
+          backgroundColor: Colors.black,
+          activeControlsWidgetColor: context.colors.primary,
+          initAspectRatio: CropAspectRatioPreset.original,
+          lockAspectRatio: false,
+          hideBottomControls: false,
+        ),
+        IOSUiSettings(
+          title: '이미지 자르기',
+          cancelButtonTitle: '취소',
+          doneButtonTitle: '완료',
+          resetButtonHidden: false,
+          rotateButtonsHidden: false,
+          aspectRatioPickerButtonHidden: true,
+          resetAspectRatioEnabled: true,
+        ),
+      ],
+    );
+
+    if (croppedFile != null) {
+      return File(croppedFile.path);
+    }
+    return null;
   }
 
   /// 이미지 리사이즈 (OCR 최적화)

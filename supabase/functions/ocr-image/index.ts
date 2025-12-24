@@ -94,8 +94,14 @@ Deno.serve(async (req) => {
 
       // Clean up: normalize line breaks for book text
       extractedText = extractedText
+        // Windows 줄바꿈을 Unix로 통일
         .replace(/\r\n/g, '\n')
+        // 문장 끝(. ! ? 등)이 아닌 단일 줄바꿈은 공백으로 변환 (문단 내 줄바꿈 제거)
+        .replace(/([^.!?。！？:;:\n])\n([^\n])/g, '$1 $2')
+        // 3개 이상 연속 줄바꿈은 2개로 (문단 구분 유지)
         .replace(/\n{3,}/g, '\n\n')
+        // 연속 공백 정리
+        .replace(/  +/g, ' ')
         .trim();
     }
 
