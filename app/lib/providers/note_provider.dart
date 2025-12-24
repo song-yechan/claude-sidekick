@@ -109,29 +109,23 @@ class OcrState {
   /// 추출된 원본 텍스트
   final String? extractedText;
 
-  /// AI가 요약한 텍스트
-  final String? summary;
-
   /// 에러 메시지 (처리 실패 시)
   final String? error;
 
   const OcrState({
     this.isProcessing = false,
     this.extractedText,
-    this.summary,
     this.error,
   });
 
   OcrState copyWith({
     bool? isProcessing,
     String? extractedText,
-    String? summary,
     String? error,
   }) {
     return OcrState(
       isProcessing: isProcessing ?? this.isProcessing,
       extractedText: extractedText ?? this.extractedText,
-      summary: summary ?? this.summary,
       error: error,
     );
   }
@@ -139,8 +133,7 @@ class OcrState {
 
 /// OCR 처리 기능을 관리하는 StateNotifier
 ///
-/// 이미지를 받아 Google Vision API를 통해 텍스트를 추출하고,
-/// AI를 통해 추출된 텍스트를 요약합니다.
+/// 이미지를 받아 Google Vision API를 통해 텍스트를 추출합니다.
 class OcrNotifier extends StateNotifier<OcrState> {
   final OcrService _ocrService;
 
@@ -149,7 +142,7 @@ class OcrNotifier extends StateNotifier<OcrState> {
   /// 이미지에서 텍스트를 추출합니다.
   ///
   /// [imageBytes] 처리할 이미지의 바이트 데이터
-  /// 성공 시 추출된 텍스트와 요약을 상태에 저장합니다.
+  /// 성공 시 추출된 텍스트를 상태에 저장합니다.
   Future<void> processImage(Uint8List imageBytes) async {
     state = const OcrState(isProcessing: true);
 
@@ -157,9 +150,9 @@ class OcrNotifier extends StateNotifier<OcrState> {
       final result = await _ocrService.processImage(imageBytes);
       state = OcrState(
         extractedText: result.originalText,
-        summary: result.summary,
       );
     } catch (e) {
+      print('📷 OCR Error: $e');
       state = OcrState(error: e.toString());
     }
   }

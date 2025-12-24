@@ -240,7 +240,6 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           return _SaveNoteDialog(
             bookId: widget.bookId,
             extractedText: ocrState.extractedText ?? '',
-            summary: ocrState.summary,
             onSaved: () {
               Navigator.pop(dialogContext);
               ref.read(ocrProvider.notifier).clear();
@@ -534,13 +533,11 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 class _SaveNoteDialog extends ConsumerStatefulWidget {
   final String bookId;
   final String extractedText;
-  final String? summary;
   final VoidCallback onSaved;
 
   const _SaveNoteDialog({
     required this.bookId,
     required this.extractedText,
-    this.summary,
     required this.onSaved,
   });
 
@@ -575,7 +572,6 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
       ref,
       bookId: widget.bookId,
       content: _contentController.text,
-      summary: widget.summary,
       pageNumber:
           _pageController.text.isNotEmpty ? int.tryParse(_pageController.text) : null,
       memo: _memoController.text.isNotEmpty ? _memoController.text : null,
