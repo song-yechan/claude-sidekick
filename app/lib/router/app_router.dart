@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
+import '../providers/onboarding_provider.dart';
 import '../screens/auth/auth_screen.dart';
 import '../screens/home/home_screen.dart';
 import '../screens/search/search_screen.dart';
@@ -10,28 +11,50 @@ import '../screens/categories/category_detail_screen.dart';
 import '../screens/book/book_detail_screen.dart';
 import '../screens/note/note_detail_screen.dart';
 import '../screens/settings/settings_screen.dart';
+import '../screens/onboarding/onboarding_screen.dart';
 import '../widgets/layout/main_layout.dart';
 
 /// 라우터 프로바이더
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authProvider);
+  final onboardingState = ref.watch(onboardingProvider);
 
   return GoRouter(
     initialLocation: '/',
     redirect: (context, state) {
       final isAuthenticated = authState.isAuthenticated;
       final isAuthPage = state.matchedLocation == '/auth';
+      final isOnboardingPage = state.matchedLocation == '/onboarding';
+      final isOnboardingPreview = state.matchedLocation.startsWith('/onboarding/preview');
+      final isOnboardingCompleted = onboardingState.isCompleted;
 
       // 로딩 중이면 리다이렉트 안함
-      if (authState.isLoading) return null;
+      if (authState.isLoading || onboardingState.isLoading) return null;
+
+      // 온보딩 미리보기는 항상 허용
+      if (isOnboardingPreview) return null;
 
       // 인증 안됐으면 로그인 페이지로
       if (!isAuthenticated && !isAuthPage) {
         return '/auth';
       }
 
-      // 인증됐는데 로그인 페이지면 홈으로
+      // 인증됐는데 로그인 페이지면
       if (isAuthenticated && isAuthPage) {
+        // 온보딩 안했으면 온보딩으로
+        if (!isOnboardingCompleted) {
+          return '/onboarding';
+        }
+        return '/';
+      }
+
+      // 인증됐고, 온보딩 안했고, 온보딩 페이지가 아니면 온보딩으로
+      if (isAuthenticated && !isOnboardingCompleted && !isOnboardingPage && !isOnboardingPreview) {
+        return '/onboarding';
+      }
+
+      // 온보딩 완료했는데 온보딩 메인 페이지면 홈으로 (미리보기는 제외)
+      if (isAuthenticated && isOnboardingCompleted && isOnboardingPage) {
         return '/';
       }
 
@@ -42,6 +65,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/auth',
         builder: (context, state) => const AuthScreen(),
+      ),
+
+      // 온보딩 화면 (인터랙티브형 - Variant 2)
+      GoRoute(
+        path: '/onboarding',
+        builder: (context, state) => const OnboardingVariant2(),
       ),
 
       // 메인 레이아웃 (하단 네비게이션 포함)

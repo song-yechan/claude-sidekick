@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:image/image.dart' as img;
 import '../../core/theme.dart';
+import '../../core/error_utils.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
 import '../../widgets/note/note_card.dart';
@@ -19,8 +21,6 @@ class BookDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
-  bool _showSummary = true;
-
   Future<void> _pickImage() async {
     final picker = ImagePicker();
     final source = await showModalBottomSheet<ImageSource>(
@@ -100,12 +100,53 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     final image = await picker.pickImage(source: source);
     if (image == null) return;
 
-    // 이미지를 바이트로 읽기 (웹 호환성)
-    final imageBytes = await image.readAsBytes();
+    // 이미지를 바이트로 읽기
+    final originalBytes = await image.readAsBytes();
+
+    // 이미지 리사이즈 (OCR 최적화)
+    final resizedBytes = await _resizeImageForOcr(originalBytes);
 
     // OCR 처리 시작
     if (mounted) {
-      _showOcrDialog(imageBytes);
+      _showOcrDialog(resizedBytes);
+    }
+  }
+
+  /// 이미지 리사이즈 (OCR 최적화)
+  /// 최대 1920px 너비/높이, JPEG 85% 품질로 압축
+  Future<Uint8List> _resizeImageForOcr(Uint8List bytes) async {
+    const maxDimension = 1920;
+    const jpegQuality = 85;
+
+    try {
+      // 이미지 디코딩
+      final originalImage = img.decodeImage(bytes);
+      if (originalImage == null) return bytes;
+
+      // 리사이즈가 필요한지 확인
+      final width = originalImage.width;
+      final height = originalImage.height;
+
+      if (width <= maxDimension && height <= maxDimension) {
+        // 이미 충분히 작은 경우 JPEG으로 압축만 수행
+        final compressed = img.encodeJpg(originalImage, quality: jpegQuality);
+        return Uint8List.fromList(compressed);
+      }
+
+      // 비율 유지하며 리사이즈
+      img.Image resized;
+      if (width > height) {
+        resized = img.copyResize(originalImage, width: maxDimension);
+      } else {
+        resized = img.copyResize(originalImage, height: maxDimension);
+      }
+
+      // JPEG으로 인코딩
+      final encoded = img.encodeJpg(resized, quality: jpegQuality);
+      return Uint8List.fromList(encoded);
+    } catch (e) {
+      // 리사이즈 실패 시 원본 반환
+      return bytes;
     }
   }
 
@@ -122,13 +163,53 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
           if (ocrState.isProcessing) {
             return AlertDialog(
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: const [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 16),
-                  Text('텍스트를 추출하고 있습니다...'),
-                ],
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              content: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: Theme.of(dialogContext).colorScheme.primaryContainer,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: SizedBox(
+                          width: 32,
+                          height: 32,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 3,
+                            color: Theme.of(dialogContext).colorScheme.primary,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      '텍스트 추출 중',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(dialogContext).colorScheme.onSurface,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '이미지에서 텍스트를 인식하고 있습니다.\n잠시만 기다려주세요...',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -327,7 +408,6 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
                   // 노트 헤더
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         '수집한 문장',
@@ -335,53 +415,6 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: context.colors.onSurface,
-                        ),
-                      ),
-                      // 요약/원문 토글
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: context.surfaceContainerHigh,
-                          borderRadius: BorderRadius.circular(AppShapes.full),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              _showSummary
-                                  ? Icons.auto_awesome
-                                  : Icons.format_quote_rounded,
-                              size: 16,
-                              color: _showSummary
-                                  ? context.colors.primary
-                                  : context.colors.onSurfaceVariant,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              _showSummary ? 'AI 요약' : '원문',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: _showSummary
-                                    ? context.colors.primary
-                                    : context.colors.onSurfaceVariant,
-                              ),
-                            ),
-                            const SizedBox(width: 4),
-                            Switch(
-                              value: _showSummary,
-                              onChanged: (value) {
-                                setState(() {
-                                  _showSummary = value;
-                                });
-                              },
-                              materialTapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
-                            ),
-                          ],
                         ),
                       ),
                     ],
@@ -447,7 +480,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         padding: const EdgeInsets.only(bottom: 12),
                         child: NoteCard(
                           note: note,
-                          showSummary: _showSummary,
+                          showSummary: false, // 항상 원문 표시
                           onTap: () => context.push('/notes/${note.id}'),
                         ),
                       );
@@ -468,8 +501,9 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             error: (error, _) => SliverFillRemaining(
               child: Center(
                 child: Text(
-                  '오류: $error',
+                  getUserFriendlyErrorMessage(error),
                   style: TextStyle(color: context.colors.onSurfaceVariant),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
@@ -512,7 +546,6 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
   late TextEditingController _contentController;
   final _pageController = TextEditingController();
   final _memoController = TextEditingController();
-  bool _showSummary = true;
   bool _isSaving = false;
 
   @override
@@ -563,19 +596,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 요약/원문 토글
-            if (widget.summary != null)
-              Row(
-                children: [
-                  const Text('AI 요약 보기'),
-                  Switch(
-                    value: _showSummary,
-                    onChanged: (value) => setState(() => _showSummary = value),
-                  ),
-                ],
-              ),
-
-            // 추출된 텍스트 / 요약
+            // 추출된 텍스트
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
@@ -588,32 +609,24 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                   Row(
                     children: [
                       Icon(
-                        _showSummary && widget.summary != null
-                            ? Icons.auto_awesome
-                            : Icons.format_quote_rounded,
+                        Icons.format_quote_rounded,
                         size: 16,
-                        color: _showSummary && widget.summary != null
-                            ? context.colors.tertiary
-                            : context.colors.onSurfaceVariant,
+                        color: context.colors.onSurfaceVariant,
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        _showSummary && widget.summary != null ? 'AI 요약' : '원문',
+                        '추출된 텍스트',
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
-                          color: _showSummary && widget.summary != null
-                              ? context.colors.tertiary
-                              : context.colors.onSurfaceVariant,
+                          color: context.colors.onSurfaceVariant,
                         ),
                       ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
                   Text(
-                    _showSummary && widget.summary != null
-                        ? widget.summary!
-                        : widget.extractedText,
+                    widget.extractedText,
                     style: TextStyle(
                       height: 1.6,
                       color: context.colors.onSurface,

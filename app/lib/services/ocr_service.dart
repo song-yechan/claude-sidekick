@@ -11,7 +11,7 @@ class OcrService {
     final response = await supabase.functions.invoke(
       'ocr-image',
       body: {
-        'image': base64Image,
+        'imageBase64': base64Image,
       },
     );
 

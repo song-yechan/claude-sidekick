@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../services/auth_service.dart';
 import '../core/supabase.dart';
 
@@ -13,27 +13,31 @@ class AuthState {
   final Session? session;
   final bool isLoading;
   final String? errorMessage;
+  final bool signUpCompleted; // 회원가입 완료 상태 (완료 화면 표시용)
 
   const AuthState({
     this.user,
     this.session,
     this.isLoading = false,
     this.errorMessage,
+    this.signUpCompleted = false,
   });
 
-  bool get isAuthenticated => user != null;
+  bool get isAuthenticated => user != null && !signUpCompleted;
 
   AuthState copyWith({
     User? user,
     Session? session,
     bool? isLoading,
     String? errorMessage,
+    bool? signUpCompleted,
   }) {
     return AuthState(
       user: user ?? this.user,
       session: session ?? this.session,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
+      signUpCompleted: signUpCompleted ?? this.signUpCompleted,
     );
   }
 }
@@ -41,7 +45,7 @@ class AuthState {
 /// 인증 상태 관리 Notifier
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
-  StreamSubscription<AuthState>? _authSubscription;
+  StreamSubscription? _authSubscription;
 
   AuthNotifier(this._authService) : super(const AuthState(isLoading: true)) {
     _init();
@@ -59,11 +63,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
 
     // 인증 상태 변경 리스닝
-    supabase.auth.onAuthStateChange.listen((data) {
+    _authSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      // 회원가입 완료 상태는 유지 (완료 화면 표시 중일 때)
+      final keepSignUpCompleted = state.signUpCompleted && data.session?.user != null;
+
+      // 현재 로딩 중이면 무시 (signIn/signUp 메서드에서 처리 중)
+      if (state.isLoading) return;
+
+      // 이미 같은 사용자라면 무시 (중복 업데이트 방지)
+      if (state.user?.id == data.session?.user?.id &&
+          state.session?.accessToken == data.session?.accessToken) {
+        return;
+      }
+
       state = AuthState(
         user: data.session?.user,
         session: data.session,
         isLoading: false,
+        signUpCompleted: keepSignUpCompleted,
       );
     });
   }
@@ -79,10 +96,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
 
       if (response.user != null) {
+        // 회원가입 완료 상태로 설정 (바로 홈으로 가지 않고 완료 화면 표시)
         state = AuthState(
           user: response.user,
           session: response.session,
           isLoading: false,
+          signUpCompleted: true, // 완료 화면 표시를 위한 플래그
         );
         return true;
       } else {
@@ -99,6 +118,18 @@ class AuthNotifier extends StateNotifier<AuthState> {
       );
       return false;
     }
+  }
+
+  /// 회원가입 완료 후 로그인 화면으로 전환
+  void goToLogin() {
+    // 로그아웃하고 로그인 화면으로 이동
+    _authService.signOut();
+    state = const AuthState();
+  }
+
+  /// 회원가입 완료 후 바로 앱 사용 (이미 로그인 상태)
+  void continueToApp() {
+    state = state.copyWith(signUpCompleted: false);
   }
 
   /// 로그인

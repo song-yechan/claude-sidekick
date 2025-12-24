@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../core/error_utils.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
 
@@ -136,7 +137,7 @@ class LibraryScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        '$error',
+                        getUserFriendlyErrorMessage(error),
                         style: TextStyle(
                           fontSize: 14,
                           color: context.colors.onSurfaceVariant,
