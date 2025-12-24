@@ -97,10 +97,16 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
     if (source == null) return;
 
-    final image = await picker.pickImage(source: source);
+    // iOS에서 HEIC 형식을 JPEG으로 자동 변환하도록 설정
+    final image = await picker.pickImage(
+      source: source,
+      maxWidth: 1920,
+      maxHeight: 1920,
+      imageQuality: 85,
+    );
     if (image == null) return;
 
-    // 이미지를 바이트로 읽기
+    // 이미지를 바이트로 읽기 (image_picker가 JPEG으로 변환)
     final originalBytes = await image.readAsBytes();
 
     // 이미지 리사이즈 (OCR 최적화)
