@@ -13,6 +13,7 @@ import '../screens/book/book_detail_screen.dart';
 import '../screens/note/note_detail_screen.dart';
 import '../screens/settings/settings_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
+import '../screens/splash/splash_screen.dart';
 import '../widgets/layout/main_layout.dart';
 
 /// 라우터 리프레시 알림 클래스
@@ -31,7 +32,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   final refreshNotifier = _RouterRefreshNotifier(ref);
 
   return GoRouter(
-    initialLocation: '/',
+    initialLocation: '/splash',
     refreshListenable: refreshNotifier,
     redirect: (context, state) {
       // ref.read 사용 (watch 대신) - GoRouter 인스턴스 재생성 방지
@@ -39,18 +40,20 @@ final routerProvider = Provider<GoRouter>((ref) {
       final onboardingState = ref.read(onboardingProvider);
 
       final isAuthenticated = authState.isAuthenticated;
+      final isSplashPage = state.matchedLocation == '/splash';
       final isAuthPage = state.matchedLocation == '/auth';
       final isOnboardingPage = state.matchedLocation == '/onboarding';
       final isOnboardingPreview = state.matchedLocation.startsWith('/onboarding/preview');
       final isOnboardingCompleted = onboardingState.isCompleted;
 
-      print('🔀 Router - location: ${state.matchedLocation}');
-      print('🔀 Router - isAuthenticated: $isAuthenticated, isOnboardingCompleted: $isOnboardingCompleted');
-      print('🔀 Router - authLoading: ${authState.isLoading}, onboardingLoading: ${onboardingState.isLoading}');
+      // 스플래시 화면은 자체적으로 네비게이션 처리 (리다이렉트 안함)
+      if (isSplashPage) return null;
+
+      // /home으로 오면 /로 리다이렉트
+      if (state.matchedLocation == '/home') return '/';
 
       // 인증 로딩 중이면 리다이렉트 안함 (온보딩 로딩은 무시)
       if (authState.isLoading) {
-        print('🔀 Router - auth loading, no redirect');
         return null;
       }
 
@@ -85,6 +88,12 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
+      // 스플래시 화면
+      GoRoute(
+        path: '/splash',
+        builder: (context, state) => const SplashScreen(),
+      ),
+
       // 인증 화면
       GoRoute(
         path: '/auth',
