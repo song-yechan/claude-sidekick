@@ -92,7 +92,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       if (state.isLoading) return;
 
       // 이미 같은 사용자라면 무시 (중복 업데이트 방지)
-      if (state.user?.id == data.session?.user?.id &&
+      if (state.user?.id == data.session?.user.id &&
           state.session?.accessToken == data.session?.accessToken) {
         return;
       }
