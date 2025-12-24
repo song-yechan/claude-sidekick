@@ -84,6 +84,7 @@ Deno.serve(async (req) => {
       publishDate: item.pubDate || '',
       coverImage: item.cover || '',
       description: item.description || '',
+      pageCount: item.subInfo?.itemPage || null,
     }));
 
     return new Response(

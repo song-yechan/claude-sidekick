@@ -154,6 +154,7 @@ final bookSearchProvider =
 /// [publishDate] 출판일
 /// [coverImage] 표지 이미지 URL
 /// [description] 책 설명
+/// [pageCount] 페이지 수
 /// [categoryIds] 이 책이 속할 카테고리 ID 목록
 ///
 /// 성공 시 생성된 Book 객체를 반환하고, 실패 시 null을 반환합니다.
@@ -167,6 +168,7 @@ Future<Book?> addBook(
   String? publishDate,
   String? coverImage,
   String? description,
+  int? pageCount,
   List<String> categoryIds = const [],
 }) async {
   final authState = ref.read(authProvider);
@@ -186,6 +188,7 @@ Future<Book?> addBook(
       publishDate: publishDate,
       coverImage: coverImage,
       description: description,
+      pageCount: pageCount,
       categoryIds: categoryIds,
     );
 

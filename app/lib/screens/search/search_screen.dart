@@ -41,6 +41,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         publishDate: book.publishDate.isNotEmpty ? book.publishDate : null,
         coverImage: book.coverImage.isNotEmpty ? book.coverImage : null,
         description: book.description.isNotEmpty ? book.description : null,
+        pageCount: book.pageCount,
         categoryIds: _selectedCategoryIds.toList(),
       );
 

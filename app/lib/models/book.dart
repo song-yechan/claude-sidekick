@@ -7,6 +7,7 @@ class Book {
   final String? publishDate;
   final String? coverImage;
   final String? description;
+  final int? pageCount;
   final List<String> categoryIds;
   final DateTime addedAt;
 
@@ -19,6 +20,7 @@ class Book {
     this.publishDate,
     this.coverImage,
     this.description,
+    this.pageCount,
     this.categoryIds = const [],
     required this.addedAt,
   });
@@ -33,6 +35,7 @@ class Book {
       publishDate: json['publish_date'] as String?,
       coverImage: json['cover_image'] as String?,
       description: json['description'] as String?,
+      pageCount: json['page_count'] as int?,
       categoryIds: categoryIds ?? [],
       addedAt: DateTime.parse(json['added_at'] as String),
     );
@@ -47,6 +50,7 @@ class Book {
       'publish_date': publishDate,
       'cover_image': coverImage,
       'description': description,
+      'page_count': pageCount,
     };
   }
 
@@ -59,6 +63,7 @@ class Book {
     String? publishDate,
     String? coverImage,
     String? description,
+    int? pageCount,
     List<String>? categoryIds,
     DateTime? addedAt,
   }) {
@@ -71,6 +76,7 @@ class Book {
       publishDate: publishDate ?? this.publishDate,
       coverImage: coverImage ?? this.coverImage,
       description: description ?? this.description,
+      pageCount: pageCount ?? this.pageCount,
       categoryIds: categoryIds ?? this.categoryIds,
       addedAt: addedAt ?? this.addedAt,
     );
@@ -85,6 +91,7 @@ class BookSearchResult {
   final String publishDate;
   final String coverImage;
   final String description;
+  final int? pageCount;
 
   BookSearchResult({
     required this.isbn,
@@ -94,6 +101,7 @@ class BookSearchResult {
     required this.publishDate,
     required this.coverImage,
     required this.description,
+    this.pageCount,
   });
 
   factory BookSearchResult.fromJson(Map<String, dynamic> json) {
@@ -105,6 +113,7 @@ class BookSearchResult {
       publishDate: json['publishDate'] as String? ?? '',
       coverImage: json['coverImage'] as String? ?? '',
       description: json['description'] as String? ?? '',
+      pageCount: json['pageCount'] as int?,
     );
   }
 }

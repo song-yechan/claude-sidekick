@@ -53,6 +53,7 @@ class BookService {
     String? publishDate,
     String? coverImage,
     String? description,
+    int? pageCount,
     List<String> categoryIds = const [],
   }) async {
     // 1단계: books 테이블에 책 정보 추가
@@ -67,6 +68,7 @@ class BookService {
           'publish_date': publishDate,
           'cover_image': coverImage,
           'description': description,
+          'page_count': pageCount,
         })
         .select()
         .single();
