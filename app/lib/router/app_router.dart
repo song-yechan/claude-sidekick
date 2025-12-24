@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/auth_provider.dart';
@@ -14,14 +15,29 @@ import '../screens/settings/settings_screen.dart';
 import '../screens/onboarding/onboarding_screen.dart';
 import '../widgets/layout/main_layout.dart';
 
+/// 라우터 리프레시 알림 클래스
+///
+/// auth/onboarding 상태 변화 시 GoRouter의 redirect를 재평가하도록 알립니다.
+/// GoRouter 인스턴스는 유지하면서 redirect만 재실행되어 백그라운드 복귀 시 안정적입니다.
+class _RouterRefreshNotifier extends ChangeNotifier {
+  _RouterRefreshNotifier(Ref ref) {
+    ref.listen(authProvider, (_, __) => notifyListeners());
+    ref.listen(onboardingProvider, (_, __) => notifyListeners());
+  }
+}
+
 /// 라우터 프로바이더
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authProvider);
-  final onboardingState = ref.watch(onboardingProvider);
+  final refreshNotifier = _RouterRefreshNotifier(ref);
 
   return GoRouter(
     initialLocation: '/',
+    refreshListenable: refreshNotifier,
     redirect: (context, state) {
+      // ref.read 사용 (watch 대신) - GoRouter 인스턴스 재생성 방지
+      final authState = ref.read(authProvider);
+      final onboardingState = ref.read(onboardingProvider);
+
       final isAuthenticated = authState.isAuthenticated;
       final isAuthPage = state.matchedLocation == '/auth';
       final isOnboardingPage = state.matchedLocation == '/onboarding';
