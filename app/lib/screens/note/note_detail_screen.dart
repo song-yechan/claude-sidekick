@@ -59,7 +59,10 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           TextButton(
             onPressed: () async {
               Navigator.pop(dialogContext);
-              final success = await deleteNote(ref, widget.noteId);
+              // 삭제 전에 bookId 저장 (삭제 후 note가 null이 되므로)
+              final note = ref.read(noteProvider(widget.noteId));
+              final bookId = note?.bookId;
+              final success = await deleteNote(ref, widget.noteId, bookId: bookId);
               if (success && mounted) {
                 context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(

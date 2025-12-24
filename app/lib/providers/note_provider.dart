@@ -258,14 +258,19 @@ Future<bool> updateNote(
 ///
 /// [ref] Riverpod WidgetRef
 /// [noteId] 삭제할 노트의 고유 ID
+/// [bookId] 노트가 속한 책의 고유 ID (책 상세 페이지 갱신용)
 ///
 /// 성공 시 true, 실패 시 false를 반환합니다.
-Future<bool> deleteNote(WidgetRef ref, String noteId) async {
+Future<bool> deleteNote(WidgetRef ref, String noteId, {String? bookId}) async {
   final noteService = ref.read(noteServiceProvider);
 
   try {
     await noteService.deleteNote(noteId);
     ref.invalidate(notesProvider);
+    // 책별 노트 목록도 갱신
+    if (bookId != null) {
+      ref.invalidate(notesByBookProvider(bookId));
+    }
     return true;
   } catch (e) {
     return false;
