@@ -504,7 +504,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          '카메라 버튼을 눌러 문장을 수집해보세요',
+                          '문장 수집 버튼을 눌러 문장을 수집해보세요',
                           style: TextStyle(
                             fontSize: 14,
                             color: context.colors.onSurfaceVariant,

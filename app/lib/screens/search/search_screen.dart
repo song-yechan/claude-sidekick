@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/category_provider.dart';
@@ -60,6 +61,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         _searchController.clear();
         _selectedCategoryIds.clear();
         setState(() {});
+        // 추가된 책의 상세 페이지로 이동
+        context.push('/books/${result.id}');
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
