@@ -71,13 +71,15 @@ class LibraryScreen extends ConsumerWidget {
                               color: context.colors.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.xl),
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              onPressed: () => context.go('/search'),
-                              icon: const Icon(Icons.search_rounded, size: 20),
-                              label: const Text('책 검색하기'),
+                          const SizedBox(height: AppSpacing.lg),
+                          ElevatedButton.icon(
+                            onPressed: () => context.go('/search'),
+                            icon: const Icon(Icons.search_rounded, size: 18),
+                            label: const Text('책 검색하기'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(0, 44),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],

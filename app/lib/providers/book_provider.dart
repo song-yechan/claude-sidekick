@@ -13,9 +13,21 @@ final booksProvider = FutureProvider<List<Book>>((ref) async {
   final authState = ref.watch(authProvider);
   final bookService = ref.watch(bookServiceProvider);
 
-  if (authState.user == null) return [];
+  print('📚 booksProvider - user: ${authState.user?.id}');
 
-  return bookService.getBooks(authState.user!.id);
+  if (authState.user == null) {
+    print('📚 booksProvider - user is null, returning empty list');
+    return [];
+  }
+
+  try {
+    final books = await bookService.getBooks(authState.user!.id);
+    print('📚 booksProvider - fetched ${books.length} books');
+    return books;
+  } catch (e) {
+    print('📚 booksProvider - error: $e');
+    rethrow;
+  }
 });
 
 /// 특정 책 프로바이더

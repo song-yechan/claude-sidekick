@@ -38,10 +38,12 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
     _pageController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
+      value: 1.0, // 초기값을 1.0으로 설정하여 애니메이션 완료 상태로 시작
     );
     _indicatorController = AnimationController(
       duration: const Duration(milliseconds: 250),
       vsync: this,
+      value: 1.0,
     );
     _indicatorAnimation = CurvedAnimation(
       parent: _indicatorController,
@@ -146,10 +148,10 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
 
   Widget _buildBottomNavBar(BuildContext context) {
     const items = [
-      _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home, label: '홈'),
-      _NavItem(icon: Icons.search_outlined, selectedIcon: Icons.search, label: '검색'),
-      _NavItem(icon: Icons.library_books_outlined, selectedIcon: Icons.library_books, label: '서재'),
-      _NavItem(icon: Icons.category_outlined, selectedIcon: Icons.category, label: '카테고리'),
+      _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home_rounded, label: '홈'),
+      _NavItem(icon: Icons.search_outlined, selectedIcon: Icons.search_rounded, label: '검색'),
+      _NavItem(icon: Icons.shelves, selectedIcon: Icons.shelves, label: '서재'),
+      _NavItem(icon: Icons.folder_outlined, selectedIcon: Icons.folder_rounded, label: '카테고리'),
     ];
 
     return Container(
@@ -164,7 +166,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 64,
+          height: 56,
           child: Stack(
             children: [
               // 애니메이션 인디케이터
@@ -177,14 +179,14 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   final currentPos = startPos + (endPos - startPos) * _indicatorAnimation.value;
 
                   return Positioned(
-                    left: currentPos + itemWidth * 0.15,
-                    top: 4,
+                    left: currentPos + itemWidth * 0.2,
+                    top: 8,
                     child: Container(
-                      width: itemWidth * 0.7,
-                      height: 32,
+                      width: itemWidth * 0.6,
+                      height: 40,
                       decoration: BoxDecoration(
                         color: context.colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
                   );
@@ -204,33 +206,19 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         splashColor: context.colors.primary.withValues(alpha: 0.1),
                         highlightColor: context.colors.primary.withValues(alpha: 0.05),
                         child: SizedBox(
-                          height: 64,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
-                                child: Icon(
-                                  isSelected ? item.selectedIcon : item.icon,
-                                  key: ValueKey(isSelected),
-                                  size: 24,
-                                  color: isSelected
-                                      ? context.colors.primary
-                                      : context.colors.onSurfaceVariant,
-                                ),
+                          height: 56,
+                          child: Center(
+                            child: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 200),
+                              child: Icon(
+                                isSelected ? item.selectedIcon : item.icon,
+                                key: ValueKey(isSelected),
+                                size: 26,
+                                color: isSelected
+                                    ? context.colors.primary
+                                    : context.colors.onSurfaceVariant,
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                item.label,
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                                  color: isSelected
-                                      ? context.colors.primary
-                                      : context.colors.onSurfaceVariant,
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
                       ),

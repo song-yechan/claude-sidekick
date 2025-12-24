@@ -28,8 +28,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       final isOnboardingPreview = state.matchedLocation.startsWith('/onboarding/preview');
       final isOnboardingCompleted = onboardingState.isCompleted;
 
-      // 로딩 중이면 리다이렉트 안함
-      if (authState.isLoading || onboardingState.isLoading) return null;
+      print('🔀 Router - location: ${state.matchedLocation}');
+      print('🔀 Router - isAuthenticated: $isAuthenticated, isOnboardingCompleted: $isOnboardingCompleted');
+      print('🔀 Router - authLoading: ${authState.isLoading}, onboardingLoading: ${onboardingState.isLoading}');
+
+      // 인증 로딩 중이면 리다이렉트 안함 (온보딩 로딩은 무시)
+      if (authState.isLoading) {
+        print('🔀 Router - auth loading, no redirect');
+        return null;
+      }
 
       // 온보딩 미리보기는 항상 허용
       if (isOnboardingPreview) return null;
@@ -49,7 +56,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       }
 
       // 인증됐고, 온보딩 안했고, 온보딩 페이지가 아니면 온보딩으로
-      if (isAuthenticated && !isOnboardingCompleted && !isOnboardingPage && !isOnboardingPreview) {
+      // (온보딩 로딩 중이면 일단 홈으로 보내고, 나중에 리다이렉트)
+      if (isAuthenticated && !onboardingState.isLoading && !isOnboardingCompleted && !isOnboardingPage && !isOnboardingPreview) {
         return '/onboarding';
       }
 

@@ -212,7 +212,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                               borderRadius: BorderRadius.circular(40),
                             ),
                             child: Icon(
-                              Icons.category_rounded,
+                              Icons.folder_outlined,
                               size: 40,
                               color: context.colors.outline,
                             ),
@@ -234,13 +234,15 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                               color: context.colors.onSurfaceVariant,
                             ),
                           ),
-                          const SizedBox(height: AppSpacing.xl),
-                          SizedBox(
-                            height: 48,
-                            child: ElevatedButton.icon(
-                              onPressed: _showAddDialog,
-                              icon: const Icon(Icons.add_rounded, size: 20),
-                              label: const Text('카테고리 추가'),
+                          const SizedBox(height: AppSpacing.lg),
+                          ElevatedButton.icon(
+                            onPressed: _showAddDialog,
+                            icon: const Icon(Icons.add_rounded, size: 18),
+                            label: const Text('카테고리 추가'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size(0, 44),
+                              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                             ),
                           ),
                         ],

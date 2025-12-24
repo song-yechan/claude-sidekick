@@ -90,10 +90,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
+      print('🔐 SignUp 시도: $email');
       final response = await _authService.signUp(
         email: email,
         password: password,
       );
+
+      print('🔐 SignUp 응답 - user: ${response.user?.id}, session: ${response.session?.accessToken != null}');
 
       if (response.user != null) {
         // 회원가입 완료 상태로 설정 (바로 홈으로 가지 않고 완료 화면 표시)
@@ -103,8 +106,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
           isLoading: false,
           signUpCompleted: true, // 완료 화면 표시를 위한 플래그
         );
+        print('🔐 SignUp 성공!');
         return true;
       } else {
+        print('🔐 SignUp 실패 - user가 null');
         state = state.copyWith(
           isLoading: false,
           errorMessage: '회원가입에 실패했습니다.',
@@ -112,6 +117,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } catch (e) {
+      print('🔐 SignUp 에러: $e');
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),
@@ -134,6 +140,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// 로그인
   Future<bool> signIn(String email, String password) async {
+    print('🔐 SignIn 시도: $email');
     state = state.copyWith(isLoading: true, errorMessage: null);
 
     try {
@@ -142,14 +149,21 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
       );
 
+      print('🔐 SignIn 응답 - user: ${response.user?.id}, session: ${response.session?.accessToken != null}');
+
       if (response.user != null) {
+        // 약간의 딜레이를 주어 Supabase 세션이 완전히 설정되도록 함
+        await Future.delayed(const Duration(milliseconds: 100));
+
         state = AuthState(
           user: response.user,
           session: response.session,
           isLoading: false,
         );
+        print('🔐 SignIn 성공! isAuthenticated: ${state.isAuthenticated}');
         return true;
       } else {
+        print('🔐 SignIn 실패 - user가 null');
         state = state.copyWith(
           isLoading: false,
           errorMessage: '로그인에 실패했습니다.',
@@ -157,6 +171,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return false;
       }
     } catch (e) {
+      print('🔐 SignIn 에러: $e');
       state = state.copyWith(
         isLoading: false,
         errorMessage: e.toString(),

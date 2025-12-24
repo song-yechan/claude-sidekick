@@ -76,49 +76,73 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 60),
+                  const SizedBox(height: 48),
 
-                  // 회원가입/로그인 구분 아이콘
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: _isSignUp
-                          ? context.colors.tertiaryContainer
-                          : context.colors.primaryContainer,
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Icon(
-                      _isSignUp ? Icons.person_add_rounded : Icons.login_rounded,
-                      size: 32,
-                      color: _isSignUp
-                          ? context.colors.tertiary
-                          : context.colors.primary,
+                  // 앱 로고 및 브랜드 (앱 아이콘과 동일한 디자인)
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            color: context.surfaceContainerLowest,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: context.colors.outline.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.menu_book_outlined,
+                            size: 36,
+                            color: context.colors.onSurface,
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.lg),
+                        Text(
+                          'BookScribe',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: context.colors.onSurface,
+                            letterSpacing: -0.5,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          '책 속 문장을 나만의 기록으로',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.lg),
+                  const SizedBox(height: AppSpacing.xxxl),
 
                   // 헤더
                   Text(
                     _isSignUp ? '회원가입' : '로그인',
                     style: TextStyle(
-                      fontSize: 28,
+                      fontSize: 22,
                       fontWeight: FontWeight.w700,
                       color: context.colors.onSurface,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.sm),
+                  const SizedBox(height: 6),
                   Text(
                     _isSignUp
-                        ? '북스크라이브에 오신 것을 환영합니다!\n책 속 문장을 수집하고 기록해보세요'
+                        ? '간단한 가입으로 시작하세요'
                         : '다시 만나서 반가워요',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 15,
                       color: context.colors.onSurfaceVariant,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: AppSpacing.xxl),
+                  const SizedBox(height: AppSpacing.xl),
 
                   // 이메일 입력
                   Text(
@@ -323,20 +347,34 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                 width: 100,
                 height: 100,
                 decoration: BoxDecoration(
-                  color: context.colors.primaryContainer,
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      context.colors.primary,
+                      context.colors.primary.withValues(alpha: 0.8),
+                    ],
+                  ),
                   shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: context.colors.primary.withValues(alpha: 0.3),
+                      blurRadius: 24,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
                 ),
-                child: Icon(
-                  Icons.check_circle_rounded,
-                  size: 60,
-                  color: context.colors.primary,
+                child: const Icon(
+                  Icons.check_rounded,
+                  size: 52,
+                  color: Colors.white,
                 ),
               ),
               const SizedBox(height: AppSpacing.xxl),
 
               // 완료 메시지
               Text(
-                '회원가입 완료!',
+                '환영합니다!',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -345,7 +383,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                '북스크라이브에 오신 것을 환영합니다.\n이제 책 속 문장을 수집하고 기록해보세요!',
+                '이제 BookScribe와 함께\n책 속 문장을 수집해보세요',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -364,32 +402,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ref.read(authProvider.notifier).continueToApp();
                   },
                   child: const Text(
-                    '바로 시작하기',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              // 로그인하러 가기 버튼
-              SizedBox(
-                width: double.infinity,
-                height: 52,
-                child: OutlinedButton(
-                  onPressed: () {
-                    ref.read(authProvider.notifier).goToLogin();
-                    setState(() {
-                      _isSignUp = false;
-                      _emailController.clear();
-                      _passwordController.clear();
-                      _confirmPasswordController.clear();
-                    });
-                  },
-                  child: const Text(
-                    '로그인하러 가기',
+                    '시작하기',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,

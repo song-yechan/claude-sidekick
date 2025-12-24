@@ -25,10 +25,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    print('🏠 HomeScreen build called');
     final authState = ref.watch(authProvider);
     final booksAsync = ref.watch(booksProvider);
     final notesAsync = ref.watch(notesProvider);
     final noteCountsAsync = ref.watch(noteCountsByDateProvider(_selectedYear));
+    print('🏠 HomeScreen - booksAsync: $booksAsync');
+    print('🏠 HomeScreen - notesAsync: $notesAsync');
+    print('🏠 HomeScreen - noteCountsAsync: $noteCountsAsync');
 
     return Scaffold(
       body: SafeArea(
@@ -95,13 +99,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const SizedBox(width: AppSpacing.md),
                     Expanded(
                       child: _StatCard(
-                        icon: Icons.format_quote_rounded,
+                        icon: Icons.edit_note_rounded,
                         label: '수집한 문장',
                         value: notesAsync.whenOrNull(
                               data: (notes) => notes.length.toString(),
                             ) ??
                             '-',
-                        color: context.colors.tertiary,
+                        color: context.colors.onTertiaryContainer,
                         bgColor: context.colors.tertiaryContainer,
                       ),
                     ),
@@ -118,6 +122,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   decoration: BoxDecoration(
                     color: context.surfaceContainerLowest,
                     borderRadius: BorderRadius.circular(AppShapes.large),
+                    border: Border.all(
+                      color: context.colors.outlineVariant.withValues(alpha: 0.5),
+                      width: 1,
+                    ),
                   ),
                   child: noteCountsAsync.when(
                     data: (counts) => ActivityCalendar(
@@ -175,6 +183,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         decoration: BoxDecoration(
                           color: context.surfaceContainerLowest,
                           borderRadius: BorderRadius.circular(AppShapes.large),
+                          border: Border.all(
+                            color: context.colors.outlineVariant.withValues(alpha: 0.5),
+                            width: 1,
+                          ),
                         ),
                         child: Center(
                           child: Column(
@@ -223,6 +235,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       decoration: BoxDecoration(
                         color: context.surfaceContainerLowest,
                         borderRadius: BorderRadius.circular(AppShapes.large),
+                        border: Border.all(
+                          color: context.colors.outlineVariant.withValues(alpha: 0.5),
+                          width: 1,
+                        ),
                       ),
                       child: Column(
                         children: recentNotes.asMap().entries.map((entry) {
@@ -349,6 +365,10 @@ class _StatCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.surfaceContainerLowest,
         borderRadius: BorderRadius.circular(AppShapes.large),
+        border: Border.all(
+          color: context.colors.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

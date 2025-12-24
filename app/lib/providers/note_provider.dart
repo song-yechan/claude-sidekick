@@ -16,9 +16,21 @@ final notesProvider = FutureProvider<List<Note>>((ref) async {
   final authState = ref.watch(authProvider);
   final noteService = ref.watch(noteServiceProvider);
 
-  if (authState.user == null) return [];
+  print('📝 notesProvider - user: ${authState.user?.id}');
 
-  return noteService.getNotes(authState.user!.id);
+  if (authState.user == null) {
+    print('📝 notesProvider - user is null, returning empty list');
+    return [];
+  }
+
+  try {
+    final notes = await noteService.getNotes(authState.user!.id);
+    print('📝 notesProvider - fetched ${notes.length} notes');
+    return notes;
+  } catch (e) {
+    print('📝 notesProvider - error: $e');
+    rethrow;
+  }
 });
 
 /// 특정 책의 노트 목록 프로바이더
@@ -42,9 +54,21 @@ final noteCountsByDateProvider =
   final authState = ref.watch(authProvider);
   final noteService = ref.watch(noteServiceProvider);
 
-  if (authState.user == null) return {};
+  print('📅 noteCountsByDateProvider - user: ${authState.user?.id}, year: $year');
 
-  return noteService.getNoteCountsByDate(authState.user!.id, year);
+  if (authState.user == null) {
+    print('📅 noteCountsByDateProvider - user is null');
+    return {};
+  }
+
+  try {
+    final counts = await noteService.getNoteCountsByDate(authState.user!.id, year);
+    print('📅 noteCountsByDateProvider - fetched ${counts.length} entries');
+    return counts;
+  } catch (e) {
+    print('📅 noteCountsByDateProvider - error: $e');
+    rethrow;
+  }
 });
 
 /// OCR 처리 상태

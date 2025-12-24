@@ -1,30 +1,33 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+  console.log('📚 book-search function called');
+  console.log('📚 Method:', req.method);
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Check for authentication
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+    // Check for apikey (Supabase anon key) - 기본적인 접근 제어
+    const apiKey = req.headers.get('apikey');
+    if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: '로그인이 필요합니다.', items: [] }), 
-        { 
+        JSON.stringify({ error: 'API key required', items: [] }),
+        {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 401 
+          status: 401
         }
       );
     }
 
     const { query } = await req.json();
+    console.log('📚 Search query:', query);
     
     if (!query || !query.trim()) {
       return new Response(
@@ -42,6 +45,7 @@ serve(async (req) => {
     }
 
     const ttbKey = Deno.env.get('ALADIN_TTB_KEY');
+    console.log('📚 ALADIN_TTB_KEY present:', !!ttbKey);
     if (!ttbKey) {
       console.error('ALADIN_TTB_KEY is not set');
       throw new Error('API key is not configured');

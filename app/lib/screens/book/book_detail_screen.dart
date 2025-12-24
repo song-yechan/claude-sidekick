@@ -216,8 +216,8 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
           if (ocrState.error != null) {
             return AlertDialog(
-              title: const Text('오류'),
-              content: Text(ocrState.error!),
+              title: const Text('텍스트 추출 실패'),
+              content: Text(getUserFriendlyErrorMessage(ocrState.error!)),
               actions: [
                 TextButton(
                   onPressed: () {

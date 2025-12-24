@@ -13,8 +13,11 @@ Future<void> main() async {
   await dotenv.load(fileName: '.env');
 
   // Initialize Supabase
+  final supabaseUrl = dotenv.env['SUPABASE_URL']!;
+  print('🔌 Supabase URL: $supabaseUrl');
+
   await Supabase.initialize(
-    url: dotenv.env['SUPABASE_URL']!,
+    url: supabaseUrl,
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 

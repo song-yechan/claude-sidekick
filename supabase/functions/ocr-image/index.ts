@@ -9,13 +9,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
-      throw new Error('LOVABLE_API_KEY is not configured');
+    const GOOGLE_VISION_API_KEY = Deno.env.get('GOOGLE_VISION_API_KEY');
+    if (!GOOGLE_VISION_API_KEY) {
+      throw new Error('GOOGLE_VISION_API_KEY is not configured');
     }
 
     const { imageBase64 } = await req.json();
-    
+
     if (!imageBase64) {
       return new Response(
         JSON.stringify({ error: 'imageBase64 is required' }),
@@ -23,70 +23,72 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Check base64 size (2MB limit for server-side safety)
-    const MAX_SIZE = 2 * 1024 * 1024; // 2MB
-    if (imageBase64.length > MAX_SIZE) {
-      return new Response(
-        JSON.stringify({ error: '이미지 크기가 너무 큽니다. 다시 선택해주세요.' }),
-        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
+    // Extract base64 content (remove data URL prefix if present)
+    const base64Content = imageBase64.includes(',')
+      ? imageBase64.split(',')[1]
+      : imageBase64;
 
-    console.log('Processing OCR request with Lovable AI...');
+    console.log('Processing OCR request with Google Cloud Vision...');
 
-    // Extract base64 content from data URL
-    const base64Content = imageBase64.split(',')[1] || imageBase64;
-
-    // Call Lovable AI Gateway for OCR
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [{
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: '이미지에서 모든 텍스트를 추출해주세요. 책에서 촬영된 이미지이므로, 줄바꿈으로 인해 끊어진 문장들을 자연스럽게 연결해서 하나의 흐르는 문단으로 만들어주세요. 단락 구분이 명확한 경우에만 줄바꿈을 유지하고, 단순히 책 페이지의 줄바꿈은 제거해주세요. 텍스트만 반환하고 다른 설명은 포함하지 마세요.'
+    // Call Google Cloud Vision API
+    const response = await fetch(
+      `https://vision.googleapis.com/v1/images:annotate?key=${GOOGLE_VISION_API_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          requests: [{
+            image: {
+              content: base64Content
             },
-            {
-              type: 'image_url',
-              image_url: {
-                url: imageBase64.startsWith('data:') ? imageBase64 : `data:image/jpeg;base64,${base64Content}`
-              }
-            }
-          ]
-        }]
-      }),
-    });
+            features: [{
+              type: 'TEXT_DETECTION',
+              maxResults: 1
+            }]
+          }]
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Lovable AI error:', response.status, errorText);
-      
+      console.error('Google Vision API error:', response.status, errorText);
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Rate limit exceeded. Please try again later.' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
-      if (response.status === 402) {
+
+      if (response.status === 403) {
         return new Response(
-          JSON.stringify({ error: 'Payment required. Please add credits to your workspace.' }),
-          { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          JSON.stringify({ error: 'API access denied. Please check your API key.' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       throw new Error('Failed to process image');
     }
 
     const data = await response.json();
-    const extractedText = data.choices?.[0]?.message?.content || '';
+
+    // Extract text from response
+    const textAnnotations = data.responses?.[0]?.textAnnotations;
+    let extractedText = '';
+
+    if (textAnnotations && textAnnotations.length > 0) {
+      // First annotation contains the full text
+      extractedText = textAnnotations[0].description || '';
+
+      // Clean up: normalize line breaks for book text
+      extractedText = extractedText
+        .replace(/\r\n/g, '\n')
+        .replace(/\n{3,}/g, '\n\n')
+        .trim();
+    }
 
     console.log('OCR completed successfully');
 
