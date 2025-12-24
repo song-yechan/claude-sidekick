@@ -1,3 +1,14 @@
+/// 홈 화면
+///
+/// 앱의 메인 대시보드 화면으로, 사용자의 활동 요약을 보여줍니다.
+///
+/// 주요 섹션:
+/// - 환영 메시지 및 설정 버튼
+/// - 통계 카드 (등록한 책 수, 수집한 문장 수)
+/// - 활동 캘린더 (GitHub 스타일 잔디)
+/// - 최근 수집한 문장 목록
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +18,10 @@ import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
 import '../../widgets/common/activity_calendar.dart';
 
+/// 홈 화면 위젯
+///
+/// ConsumerStatefulWidget을 사용하여 Riverpod 상태를 구독하고,
+/// 연도 선택 상태를 로컬로 관리합니다.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 

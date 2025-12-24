@@ -1,6 +1,24 @@
+/// 앱 테마 및 스타일 정의
+///
+/// Material Design 3를 기반으로 한 앱의 테마 시스템을 정의합니다.
+///
+/// 포함된 내용:
+/// - AppColors: 라이트/다크 모드 색상 팔레트
+/// - AppShapes: 모서리 둥글기 스케일
+/// - AppSpacing: 간격 시스템 (8pt grid)
+/// - AppTheme: 라이트/다크 ThemeData 생성
+/// - ThemeExtension: BuildContext에서 테마에 쉽게 접근하기 위한 확장
+///
+/// 참고 문서:
+/// - Material Design 3 색상: https://m3.material.io/styles/color/roles
+/// - Material Design 3 도형: https://m3.material.io/styles/shape/shape-scale-tokens
+library;
+
 import 'package:flutter/material.dart';
 
 /// BuildContext 확장 - 테마 색상에 쉽게 접근
+///
+/// 사용 예: context.colors.primary, context.isDark
 extension ThemeExtension on BuildContext {
   ColorScheme get colors => Theme.of(this).colorScheme;
   TextTheme get textTheme => Theme.of(this).textTheme;

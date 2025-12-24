@@ -1,3 +1,14 @@
+/// 카테고리 화면
+///
+/// 사용자가 만든 카테고리 목록을 관리하는 화면입니다.
+///
+/// 주요 기능:
+/// - 카테고리 목록 표시 (각 카테고리의 책 수 포함)
+/// - 새 카테고리 추가 (하단 시트 사용)
+/// - 카테고리 삭제
+/// - 카테고리 탭 시 해당 카테고리의 책 목록으로 이동
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -7,6 +18,9 @@ import '../../providers/category_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/category/category_chip.dart';
 
+/// 카테고리 화면 위젯
+///
+/// ConsumerStatefulWidget을 사용하여 상태와 Provider를 함께 관리합니다.
 class CategoriesScreen extends ConsumerStatefulWidget {
   const CategoriesScreen({super.key});
 

@@ -1,3 +1,13 @@
+/// 서재 화면
+///
+/// 사용자가 등록한 모든 책을 그리드 형식으로 보여주는 화면입니다.
+///
+/// 주요 기능:
+/// - 책 목록 그리드 표시 (2열)
+/// - 책 탭 시 상세 화면으로 이동
+/// - 빈 상태 시 검색 화면 안내
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +16,9 @@ import '../../core/error_utils.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
 
+/// 서재 화면 위젯
+///
+/// ConsumerWidget을 사용하여 booksProvider를 구독합니다.
 class LibraryScreen extends ConsumerWidget {
   const LibraryScreen({super.key});
 

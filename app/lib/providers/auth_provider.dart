@@ -1,13 +1,27 @@
+/// 인증 상태 관리 Provider
+///
+/// 이 파일은 앱의 인증(로그인/회원가입/로그아웃) 상태를 관리합니다.
+/// Supabase Auth를 사용하여 사용자 인증을 처리하고,
+/// Riverpod StateNotifier 패턴으로 상태를 관리합니다.
+///
+/// 주요 기능:
+/// - 이메일/비밀번호 로그인 및 회원가입
+/// - 세션 상태 실시간 동기화
+/// - 회원가입 완료 화면 플로우 관리
+library;
+
 import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../services/auth_service.dart';
 import '../core/supabase.dart';
 
-/// 인증 서비스 프로바이더
+/// 인증 서비스 인스턴스를 제공하는 Provider
 final authServiceProvider = Provider<AuthService>((ref) => AuthService());
 
-/// 인증 상태
+/// 인증 상태를 나타내는 불변 클래스
+///
+/// 사용자의 인증 상태, 세션 정보, 로딩 상태 등을 포함합니다.
 class AuthState {
   final User? user;
   final Session? session;
@@ -42,7 +56,10 @@ class AuthState {
   }
 }
 
-/// 인증 상태 관리 Notifier
+/// 인증 상태를 관리하는 StateNotifier
+///
+/// Supabase의 인증 이벤트를 구독하여 실시간으로 상태를 동기화하고,
+/// 로그인/회원가입/로그아웃 작업을 수행합니다.
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthService _authService;
   StreamSubscription? _authSubscription;
@@ -51,8 +68,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
     _init();
   }
 
+  /// 초기화 메서드
+  ///
+  /// 앱 시작 시 현재 세션을 확인하고,
+  /// Supabase 인증 상태 변경 이벤트를 구독합니다.
   void _init() {
-    // 현재 세션 확인
+    // 로컬에 저장된 세션이 있는지 확인
     final session = supabase.auth.currentSession;
     final user = supabase.auth.currentUser;
 
@@ -85,7 +106,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     });
   }
 
-  /// 회원가입
+  /// 이메일/비밀번호로 회원가입을 수행합니다.
+  ///
+  /// [email] 사용자 이메일 주소
+  /// [password] 비밀번호 (최소 6자 이상)
+  ///
+  /// 성공 시 true를 반환하고, [signUpCompleted] 플래그를 설정하여
+  /// 회원가입 완료 화면을 표시할 수 있도록 합니다.
   Future<bool> signUp(String email, String password) async {
     state = state.copyWith(isLoading: true, errorMessage: null);
 
@@ -138,7 +165,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(signUpCompleted: false);
   }
 
-  /// 로그인
+  /// 이메일/비밀번호로 로그인을 수행합니다.
+  ///
+  /// [email] 사용자 이메일 주소
+  /// [password] 비밀번호
+  ///
+  /// 성공 시 true를 반환합니다. 로그인 후 약간의 딜레이를 주어
+  /// Supabase 세션이 완전히 설정되도록 합니다.
   Future<bool> signIn(String email, String password) async {
     print('🔐 SignIn 시도: $email');
     state = state.copyWith(isLoading: true, errorMessage: null);

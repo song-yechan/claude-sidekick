@@ -1,3 +1,15 @@
+/// 메인 레이아웃 위젯
+///
+/// 앱의 메인 화면들(홈, 검색, 서재, 카테고리)을 담는 컨테이너 위젯입니다.
+/// 하단 네비게이션 바와 화면 전환 애니메이션을 관리합니다.
+///
+/// 주요 기능:
+/// - 4개의 메인 탭 화면 관리
+/// - 슬라이드 애니메이션으로 화면 전환
+/// - 커스텀 하단 네비게이션 바 (Material Design 3 스타일)
+/// - GoRouter와 네비게이션 상태 동기화
+library;
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
@@ -6,6 +18,9 @@ import '../../screens/search/search_screen.dart';
 import '../../screens/library/library_screen.dart';
 import '../../screens/categories/categories_screen.dart';
 
+/// 메인 레이아웃 위젯
+///
+/// StatefulWidget을 사용하여 애니메이션 컨트롤러와 현재 탭 상태를 관리합니다.
 class MainLayout extends StatefulWidget {
   final Widget child;
 
@@ -16,15 +31,28 @@ class MainLayout extends StatefulWidget {
 }
 
 class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
+  /// 현재 선택된 탭 인덱스
   int _currentIndex = 0;
+
+  /// 이전에 선택되었던 탭 인덱스 (애니메이션용)
   int _previousIndex = 0;
+
+  /// 페이지 전환 애니메이션 컨트롤러
   late AnimationController _pageController;
+
+  /// 하단바 인디케이터 애니메이션 컨트롤러
   late AnimationController _indicatorController;
+
+  /// 페이지 슬라이드 애니메이션
   late Animation<Offset> _slideAnimation;
+
+  /// 인디케이터 이동 애니메이션
   late Animation<double> _indicatorAnimation;
 
+  /// 각 탭에 해당하는 라우트 경로
   static const _routes = ['/', '/search', '/library', '/categories'];
 
+  /// 각 탭의 화면 위젯
   final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
@@ -35,10 +63,13 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
+    // 페이지 전환 애니메이션 설정
+    // 초기값을 1.0으로 설정하여 애니메이션 완료 상태로 시작
+    // (0.0으로 시작하면 화면이 보이지 않는 문제 발생)
     _pageController = AnimationController(
       duration: const Duration(milliseconds: 300),
       vsync: this,
-      value: 1.0, // 초기값을 1.0으로 설정하여 애니메이션 완료 상태로 시작
+      value: 1.0,
     );
     _indicatorController = AnimationController(
       duration: const Duration(milliseconds: 250),
