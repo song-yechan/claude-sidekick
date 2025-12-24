@@ -703,25 +703,31 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
           ],
         ),
       ),
+      actionsOverflowButtonSpacing: 0,
+      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
       actions: [
-        Expanded(
-          child: OutlinedButton(
-            onPressed: _isSaving ? null : () => Navigator.pop(context),
-            child: const Text('취소'),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _isSaving ? null : _save,
-            child: _isSaving
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('저장'),
-          ),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: _isSaving ? null : () => Navigator.pop(context),
+                child: const Text('취소'),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: ElevatedButton(
+                onPressed: _isSaving ? null : _save,
+                child: _isSaving
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('저장'),
+              ),
+            ),
+          ],
         ),
       ],
     );
