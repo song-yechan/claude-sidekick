@@ -10,8 +10,16 @@ import 'dart:convert';
 import 'dart:typed_data';
 import '../core/supabase.dart';
 
+/// OcrService 인터페이스
+///
+/// 테스트에서 Mock 구현체를 사용할 수 있도록 인터페이스를 정의합니다.
+abstract class IOcrService {
+  Future<String> extractText(Uint8List imageBytes);
+  Future<OcrResult> processImage(Uint8List imageBytes);
+}
+
 /// OCR 기능을 제공하는 서비스 클래스
-class OcrService {
+class OcrService implements IOcrService {
   /// 이미지에서 텍스트를 추출합니다 (OCR).
   ///
   /// [imageBytes] 처리할 이미지의 바이트 데이터

@@ -15,7 +15,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../services/note_service.dart';
-import '../services/ocr_service.dart';
+import '../services/ocr_service.dart' show IOcrService, OcrService, OcrResult;
 import 'auth_provider.dart';
 
 /// NoteService 인스턴스를 제공하는 Provider
@@ -23,7 +23,7 @@ final noteServiceProvider = Provider<NoteService>((ref) => NoteService());
 
 /// OcrService 인스턴스를 제공하는 Provider
 /// Google Vision API를 사용한 OCR 기능을 담당합니다.
-final ocrServiceProvider = Provider<OcrService>((ref) => OcrService());
+final ocrServiceProvider = Provider<IOcrService>((ref) => OcrService());
 
 /// 현재 로그인한 사용자의 모든 노트 목록을 제공하는 Provider
 ///
@@ -135,7 +135,7 @@ class OcrState {
 ///
 /// 이미지를 받아 Google Vision API를 통해 텍스트를 추출합니다.
 class OcrNotifier extends StateNotifier<OcrState> {
-  final OcrService _ocrService;
+  final IOcrService _ocrService;
 
   OcrNotifier(this._ocrService) : super(const OcrState());
 
