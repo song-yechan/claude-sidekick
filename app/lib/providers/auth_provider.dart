@@ -17,7 +17,7 @@ import '../services/auth_service.dart';
 import '../core/supabase.dart';
 
 /// 인증 서비스 인스턴스를 제공하는 Provider
-final authServiceProvider = Provider<AuthService>((ref) => AuthService());
+final authServiceProvider = Provider<IAuthService>((ref) => AuthService());
 
 /// 인증 상태를 나타내는 불변 클래스
 ///
@@ -61,7 +61,7 @@ class AuthState {
 /// Supabase의 인증 이벤트를 구독하여 실시간으로 상태를 동기화하고,
 /// 로그인/회원가입/로그아웃 작업을 수행합니다.
 class AuthNotifier extends StateNotifier<AuthState> {
-  final AuthService _authService;
+  final IAuthService _authService;
   StreamSubscription? _authSubscription;
 
   AuthNotifier(this._authService) : super(const AuthState(isLoading: true)) {

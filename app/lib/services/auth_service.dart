@@ -9,10 +9,26 @@ library;
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../core/supabase.dart';
 
+/// AuthService 인터페이스
+///
+/// 테스트에서 Mock 구현체를 사용할 수 있도록 인터페이스를 정의합니다.
+abstract class IAuthService {
+  Future<AuthResponse> signUp({
+    required String email,
+    required String password,
+  });
+  Future<AuthResponse> signIn({
+    required String email,
+    required String password,
+  });
+  Future<void> signOut();
+  Future<Session?> getSession();
+}
+
 /// Supabase 인증 기능을 래핑하는 서비스 클래스
 ///
 /// 인증 관련 Supabase API 호출을 캡슐화합니다.
-class AuthService {
+class AuthService implements IAuthService {
   /// 이메일/비밀번호로 회원가입을 수행합니다.
   ///
   /// [email] 사용자 이메일 주소
