@@ -219,3 +219,29 @@ Future<bool> deleteBook(WidgetRef ref, String bookId) async {
     return false;
   }
 }
+
+/// 책의 카테고리를 업데이트합니다.
+///
+/// [ref] Riverpod WidgetRef
+/// [bookId] 업데이트할 책의 고유 ID
+/// [categoryIds] 새로운 카테고리 ID 목록
+///
+/// 성공 시 true, 실패 시 false를 반환합니다.
+Future<bool> updateBookCategories(
+  WidgetRef ref,
+  String bookId,
+  List<String> categoryIds,
+) async {
+  final bookService = ref.read(bookServiceProvider);
+
+  try {
+    await bookService.updateBook(
+      bookId: bookId,
+      categoryIds: categoryIds,
+    );
+    ref.invalidate(booksProvider);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}

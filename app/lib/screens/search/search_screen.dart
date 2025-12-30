@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../core/constants.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/book/book_search_card.dart';
@@ -199,48 +200,75 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: 20),
               // 카테고리 선택
-              Text(
-                '카테고리 선택 (선택사항)',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: context.colors.onSurface,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '카테고리 선택 (선택사항)',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: context.colors.onSurface,
+                    ),
+                  ),
+                  Text(
+                    '${_selectedCategoryIds.length}/$maxCategoriesPerBook',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: _selectedCategoryIds.length >= maxCategoriesPerBook
+                          ? context.colors.primary
+                          : context.colors.onSurfaceVariant,
+                      fontWeight: _selectedCategoryIds.length >= maxCategoriesPerBook
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: AppSpacing.md),
               categoriesAsync.when(
-                data: (categories) => categories.isEmpty
-                    ? Text(
-                        '카테고리가 없습니다',
-                        style: TextStyle(color: context.colors.onSurfaceVariant),
-                      )
-                    : Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: categories.map((cat) {
-                          final isSelected =
-                              _selectedCategoryIds.contains(cat.id);
-                          return CategoryChip(
-                            category: cat,
-                            isSelected: isSelected,
-                            onTap: () {
-                              setModalState(() {
-                                if (isSelected) {
-                                  _selectedCategoryIds.remove(cat.id);
-                                } else {
-                                  _selectedCategoryIds.add(cat.id);
-                                }
-                              });
-                              setState(() {});
-                            },
-                          );
-                        }).toList(),
-                      ),
+                data: (categories) {
+                  if (categories.isEmpty) {
+                    return Text(
+                      '카테고리가 없습니다',
+                      style: TextStyle(color: context.colors.onSurfaceVariant),
+                    );
+                  }
+                  final isMaxReached = _selectedCategoryIds.length >= maxCategoriesPerBook;
+                  return Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: categories.map((cat) {
+                      final isSelected =
+                          _selectedCategoryIds.contains(cat.id);
+                      final isDisabled = !isSelected && isMaxReached;
+                      return Opacity(
+                        opacity: isDisabled ? 0.4 : 1.0,
+                        child: CategoryChip(
+                          category: cat,
+                          isSelected: isSelected,
+                          onTap: isDisabled
+                              ? null
+                              : () {
+                                  setModalState(() {
+                                    if (isSelected) {
+                                      _selectedCategoryIds.remove(cat.id);
+                                    } else {
+                                      _selectedCategoryIds.add(cat.id);
+                                    }
+                                  });
+                                  setState(() {});
+                                },
+                        ),
+                      );
+                    }).toList(),
+                  );
+                },
                 loading: () => CircularProgressIndicator(
                   color: context.colors.primary,
                   strokeWidth: 2,
                 ),
-                error: (_, __) => Text(
+                error: (e, s) => Text(
                   '카테고리 로딩 실패',
                   style: TextStyle(color: context.colors.error),
                 ),

@@ -147,7 +147,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('🔐 SignUp 에러: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: getKoreanAuthErrorMessage(e),
       );
       return false;
     }
@@ -207,7 +207,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('🔐 SignIn 에러: $e');
       state = state.copyWith(
         isLoading: false,
-        errorMessage: e.toString(),
+        errorMessage: getKoreanAuthErrorMessage(e),
       );
       return false;
     }
@@ -231,3 +231,42 @@ final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authService = ref.watch(authServiceProvider);
   return AuthNotifier(authService);
 });
+
+/// Supabase 에러 메시지를 사용자 친화적인 한국어로 변환합니다.
+///
+/// 주요 에러 유형:
+/// - invalid login credentials: 이메일 또는 비밀번호가 올바르지 않습니다
+/// - user already registered: 이미 가입된 이메일입니다
+/// - email not confirmed: 이메일 인증이 필요합니다
+/// - invalid email: 올바른 이메일 형식이 아닙니다
+/// - password should be at least: 비밀번호는 6자 이상이어야 합니다
+/// - network/connection: 네트워크 연결을 확인해주세요
+/// - too many requests/rate limit: 잠시 후 다시 시도해주세요
+String getKoreanAuthErrorMessage(dynamic error) {
+  final message = error.toString().toLowerCase();
+
+  if (message.contains('invalid login credentials')) {
+    return '이메일 또는 비밀번호가 올바르지 않습니다.';
+  }
+  if (message.contains('user already registered') ||
+      message.contains('user already exists')) {
+    return '이미 가입된 이메일입니다.';
+  }
+  if (message.contains('email not confirmed')) {
+    return '이메일 인증이 필요합니다.';
+  }
+  if (message.contains('invalid email')) {
+    return '올바른 이메일 형식이 아닙니다.';
+  }
+  if (message.contains('password should be at least')) {
+    return '비밀번호는 6자 이상이어야 합니다.';
+  }
+  if (message.contains('network') || message.contains('connection')) {
+    return '네트워크 연결을 확인해주세요.';
+  }
+  if (message.contains('too many requests') || message.contains('rate limit')) {
+    return '잠시 후 다시 시도해주세요.';
+  }
+
+  return '오류가 발생했습니다. 다시 시도해주세요.';
+}

@@ -2,6 +2,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/core/constants.dart';
 
 void main() {
+  group('maxCategoriesPerBook', () {
+    test('최대 카테고리 개수는 4개', () {
+      expect(maxCategoriesPerBook, 4);
+    });
+
+    test('최대 카테고리 개수는 양수', () {
+      expect(maxCategoriesPerBook, greaterThan(0));
+    });
+
+    test('최대 카테고리 개수는 합리적인 범위', () {
+      // 너무 적거나 너무 많으면 UX에 문제가 생김
+      expect(maxCategoriesPerBook, greaterThanOrEqualTo(1));
+      expect(maxCategoriesPerBook, lessThanOrEqualTo(10));
+    });
+  });
+
   group('categoryColors', () {
     test('contains 9 colors', () {
       expect(categoryColors.length, 9);

@@ -9,9 +9,13 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme.dart';
 import '../../core/error_utils.dart';
+import '../../core/constants.dart';
+import '../../models/book.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
+import '../../providers/category_provider.dart';
 import '../../widgets/note/note_card.dart';
+import '../../widgets/category/category_chip.dart';
 
 class BookDetailScreen extends ConsumerStatefulWidget {
   final String bookId;
@@ -291,6 +295,231 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     );
   }
 
+  void _showCategoryEditSheet() {
+    final book = ref.read(bookProvider(widget.bookId));
+    if (book == null) return;
+
+    final selectedIds = Set<String>.from(book.categoryIds);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: context.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
+      ),
+      builder: (sheetContext) => StatefulBuilder(
+        builder: (sheetContext, setSheetState) {
+          final categoriesAsync = ref.watch(categoriesProvider);
+          final isMaxReached = selectedIds.length >= maxCategoriesPerBook;
+
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 핸들 바
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: context.colors.outlineVariant,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        '카테고리 수정',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: context.colors.onSurface,
+                        ),
+                      ),
+                      Text(
+                        '${selectedIds.length}/$maxCategoriesPerBook',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isMaxReached
+                              ? context.colors.primary
+                              : context.colors.onSurfaceVariant,
+                          fontWeight:
+                              isMaxReached ? FontWeight.w600 : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  categoriesAsync.when(
+                    data: (categories) {
+                      if (categories.isEmpty) {
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: Text(
+                              '카테고리가 없습니다.\n카테고리 탭에서 먼저 추가해주세요.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: context.colors.onSurfaceVariant,
+                              ),
+                            ),
+                          ),
+                        );
+                      }
+                      return Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: categories.map((cat) {
+                          final isSelected = selectedIds.contains(cat.id);
+                          final isDisabled = !isSelected && isMaxReached;
+                          return Opacity(
+                            opacity: isDisabled ? 0.4 : 1.0,
+                            child: CategoryChip(
+                              category: cat,
+                              isSelected: isSelected,
+                              onTap: isDisabled
+                                  ? null
+                                  : () {
+                                      setSheetState(() {
+                                        if (isSelected) {
+                                          selectedIds.remove(cat.id);
+                                        } else {
+                                          selectedIds.add(cat.id);
+                                        }
+                                      });
+                                    },
+                            ),
+                          );
+                        }).toList(),
+                      );
+                    },
+                    loading: () => const Center(
+                      child: Padding(
+                        padding: EdgeInsets.all(20),
+                        child: CircularProgressIndicator(),
+                      ),
+                    ),
+                    error: (e, s) => const Text('카테고리를 불러올 수 없습니다'),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: selectedIds.isEmpty
+                          ? null
+                          : () async {
+                              Navigator.pop(sheetContext);
+                              final success = await updateBookCategories(
+                                ref,
+                                widget.bookId,
+                                selectedIds.toList(),
+                              );
+                              if (success && mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: const Text('카테고리가 수정되었습니다'),
+                                    behavior: SnackBarBehavior.floating,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius:
+                                          BorderRadius.circular(AppShapes.small),
+                                    ),
+                                  ),
+                                );
+                              }
+                            },
+                      child: const Text('저장'),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildCategorySection(Book book) {
+    final categoriesAsync = ref.watch(categoriesProvider);
+
+    return Row(
+      children: [
+        Expanded(
+          child: categoriesAsync.when(
+            data: (allCategories) {
+              final bookCategories = allCategories
+                  .where((c) => book.categoryIds.contains(c.id))
+                  .toList();
+
+              if (bookCategories.isEmpty) {
+                return GestureDetector(
+                  onTap: _showCategoryEditSheet,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: context.surfaceContainerHigh,
+                      borderRadius: BorderRadius.circular(AppShapes.full),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.add,
+                          size: 14,
+                          color: context.colors.onSurfaceVariant,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '카테고리',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              }
+
+              return Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: bookCategories
+                    .map((cat) => CategoryChip(category: cat))
+                    .toList(),
+              );
+            },
+            loading: () => const SizedBox.shrink(),
+            error: (e, s) => const SizedBox.shrink(),
+          ),
+        ),
+        // 카테고리가 있을 때만 수정 버튼 표시
+        if (book.categoryIds.isNotEmpty)
+          IconButton(
+            onPressed: _showCategoryEditSheet,
+            icon: Icon(
+              Icons.edit_outlined,
+              size: 20,
+              color: context.colors.onSurfaceVariant,
+            ),
+            tooltip: '카테고리 수정',
+          ),
+      ],
+    );
+  }
+
   void _showDeleteDialog() {
     final book = ref.read(bookProvider(widget.bookId));
     if (book == null) return;
@@ -448,6 +677,11 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                       ),
                     ),
                   ],
+                  const SizedBox(height: AppSpacing.lg),
+
+                  // 카테고리 섹션
+                  _buildCategorySection(book),
+
                   const SizedBox(height: AppSpacing.lg),
                   Divider(color: context.colors.outlineVariant),
                   const SizedBox(height: AppSpacing.lg),
