@@ -8,6 +8,7 @@
 # 옵션:
 #   --unit-only      Flutter 단위 테스트만 실행
 #   --edge-only      Edge Function 테스트만 실행
+#   --coverage       테스트 후 커버리지 리포트 생성
 #   --verbose        상세 출력
 #   --help           도움말
 
@@ -28,6 +29,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # 기본 옵션
 RUN_UNIT=true
 RUN_EDGE=true
+RUN_COVERAGE=false
 VERBOSE=false
 
 # 명령줄 인자 파싱
@@ -41,6 +43,10 @@ while [[ $# -gt 0 ]]; do
             RUN_UNIT=false
             shift
             ;;
+        --coverage)
+            RUN_COVERAGE=true
+            shift
+            ;;
         --verbose)
             VERBOSE=true
             shift
@@ -51,6 +57,7 @@ while [[ $# -gt 0 ]]; do
             echo "옵션:"
             echo "  --unit-only      Flutter 단위 테스트만 실행"
             echo "  --edge-only      Edge Function 테스트만 실행"
+            echo "  --coverage       테스트 후 커버리지 리포트 생성"
             echo "  --verbose        상세 출력"
             echo "  --help           도움말"
             exit 0
@@ -123,6 +130,23 @@ if [ "$RUN_EDGE" = true ]; then
         echo -e "${GREEN}✓ Edge Function 테스트 통과${NC}"
     else
         echo -e "${RED}✗ Edge Function 테스트 실패${NC}"
+    fi
+    echo ""
+fi
+
+# ========================================
+# Coverage 리포트 (선택적)
+# ========================================
+if [ "$RUN_COVERAGE" = true ]; then
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo -e "${BLUE}  3. Coverage 리포트${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+
+    if [ -f "$SCRIPT_DIR/coverage.sh" ]; then
+        bash "$SCRIPT_DIR/coverage.sh" --ci
+    else
+        echo -e "${YELLOW}⚠ coverage.sh 파일을 찾을 수 없습니다${NC}"
     fi
     echo ""
 fi
