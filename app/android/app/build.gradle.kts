@@ -40,6 +40,21 @@ android {
         versionName = flutter.versionName
     }
 
+    // Product Flavors for dev/prod environments
+    flavorDimensions += "environment"
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+            resValue("string", "app_name", "BookScribe Dev")
+        }
+        create("prod") {
+            dimension = "environment"
+            resValue("string", "app_name", "BookScribe")
+        }
+    }
+
     signingConfigs {
         create("release") {
             if (keystorePropertiesFile.exists()) {

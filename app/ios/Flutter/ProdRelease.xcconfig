@@ -1,0 +1,6 @@
+// Production environment configuration (Release build)
+#include "Release.xcconfig"
+
+PRODUCT_BUNDLE_IDENTIFIER=com.bookscribe.app
+DISPLAY_NAME=BookScribe
+FLUTTER_TARGET=lib/main_prod.dart

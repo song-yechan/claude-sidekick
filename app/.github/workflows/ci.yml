@@ -37,10 +37,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Create dummy .env file
+      - name: Create dummy .env files
         run: |
           echo "SUPABASE_URL=https://dummy.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=dummy_key" >> .env
+          cp .env .env.dev
+          cp .env .env.prod
 
       - name: Verify formatting
         run: dart format --output=none --set-exit-if-changed .
@@ -60,8 +62,51 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
-  build-android:
-    name: Build Android (Debug)
+  build-android-dev:
+    name: Build Android Dev (Debug)
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create dummy .env files
+        run: |
+          echo "SUPABASE_URL=https://dummy.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=dummy_key" >> .env
+          cp .env .env.dev
+          cp .env .env.prod
+
+      - name: Build APK (dev flavor)
+        run: flutter build apk --debug --flavor dev -t lib/main_dev.dart
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-apk-dev
+          path: build/app/outputs/flutter-apk/app-dev-debug.apk
+          retention-days: 7
+
+  build-android-prod:
+    name: Build Android Prod (Debug)
     runs-on: ubuntu-latest
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -86,23 +131,55 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Create dummy .env file
+      - name: Create dummy .env files
         run: |
           echo "SUPABASE_URL=https://dummy.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=dummy_key" >> .env
+          cp .env .env.dev
+          cp .env .env.prod
 
-      - name: Build APK
-        run: flutter build apk --debug
+      - name: Build APK (prod flavor)
+        run: flutter build apk --debug --flavor prod -t lib/main_prod.dart
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: debug-apk-prod
+          path: build/app/outputs/flutter-apk/app-prod-debug.apk
           retention-days: 7
 
-  build-ios:
-    name: Build iOS (Debug)
+  build-ios-dev:
+    name: Build iOS Dev (Debug)
+    runs-on: macos-latest
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.29.2'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Create dummy .env files
+        run: |
+          echo "SUPABASE_URL=https://dummy.supabase.co" > .env
+          echo "SUPABASE_ANON_KEY=dummy_key" >> .env
+          cp .env .env.dev
+          cp .env .env.prod
+
+      - name: Build iOS (dev flavor, no codesign)
+        run: flutter build ios --debug --no-codesign --flavor dev -t lib/main_dev.dart
+
+  build-ios-prod:
+    name: Build iOS Prod (Debug)
     runs-on: macos-latest
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -121,10 +198,12 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Create dummy .env file
+      - name: Create dummy .env files
         run: |
           echo "SUPABASE_URL=https://dummy.supabase.co" > .env
           echo "SUPABASE_ANON_KEY=dummy_key" >> .env
+          cp .env .env.dev
+          cp .env .env.prod
 
-      - name: Build iOS (no codesign)
-        run: flutter build ios --debug --no-codesign
+      - name: Build iOS (prod flavor, no codesign)
+        run: flutter build ios --debug --no-codesign --flavor prod -t lib/main_prod.dart
