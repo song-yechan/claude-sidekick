@@ -1,5 +1,67 @@
 # BookScan Flutter App Test Plan
 
+## 빠른 테스트 실행 가이드
+
+### 개발 후 테스트 (권장 순서)
+
+```bash
+# 1. 빠른 통과 확인 (토큰 절약)
+flutter test && echo "✅ All passed" || echo "❌ Failed"
+
+# 2. 실패 시 상세 확인
+flutter test
+
+# 3. 특정 영역만 테스트
+flutter test test/models/       # 모델만
+flutter test test/providers/    # Provider만
+flutter test test/screens/      # Screen만
+flutter test test/core/         # 테마, 상수만
+
+# 4. 커버리지 확인
+flutter test --coverage
+```
+
+### 현재 테스트 파일 구조
+
+```
+test/
+├── mocks/                    # Fake 서비스, 테스트 픽스처
+│   ├── fake_services.dart    # FakeAuthService, FakeBookService 등
+│   └── test_fixtures.dart    # TestBooks, TestCategories 등
+├── models/                   # 모델 JSON 변환 테스트
+│   ├── book_test.dart
+│   ├── category_test.dart
+│   └── note_test.dart
+├── providers/                # Provider/Notifier 테스트
+│   ├── auth_provider_test.dart
+│   ├── auth_notifier_test.dart
+│   ├── book_provider_test.dart
+│   ├── book_search_notifier_test.dart
+│   ├── category_provider_test.dart
+│   ├── note_provider_test.dart
+│   ├── ocr_notifier_test.dart
+│   ├── onboarding_provider_test.dart
+│   └── theme_provider_test.dart
+├── screens/                  # Screen 테스트
+│   ├── book_detail_screen_test.dart
+│   └── note_detail_screen_test.dart
+├── core/                     # 테마, 상수 테스트
+│   ├── theme_test.dart
+│   └── constants_test.dart
+└── widgets/                  # 위젯 테스트
+    └── book_card_test.dart
+
+integration_test/
+└── app_test.dart             # E2E 통합 테스트
+```
+
+### CI/CD
+
+- `.github/workflows/ci.yml` - PR/Push 시 자동 테스트
+- `.github/workflows/release.yml` - 태그 시 릴리즈 빌드
+
+---
+
 ## 테스트 전략
 
 ### 테스트 레벨

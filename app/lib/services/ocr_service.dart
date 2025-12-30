@@ -2,12 +2,20 @@
 ///
 /// 이미지에서 텍스트를 추출하는 기능을 제공합니다.
 ///
+/// 전략:
+/// 1. ML Kit (온디바이스) 우선 시도 - 빠르고 무료
+/// 2. 실패 시 Cloud Vision API 폴백 - 더 정확함
+///
 /// 사용하는 외부 서비스:
-/// - Google Vision API (OCR): Supabase Edge Function(ocr-image)을 통해 호출
+/// - Google ML Kit (온디바이스 OCR)
+/// - Google Vision API (클라우드 OCR): Supabase Edge Function(ocr-image)을 통해 호출
 library;
 
 import 'dart:convert';
+import 'dart:io';
 import 'dart:typed_data';
+import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
+import 'package:path_provider/path_provider.dart';
 import '../core/supabase.dart';
 
 /// OcrService 인터페이스
@@ -19,21 +27,83 @@ abstract class IOcrService {
 }
 
 /// OCR 기능을 제공하는 서비스 클래스
+///
+/// ML Kit 온디바이스 OCR을 우선 사용하고,
+/// 실패 시 Cloud Vision API로 폴백합니다.
 class OcrService implements IOcrService {
+  /// ML Kit 텍스트 인식기 (한글 + 라틴)
+  final TextRecognizer _textRecognizer = TextRecognizer(
+    script: TextRecognitionScript.korean,
+  );
+
+  /// ML Kit이 실패로 간주되는 최소 텍스트 길이
+  static const int _minTextLength = 5;
+
+
   /// 이미지에서 텍스트를 추출합니다 (OCR).
   ///
   /// [imageBytes] 처리할 이미지의 바이트 데이터
   ///
-  /// 이미지를 Base64로 인코딩하여 Edge Function에 전송하고,
-  /// Google Vision API를 통해 텍스트를 추출합니다.
+  /// 1차: ML Kit (온디바이스) 시도
+  /// 2차: 실패 시 Cloud Vision API 폴백
   ///
   /// 반환값: 추출된 텍스트 문자열
   /// 예외: OCR 처리 실패 시 Exception 발생
+  @override
   Future<String> extractText(Uint8List imageBytes) async {
-    // 이미지를 Base64로 인코딩하여 HTTP 전송 가능하게 변환
-    final base64Image = base64Encode(imageBytes);
+    print('📷 OCR: Starting text extraction...');
 
-    print('📷 OCR: Calling Edge Function...');
+    // 1차: ML Kit 시도
+    try {
+      final mlKitResult = await _extractWithMlKit(imageBytes);
+
+      if (_isValidResult(mlKitResult)) {
+        print('📷 OCR: ML Kit succeeded (${mlKitResult.length} chars)');
+        return mlKitResult;
+      }
+
+      print('📷 OCR: ML Kit result too short or empty, falling back to Cloud Vision');
+    } catch (e) {
+      print('📷 OCR: ML Kit failed: $e, falling back to Cloud Vision');
+    }
+
+    // 2차: Cloud Vision API 폴백
+    return _extractWithCloudVision(imageBytes);
+  }
+
+  /// ML Kit 결과가 유효한지 확인
+  bool _isValidResult(String text) {
+    return text.trim().length >= _minTextLength;
+  }
+
+  /// ML Kit (온디바이스)로 텍스트 추출
+  Future<String> _extractWithMlKit(Uint8List imageBytes) async {
+    print('📷 OCR: Trying ML Kit (on-device)...');
+
+    // Uint8List를 임시 파일로 저장 (ML Kit은 파일 경로 필요)
+    final tempDir = await getTemporaryDirectory();
+    final tempFile = File('${tempDir.path}/ocr_temp_${DateTime.now().millisecondsSinceEpoch}.jpg');
+    await tempFile.writeAsBytes(imageBytes);
+
+    try {
+      final inputImage = InputImage.fromFilePath(tempFile.path);
+      final recognizedText = await _textRecognizer.processImage(inputImage);
+
+      print('📷 OCR: ML Kit extracted ${recognizedText.text.length} chars, ${recognizedText.blocks.length} blocks');
+      return recognizedText.text;
+    } finally {
+      // 임시 파일 정리
+      if (await tempFile.exists()) {
+        await tempFile.delete();
+      }
+    }
+  }
+
+  /// Cloud Vision API로 텍스트 추출 (폴백)
+  Future<String> _extractWithCloudVision(Uint8List imageBytes) async {
+    print('📷 OCR: Using Cloud Vision API (fallback)...');
+
+    final base64Image = base64Encode(imageBytes);
     print('📷 OCR: Image base64 length: ${base64Image.length}');
 
     final response = await supabase.functions.invoke(
@@ -43,10 +113,8 @@ class OcrService implements IOcrService {
       },
     );
 
-    print('📷 OCR: Response status: ${response.status}');
-    print('📷 OCR: Response data: ${response.data}');
+    print('📷 OCR: Cloud Vision response status: ${response.status}');
 
-    // 에러 상태 코드 확인
     if (response.status >= 400) {
       final errorMsg = response.data?['error'] ?? response.data?['details'] ?? 'Unknown error';
       throw Exception('$errorMsg (${response.status})');
@@ -56,7 +124,9 @@ class OcrService implements IOcrService {
       throw Exception('OCR 처리에 실패했습니다');
     }
 
-    return response.data['text'] as String? ?? '';
+    final text = response.data['text'] as String? ?? '';
+    print('📷 OCR: Cloud Vision extracted ${text.length} chars');
+    return text;
   }
 
   /// 이미지에서 텍스트를 추출합니다.
@@ -64,12 +134,18 @@ class OcrService implements IOcrService {
   /// [imageBytes] 처리할 이미지의 바이트 데이터
   ///
   /// 반환값: 추출된 텍스트를 포함한 OcrResult 객체
+  @override
   Future<OcrResult> processImage(Uint8List imageBytes) async {
     final extractedText = await extractText(imageBytes);
 
     return OcrResult(
       originalText: extractedText,
     );
+  }
+
+  /// 리소스 정리
+  void dispose() {
+    _textRecognizer.close();
   }
 }
 
