@@ -17,7 +17,7 @@ import 'auth_provider.dart';
 export '../models/book.dart' show BookSearchResult;
 
 /// BookService 인스턴스를 제공하는 Provider
-final bookServiceProvider = Provider<BookService>((ref) => BookService());
+final bookServiceProvider = Provider<IBookService>((ref) => BookService());
 
 /// 현재 로그인한 사용자의 책 목록을 제공하는 Provider
 ///
@@ -107,7 +107,7 @@ class BookSearchState {
 /// 알라딘 API를 통해 도서를 검색하고 결과를 상태로 관리합니다.
 /// 검색어가 비어있으면 상태를 초기화합니다.
 class BookSearchNotifier extends StateNotifier<BookSearchState> {
-  final BookService _bookService;
+  final IBookService _bookService;
 
   BookSearchNotifier(this._bookService) : super(const BookSearchState());
 

@@ -14,3 +14,4 @@ export 'mock_book_service.dart';
 export 'mock_note_service.dart';
 export 'mock_category_service.dart';
 export 'fake_auth_service.dart';
+export 'fake_book_service.dart';

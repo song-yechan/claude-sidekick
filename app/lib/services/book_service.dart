@@ -11,8 +11,40 @@ library;
 import '../core/supabase.dart';
 import '../models/book.dart';
 
+/// BookService 인터페이스
+///
+/// 테스트에서 Mock 구현체를 사용할 수 있도록 인터페이스를 정의합니다.
+abstract class IBookService {
+  Future<List<Book>> getBooks(String userId);
+  Future<Book> addBook({
+    required String userId,
+    required String title,
+    required String author,
+    String? isbn,
+    String? publisher,
+    String? publishDate,
+    String? coverImage,
+    String? description,
+    int? pageCount,
+    List<String> categoryIds,
+  });
+  Future<void> updateBook({
+    required String bookId,
+    String? title,
+    String? author,
+    String? isbn,
+    String? publisher,
+    String? publishDate,
+    String? coverImage,
+    String? description,
+    List<String>? categoryIds,
+  });
+  Future<void> deleteBook(String bookId);
+  Future<List<BookSearchResult>> searchBooks(String query);
+}
+
 /// 책 데이터 CRUD 및 검색 기능을 제공하는 서비스 클래스
-class BookService {
+class BookService implements IBookService {
   /// 특정 사용자의 모든 책을 조회합니다.
   ///
   /// [userId] 조회할 사용자의 ID
