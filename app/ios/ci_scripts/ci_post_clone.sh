@@ -1,25 +1,43 @@
 #!/bin/sh
 
 # =============================================================================
-# Xcode Cloud Post-Clone Script
-# =============================================================================
-# This script runs automatically after Xcode Cloud clones the repository.
-# It installs Flutter, fetches dependencies, and runs pod install.
+# Xcode Cloud Post-Clone Script for Flutter
 # =============================================================================
 
+# Exit on error, but print what failed
 set -e
+trap 'echo "ERROR: Script failed at line $LINENO"' ERR
 
 echo "=============================================="
 echo "Xcode Cloud Post-Clone Script"
 echo "=============================================="
 
-# Debug: Print environment info
+# -----------------------------------------------------------------------------
+# 0. Determine paths from script location
+# -----------------------------------------------------------------------------
 echo ""
-echo "=== Environment Info ==="
-echo "HOME: $HOME"
+echo "Step 0: Determining paths..."
+
+# Script is at: app/ios/ci_scripts/ci_post_clone.sh
+# So app directory is 2 levels up from script location
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+IOS_DIR="$(dirname "$SCRIPT_DIR")"
+APP_DIR="$(dirname "$IOS_DIR")"
+
+echo "SCRIPT_DIR: $SCRIPT_DIR"
+echo "IOS_DIR: $IOS_DIR"
+echo "APP_DIR: $APP_DIR"
 echo "CI_PRIMARY_REPOSITORY_PATH: $CI_PRIMARY_REPOSITORY_PATH"
-echo "PWD: $(pwd)"
-echo "========================"
+echo "CI_WORKSPACE: $CI_WORKSPACE"
+
+# Verify app directory
+if [ ! -f "$APP_DIR/pubspec.yaml" ]; then
+    echo "ERROR: pubspec.yaml not found at $APP_DIR"
+    echo "Contents of APP_DIR:"
+    ls -la "$APP_DIR" 2>/dev/null || echo "Directory does not exist"
+    exit 1
+fi
+echo "App directory verified: $APP_DIR"
 
 # -----------------------------------------------------------------------------
 # 1. Install Flutter
@@ -29,78 +47,72 @@ echo "Step 1: Installing Flutter SDK..."
 
 FLUTTER_HOME="$HOME/flutter"
 
+# Clean up existing Flutter
 if [ -d "$FLUTTER_HOME" ]; then
-    echo "Flutter already exists, removing..."
+    echo "Removing existing Flutter..."
     rm -rf "$FLUTTER_HOME"
 fi
 
-echo "Cloning Flutter..."
-git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$FLUTTER_HOME"
-export PATH="$PATH:$FLUTTER_HOME/bin"
-
-echo "Flutter installed at: $FLUTTER_HOME"
-"$FLUTTER_HOME/bin/flutter" --version
-
-# -----------------------------------------------------------------------------
-# 2. Determine App Directory
-# -----------------------------------------------------------------------------
-echo ""
-echo "Step 2: Finding Flutter app directory..."
-
-# Repository structure: repository/app/ (Flutter app is in 'app' subdirectory)
-APP_DIR="$CI_PRIMARY_REPOSITORY_PATH/app"
-
-echo "Looking for pubspec.yaml at: $APP_DIR"
-
-if [ ! -f "$APP_DIR/pubspec.yaml" ]; then
-    echo "ERROR: pubspec.yaml not found at $APP_DIR"
-    echo ""
-    echo "Repository contents:"
-    ls -la "$CI_PRIMARY_REPOSITORY_PATH"
-    echo ""
-    echo "App directory contents (if exists):"
-    ls -la "$APP_DIR" 2>/dev/null || echo "App directory does not exist"
+# Clone Flutter
+echo "Cloning Flutter (this may take a few minutes)..."
+if ! git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$FLUTTER_HOME"; then
+    echo "ERROR: Failed to clone Flutter"
     exit 1
 fi
 
-echo "App directory found: $APP_DIR"
+export PATH="$PATH:$FLUTTER_HOME/bin"
+echo "Flutter PATH added"
+
+# Verify Flutter
+echo "Verifying Flutter installation..."
+"$FLUTTER_HOME/bin/flutter" --version
+"$FLUTTER_HOME/bin/flutter" doctor -v
 
 # -----------------------------------------------------------------------------
-# 3. Flutter Pub Get
+# 2. Flutter Pub Get
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 3: Getting Flutter dependencies..."
+echo "Step 2: Getting Flutter dependencies..."
 
 cd "$APP_DIR"
-"$FLUTTER_HOME/bin/flutter" pub get
+echo "Working directory: $(pwd)"
 
+"$FLUTTER_HOME/bin/flutter" pub get
 echo "Flutter dependencies installed"
 
 # -----------------------------------------------------------------------------
-# 4. Install CocoaPods (if needed)
+# 3. CocoaPods
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 4: Checking CocoaPods..."
+echo "Step 3: Setting up CocoaPods..."
 
-if command -v pod > /dev/null 2>&1; then
-    echo "CocoaPods already installed"
-else
-    echo "Installing CocoaPods via Homebrew..."
+# Check if pod is available
+if ! command -v pod > /dev/null 2>&1; then
+    echo "Installing CocoaPods..."
     brew install cocoapods
 fi
 
+echo "CocoaPods version:"
 pod --version
 
 # -----------------------------------------------------------------------------
-# 5. Pod Install
+# 4. Pod Install
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 5: Running pod install..."
+echo "Step 4: Running pod install..."
 
-cd "$APP_DIR/ios"
+cd "$IOS_DIR"
+echo "Working directory: $(pwd)"
+
+# List Podfile to verify
+if [ ! -f "Podfile" ]; then
+    echo "ERROR: Podfile not found in $IOS_DIR"
+    ls -la
+    exit 1
+fi
+
 pod install --repo-update
-
-echo "Pods installed"
+echo "Pods installed successfully"
 
 # -----------------------------------------------------------------------------
 # Done
