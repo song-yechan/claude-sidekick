@@ -124,6 +124,22 @@ flutter build ipa --release
 # Xcode에서 Archive 열고 → Distribute App → App Store Connect
 ```
 
+### Flutter Flavor 추가/수정 시 체크리스트
+
+Flavor(Dev/Prod 등) 관련 작업 시 반드시 확인:
+
+- [ ] `ios/Podfile` - 새 Configuration 추가 (Debug-xxx, Release-xxx, Profile-xxx)
+- [ ] `ios/Flutter/*.xcconfig` - Flavor별 xcconfig 생성 및 Pods include 확인
+- [ ] `ios/Runner.xcodeproj/project.pbxproj` - Build Configuration 추가
+- [ ] `android/app/build.gradle.kts` - productFlavors 추가
+- [ ] `pod install` 실행 및 경고 확인
+- [ ] 로컬 빌드 테스트 (`flutter build ipa --flavor xxx`)
+- [ ] Xcode Cloud 스크립트 경로 확인 (`ci_scripts/ci_post_clone.sh`)
+
+**주의**: 쉘 스크립트 작성 시 `#!/bin/sh` 사용하면 POSIX 호환 문법만 사용
+- `&>` → `> /dev/null 2>&1`
+- `[[ ]]` → `[ ]`
+
 ### DB 마이그레이션
 ```bash
 # 새 마이그레이션 생성
