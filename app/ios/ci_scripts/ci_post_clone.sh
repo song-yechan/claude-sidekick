@@ -34,21 +34,39 @@ echo "✅ Flutter installed"
 flutter --version
 
 # -----------------------------------------------------------------------------
-# 2. Flutter Pub Get
+# 2. Determine App Directory
 # -----------------------------------------------------------------------------
 echo ""
-echo "📦 Step 2: Getting Flutter dependencies..."
+echo "📦 Step 2: Finding Flutter app directory..."
 
-cd "$CI_PRIMARY_REPOSITORY_PATH"
+# Repository structure: repository/app/ (Flutter app is in 'app' subdirectory)
+APP_DIR="$CI_PRIMARY_REPOSITORY_PATH/app"
+
+if [ ! -f "$APP_DIR/pubspec.yaml" ]; then
+    echo "❌ Error: pubspec.yaml not found at $APP_DIR"
+    echo "CI_PRIMARY_REPOSITORY_PATH: $CI_PRIMARY_REPOSITORY_PATH"
+    ls -la "$CI_PRIMARY_REPOSITORY_PATH"
+    exit 1
+fi
+
+echo "✅ App directory: $APP_DIR"
+
+# -----------------------------------------------------------------------------
+# 3. Flutter Pub Get
+# -----------------------------------------------------------------------------
+echo ""
+echo "📦 Step 3: Getting Flutter dependencies..."
+
+cd "$APP_DIR"
 flutter pub get
 
 echo "✅ Flutter dependencies installed"
 
 # -----------------------------------------------------------------------------
-# 3. Install CocoaPods
+# 4. Install CocoaPods
 # -----------------------------------------------------------------------------
 echo ""
-echo "📦 Step 3: Installing CocoaPods..."
+echo "📦 Step 4: Installing CocoaPods..."
 
 if ! command -v pod &> /dev/null; then
     brew install cocoapods
@@ -58,12 +76,12 @@ echo "✅ CocoaPods ready"
 pod --version
 
 # -----------------------------------------------------------------------------
-# 4. Pod Install
+# 5. Pod Install
 # -----------------------------------------------------------------------------
 echo ""
-echo "📦 Step 4: Running pod install..."
+echo "📦 Step 5: Running pod install..."
 
-cd "$CI_PRIMARY_REPOSITORY_PATH/ios"
+cd "$APP_DIR/ios"
 pod install --repo-update
 
 echo "✅ Pods installed"
