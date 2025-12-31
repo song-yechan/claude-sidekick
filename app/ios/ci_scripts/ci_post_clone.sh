@@ -81,10 +81,19 @@ echo "Working directory: $(pwd)"
 echo "Flutter dependencies installed"
 
 # -----------------------------------------------------------------------------
-# 3. CocoaPods
+# 3. Precache iOS artifacts
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 3: Setting up CocoaPods..."
+echo "Step 3: Precaching iOS artifacts..."
+
+"$FLUTTER_HOME/bin/flutter" precache --ios
+echo "iOS artifacts cached"
+
+# -----------------------------------------------------------------------------
+# 4. CocoaPods
+# -----------------------------------------------------------------------------
+echo ""
+echo "Step 4: Setting up CocoaPods..."
 
 # Check if pod is available
 if ! command -v pod > /dev/null 2>&1; then
@@ -96,10 +105,10 @@ echo "CocoaPods version:"
 pod --version
 
 # -----------------------------------------------------------------------------
-# 4. Pod Install
+# 5. Pod Install
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 4: Running pod install..."
+echo "Step 5: Running pod install..."
 
 cd "$IOS_DIR"
 echo "Working directory: $(pwd)"
