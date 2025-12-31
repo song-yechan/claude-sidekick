@@ -1,5 +1,6 @@
-// Development environment configuration
-#include "Debug.xcconfig"
+// Development environment configuration (Debug build)
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug-dev.xcconfig"
+#include "Generated.xcconfig"
 
 PRODUCT_BUNDLE_IDENTIFIER=com.bookscribe.app.dev
 DISPLAY_NAME=BookScribe Dev

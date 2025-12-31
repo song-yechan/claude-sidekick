@@ -1,5 +1,6 @@
 // Production environment configuration (Release build)
-#include "Release.xcconfig"
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release-prod.xcconfig"
+#include "Generated.xcconfig"
 
 PRODUCT_BUNDLE_IDENTIFIER=com.bookscribe.app
 DISPLAY_NAME=BookScribe
