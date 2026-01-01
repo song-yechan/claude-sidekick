@@ -17,18 +17,22 @@ class NoteDetailScreen extends ConsumerStatefulWidget {
 
 class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
   bool _showSummary = true;
-  bool _isEditing = false;
+  bool _isEditingMemo = false;
+  bool _isEditingContent = false;
   late TextEditingController _memoController;
+  late TextEditingController _contentController;
 
   @override
   void initState() {
     super.initState();
     _memoController = TextEditingController();
+    _contentController = TextEditingController();
   }
 
   @override
   void dispose() {
     _memoController.dispose();
+    _contentController.dispose();
     super.dispose();
   }
 
@@ -94,9 +98,24 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     );
 
     if (success && mounted) {
-      setState(() => _isEditing = false);
+      setState(() => _isEditingMemo = false);
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('메모가 저장되었습니다')),
+      );
+    }
+  }
+
+  Future<void> _saveContent() async {
+    final success = await updateNote(
+      ref,
+      widget.noteId,
+      content: _contentController.text,
+    );
+
+    if (success && mounted) {
+      setState(() => _isEditingContent = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('본문이 저장되었습니다')),
       );
     }
   }
@@ -118,9 +137,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       );
     }
 
-    // 메모 컨트롤러 초기화
-    if (!_isEditing && _memoController.text != (note.memo ?? '')) {
+    // 컨트롤러 초기화
+    if (!_isEditingMemo && _memoController.text != (note.memo ?? '')) {
       _memoController.text = note.memo ?? '';
+    }
+    if (!_isEditingContent && _contentController.text != note.content) {
+      _contentController.text = note.content;
     }
 
     final book = ref.watch(bookProvider(note.bookId));
@@ -292,19 +314,74 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                               : context.colors.primary,
                         ),
                       ),
+                      const Spacer(),
+                      // 원문일 때만 수정 버튼 표시
+                      if (!_showSummary || note.summary == null)
+                        TextButton.icon(
+                          icon: Icon(
+                            _isEditingContent ? Icons.close : Icons.edit_rounded,
+                            size: 16,
+                          ),
+                          label: Text(_isEditingContent ? '취소' : '수정'),
+                          style: TextButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          onPressed: () {
+                            if (_isEditingContent) {
+                              _contentController.text = note.content;
+                            }
+                            setState(() => _isEditingContent = !_isEditingContent);
+                          },
+                        ),
                     ],
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  SelectableText(
-                    _showSummary && note.summary != null
-                        ? note.summary!
-                        : note.content,
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.8,
-                      color: context.colors.onSurface,
+                  if (_isEditingContent && (!_showSummary || note.summary == null))
+                    Column(
+                      children: [
+                        TextField(
+                          controller: _contentController,
+                          maxLines: null,
+                          minLines: 3,
+                          style: TextStyle(
+                            fontSize: 16,
+                            height: 1.8,
+                            color: context.colors.onSurface,
+                          ),
+                          decoration: InputDecoration(
+                            filled: true,
+                            fillColor: context.surfaceContainerLow,
+                            contentPadding: const EdgeInsets.all(AppSpacing.md),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(AppShapes.medium),
+                              borderSide: BorderSide.none,
+                            ),
+                            hintText: '본문을 수정하세요...',
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _saveContent,
+                            child: const Text('저장'),
+                          ),
+                        ),
+                      ],
+                    )
+                  else
+                    SelectableText(
+                      _showSummary && note.summary != null
+                          ? note.summary!
+                          : note.content,
+                      style: TextStyle(
+                        fontSize: 16,
+                        height: 1.8,
+                        color: context.colors.onSurface,
+                      ),
                     ),
-                  ),
                 ],
               ),
             ),
@@ -322,16 +399,16 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     color: context.colors.onSurface,
                   ),
                 ),
-                if (!_isEditing)
+                if (!_isEditingMemo)
                   TextButton.icon(
                     icon: const Icon(Icons.edit_rounded, size: 18),
                     label: const Text('수정'),
-                    onPressed: () => setState(() => _isEditing = true),
+                    onPressed: () => setState(() => _isEditingMemo = true),
                   ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
-            if (_isEditing)
+            if (_isEditingMemo)
               Column(
                 children: [
                   TextField(
@@ -352,7 +429,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       TextButton(
                         onPressed: () {
                           _memoController.text = note.memo ?? '';
-                          setState(() => _isEditing = false);
+                          setState(() => _isEditingMemo = false);
                         },
                         child: const Text('취소'),
                       ),

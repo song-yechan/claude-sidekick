@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:image_cropper/image_cropper.dart';
+import '../common/perspective_crop_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
 import '../../core/theme.dart';
@@ -129,38 +129,16 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
   }
 
   /// 이미지 크롭 화면을 표시합니다.
+  /// 4개 꼭지점 개별 조정 + 엣지 조정이 가능한 perspective crop 사용
   Future<File?> _cropImage(String imagePath) async {
-    final croppedFile = await ImageCropper().cropImage(
-      sourcePath: imagePath,
-      compressFormat: ImageCompressFormat.jpg,
-      compressQuality: 85,
-      uiSettings: [
-        AndroidUiSettings(
-          toolbarTitle: '이미지 자르기',
-          toolbarColor: context.colors.surface,
-          toolbarWidgetColor: context.colors.onSurface,
-          backgroundColor: Colors.black,
-          activeControlsWidgetColor: context.colors.primary,
-          initAspectRatio: CropAspectRatioPreset.original,
-          lockAspectRatio: false,
-          hideBottomControls: false,
-        ),
-        IOSUiSettings(
-          title: '이미지 자르기',
-          cancelButtonTitle: '취소',
-          doneButtonTitle: '완료',
-          resetButtonHidden: false,
-          rotateButtonsHidden: false,
-          aspectRatioPickerButtonHidden: true,
-          resetAspectRatioEnabled: true,
-        ),
-      ],
+    final result = await Navigator.push<File>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => PerspectiveCropScreen(imagePath: imagePath),
+      ),
     );
 
-    if (croppedFile != null) {
-      return File(croppedFile.path);
-    }
-    return null;
+    return result;
   }
 
   /// 이미지 리사이즈 (OCR 최적화)
@@ -873,44 +851,58 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 추출된 텍스트
-            Container(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              decoration: BoxDecoration(
-                color: context.surfaceContainerLow,
-                borderRadius: BorderRadius.circular(AppShapes.medium),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.format_quote_rounded,
-                        size: 16,
+            // 추출된 텍스트 (수정 가능)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.format_quote_rounded,
+                      size: 16,
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      '추출된 텍스트',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
                         color: context.colors.onSurfaceVariant,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '추출된 텍스트',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: context.colors.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  Text(
-                    widget.extractedText,
-                    style: TextStyle(
-                      height: 1.6,
-                      color: context.colors.onSurface,
                     ),
+                    const Spacer(),
+                    Text(
+                      '텍스트를 수정할 수 있습니다',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: context.colors.outline,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                TextField(
+                  controller: _contentController,
+                  maxLines: null,
+                  minLines: 3,
+                  style: TextStyle(
+                    fontSize: 15,
+                    height: 1.6,
+                    color: context.colors.onSurface,
                   ),
-                ],
-              ),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: context.surfaceContainerLow,
+                    contentPadding: const EdgeInsets.all(AppSpacing.lg),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(AppShapes.medium),
+                      borderSide: BorderSide.none,
+                    ),
+                    hintText: '추출된 텍스트를 수정하세요...',
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
 
