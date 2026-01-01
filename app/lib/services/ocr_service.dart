@@ -36,9 +36,8 @@ class OcrService implements IOcrService {
     script: TextRecognitionScript.korean,
   );
 
-  /// ML Kit이 실패로 간주되는 최소 텍스트 길이
-  static const int _minTextLength = 5;
-
+  /// ML Kit 신뢰도 임계값 (이 값 미만이면 Cloud Vision 폴백)
+  static const double _minConfidence = 0.5;
 
   /// 이미지에서 텍스트를 추출합니다 (OCR).
   ///
@@ -57,12 +56,12 @@ class OcrService implements IOcrService {
     try {
       final mlKitResult = await _extractWithMlKit(imageBytes);
 
-      if (_isValidResult(mlKitResult)) {
-        print('📷 OCR: ML Kit succeeded (${mlKitResult.length} chars)');
-        return mlKitResult;
+      if (mlKitResult.isValid) {
+        print('📷 OCR: ML Kit succeeded (${mlKitResult.text.length} chars, confidence: ${mlKitResult.confidence.toStringAsFixed(2)})');
+        return mlKitResult.text;
       }
 
-      print('📷 OCR: ML Kit result too short or empty, falling back to Cloud Vision');
+      print('📷 OCR: ML Kit confidence too low (${mlKitResult.confidence.toStringAsFixed(2)}), falling back to Cloud Vision');
     } catch (e) {
       print('📷 OCR: ML Kit failed: $e, falling back to Cloud Vision');
     }
@@ -71,13 +70,8 @@ class OcrService implements IOcrService {
     return _extractWithCloudVision(imageBytes);
   }
 
-  /// ML Kit 결과가 유효한지 확인
-  bool _isValidResult(String text) {
-    return text.trim().length >= _minTextLength;
-  }
-
   /// ML Kit (온디바이스)로 텍스트 추출
-  Future<String> _extractWithMlKit(Uint8List imageBytes) async {
+  Future<_MlKitResult> _extractWithMlKit(Uint8List imageBytes) async {
     print('📷 OCR: Trying ML Kit (on-device)...');
 
     // Uint8List를 임시 파일로 저장 (ML Kit은 파일 경로 필요)
@@ -89,8 +83,32 @@ class OcrService implements IOcrService {
       final inputImage = InputImage.fromFilePath(tempFile.path);
       final recognizedText = await _textRecognizer.processImage(inputImage);
 
-      print('📷 OCR: ML Kit extracted ${recognizedText.text.length} chars, ${recognizedText.blocks.length} blocks');
-      return recognizedText.text;
+      // 블록이 없으면 실패
+      if (recognizedText.blocks.isEmpty) {
+        print('📷 OCR: ML Kit found no text blocks');
+        return _MlKitResult(text: '', confidence: 0.0, isValid: false);
+      }
+
+      // 평균 신뢰도 계산 (라인 단위)
+      final confidences = recognizedText.blocks
+          .expand((block) => block.lines)
+          .where((line) => line.confidence != null)
+          .map((line) => line.confidence!)
+          .toList();
+
+      final avgConfidence = confidences.isEmpty
+          ? 0.0
+          : confidences.fold(0.0, (sum, c) => sum + c) / confidences.length;
+
+      print('📷 OCR: ML Kit extracted ${recognizedText.text.length} chars, '
+          '${recognizedText.blocks.length} blocks, '
+          'avg confidence: ${avgConfidence.toStringAsFixed(2)}');
+
+      return _MlKitResult(
+        text: recognizedText.text,
+        confidence: avgConfidence,
+        isValid: recognizedText.text.isNotEmpty && avgConfidence >= _minConfidence,
+      );
     } finally {
       // 임시 파일 정리
       if (await tempFile.exists()) {
@@ -156,5 +174,18 @@ class OcrResult {
 
   OcrResult({
     required this.originalText,
+  });
+}
+
+/// ML Kit 결과를 담는 내부 클래스
+class _MlKitResult {
+  final String text;
+  final double confidence;
+  final bool isValid;
+
+  _MlKitResult({
+    required this.text,
+    required this.confidence,
+    required this.isValid,
   });
 }
