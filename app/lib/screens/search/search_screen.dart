@@ -93,8 +93,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
   }
 
   void _showAddDialog(BookSearchResult book) {
-    final categoriesAsync = ref.read(categoriesProvider);
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -104,8 +102,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           top: Radius.circular(AppShapes.extraLarge),
         ),
       ),
-      builder: (modalContext) => StatefulBuilder(
-        builder: (modalContext, setModalState) => Padding(
+      builder: (modalContext) => Consumer(
+        builder: (modalContext, ref, _) {
+          final categoriesAsync = ref.watch(categoriesProvider);
+          return StatefulBuilder(
+            builder: (modalContext, setModalState) => Padding(
           padding: EdgeInsets.only(
             left: 20,
             right: 20,
@@ -296,6 +297,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ],
           ),
         ),
+          );
+        },
       ),
     );
   }
