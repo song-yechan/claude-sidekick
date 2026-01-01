@@ -37,7 +37,8 @@ class OcrService implements IOcrService {
   );
 
   /// ML Kit 신뢰도 임계값 (이 값 미만이면 Cloud Vision 폴백)
-  static const double _minConfidence = 0.5;
+  /// 한국어 인식 정확도를 위해 0.7로 설정
+  static const double _minConfidence = 0.7;
 
   /// 이미지에서 텍스트를 추출합니다 (OCR).
   ///
