@@ -1,7 +1,6 @@
 /// NoteDetailScreen 테스트
 ///
 /// 노트 상세 화면의 기본 UI 요소를 검증합니다.
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/models/note.dart';
 

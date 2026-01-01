@@ -15,7 +15,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../services/note_service.dart';
-import '../services/ocr_service.dart' show IOcrService, OcrService, OcrResult;
+import '../services/ocr_service.dart' show IOcrService, OcrService;
 import 'auth_provider.dart';
 
 /// NoteService 인스턴스를 제공하는 Provider

@@ -4,7 +4,6 @@
 /// 실제 API 호출 없이 검색 로직을 테스트합니다.
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/providers/book_provider.dart';
-import 'package:bookscribe/models/book.dart';
 import '../mocks/fake_book_service.dart';
 import '../mocks/test_fixtures.dart';
 

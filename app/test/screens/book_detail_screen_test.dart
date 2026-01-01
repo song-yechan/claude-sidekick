@@ -2,15 +2,9 @@
 ///
 /// 책 상세 화면의 기본 UI 요소를 검증합니다.
 /// 이미지 피커, 크롭퍼 등 복잡한 기능은 통합 테스트에서 수행합니다.
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:bookscribe/models/book.dart';
 import 'package:bookscribe/models/note.dart';
-import 'package:bookscribe/providers/book_provider.dart';
-import 'package:bookscribe/providers/note_provider.dart';
-import 'package:bookscribe/providers/category_provider.dart';
-import 'package:bookscribe/providers/auth_provider.dart';
 import '../mocks/test_fixtures.dart';
 
 void main() {
