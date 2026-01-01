@@ -57,8 +57,10 @@ class ActivityCalendar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final startDate = DateTime(year, 1, 1);
-    final endDate = year == now.year ? now : DateTime(year, 12, 31);
+    // 항상 12월 31일까지 그리드 표시 (미래 날짜는 빈 칸)
+    final endDate = DateTime(year, 12, 31);
 
     // 주별로 그룹화
     final weeks = <List<DateTime?>>[];
@@ -216,6 +218,17 @@ class ActivityCalendar extends StatelessWidget {
 
                               final dateKey =
                                   DateTime(date.year, date.month, date.day);
+
+                              // 미래 날짜는 빈 칸으로 표시
+                              final isFuture = dateKey.isAfter(today);
+                              if (isFuture) {
+                                return Container(
+                                  width: cellSize,
+                                  height: cellSize,
+                                  margin: const EdgeInsets.all(cellMargin),
+                                );
+                              }
+
                               final count = data[dateKey] ?? 0;
 
                               return Tooltip(
