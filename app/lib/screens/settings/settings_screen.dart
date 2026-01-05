@@ -131,6 +131,37 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                   onTap: () => _showLogoutDialog(context, ref),
                 ),
+                Divider(height: 1, indent: 56, color: context.colors.outlineVariant),
+                ListTile(
+                  leading: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      color: context.colors.error,
+                      borderRadius: BorderRadius.circular(AppShapes.medium),
+                    ),
+                    child: Icon(
+                      Icons.delete_forever_rounded,
+                      color: context.colors.onError,
+                      size: 20,
+                    ),
+                  ),
+                  title: Text(
+                    '계정 삭제',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w500,
+                      color: context.colors.error,
+                    ),
+                  ),
+                  subtitle: Text(
+                    '모든 데이터가 영구적으로 삭제됩니다',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: context.colors.onSurfaceVariant,
+                    ),
+                  ),
+                  onTap: () => _showDeleteAccountDialog(context, ref),
+                ),
               ],
             ),
           ),
@@ -226,6 +257,136 @@ class SettingsScreen extends ConsumerWidget {
               foregroundColor: context.colors.error,
             ),
             child: const Text('로그아웃'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning_rounded,
+              color: context.colors.error,
+              size: 24,
+            ),
+            const SizedBox(width: 8),
+            Text(
+              '계정 삭제',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:',
+              style: TextStyle(
+                fontSize: 15,
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 12),
+            _buildDeleteItem(context, '등록한 모든 책'),
+            _buildDeleteItem(context, '수집한 모든 문장'),
+            _buildDeleteItem(context, '계정 정보'),
+            const SizedBox(height: 16),
+            Text(
+              '이 작업은 되돌릴 수 없습니다.',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: context.colors.error,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(dialogContext);
+
+              // 로딩 표시
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (loadingContext) => AlertDialog(
+                  content: Row(
+                    children: [
+                      CircularProgressIndicator(
+                        color: context.colors.primary,
+                        strokeWidth: 2,
+                      ),
+                      const SizedBox(width: 20),
+                      Text(
+                        '계정을 삭제하는 중...',
+                        style: TextStyle(
+                          color: context.colors.onSurface,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+
+              final success = await ref.read(authProvider.notifier).deleteAccount();
+
+              if (context.mounted) {
+                Navigator.pop(context); // 로딩 다이얼로그 닫기
+
+                if (success) {
+                  context.go('/'); // 홈으로 이동 (로그인 화면으로 리다이렉트됨)
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: const Text('계정 삭제에 실패했습니다. 다시 시도해주세요.'),
+                      backgroundColor: context.colors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            style: TextButton.styleFrom(
+              foregroundColor: context.colors.error,
+            ),
+            child: const Text('삭제'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDeleteItem(BuildContext context, String text) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        children: [
+          Icon(
+            Icons.remove_circle_outline,
+            size: 16,
+            color: context.colors.error,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            text,
+            style: TextStyle(
+              fontSize: 14,
+              color: context.colors.onSurfaceVariant,
+            ),
           ),
         ],
       ),

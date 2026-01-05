@@ -23,6 +23,7 @@ abstract class IAuthService {
   });
   Future<void> signOut();
   Future<Session?> getSession();
+  Future<void> deleteAccount();
 }
 
 /// Supabase 인증 기능을 래핑하는 서비스 클래스
@@ -78,5 +79,32 @@ class AuthService implements IAuthService {
   /// 로그인/로그아웃/토큰 갱신 등의 이벤트를 수신합니다.
   Stream<AuthState> get authStateChanges {
     return supabase.auth.onAuthStateChange;
+  }
+
+  /// 계정을 완전히 삭제합니다.
+  ///
+  /// Edge Function을 호출하여 사용자 데이터와 인증 계정을 삭제합니다.
+  /// 삭제 후 자동으로 로그아웃 됩니다.
+  @override
+  Future<void> deleteAccount() async {
+    final session = supabase.auth.currentSession;
+    if (session == null) {
+      throw Exception('No active session');
+    }
+
+    final response = await supabase.functions.invoke(
+      'delete-account',
+      headers: {
+        'Authorization': 'Bearer ${session.accessToken}',
+      },
+    );
+
+    if (response.status != 200) {
+      final error = response.data?['error'] ?? 'Failed to delete account';
+      throw Exception(error);
+    }
+
+    // Sign out locally after successful deletion
+    await signOut();
   }
 }

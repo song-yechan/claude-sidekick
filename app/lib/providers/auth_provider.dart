@@ -219,6 +219,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     state = const AuthState();
   }
 
+  /// 계정 삭제
+  ///
+  /// 사용자의 모든 데이터와 계정을 삭제합니다.
+  /// 성공 시 true, 실패 시 false를 반환합니다.
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      await _authService.deleteAccount();
+      state = const AuthState();
+      return true;
+    } catch (e) {
+      print('🔐 Delete account error: $e');
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: '계정 삭제에 실패했습니다. 다시 시도해주세요.',
+      );
+      return false;
+    }
+  }
+
   @override
   void dispose() {
     _authSubscription?.cancel();
