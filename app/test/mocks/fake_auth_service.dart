@@ -27,10 +27,14 @@ class FakeAuthService implements IAuthService {
   /// signOut 호출 시 발생시킬 에러
   Exception? signOutError;
 
+  /// deleteAccount 호출 시 발생시킬 에러
+  Exception? deleteAccountError;
+
   /// 각 메서드 호출 횟수 추적
   int signUpCallCount = 0;
   int signInCallCount = 0;
   int signOutCallCount = 0;
+  int deleteAccountCallCount = 0;
 
   /// 마지막으로 전달된 credentials
   String? lastEmail;
@@ -44,9 +48,11 @@ class FakeAuthService implements IAuthService {
     signUpError = null;
     signInError = null;
     signOutError = null;
+    deleteAccountError = null;
     signUpCallCount = 0;
     signInCallCount = 0;
     signOutCallCount = 0;
+    deleteAccountCallCount = 0;
     lastEmail = null;
     lastPassword = null;
   }
@@ -103,6 +109,15 @@ class FakeAuthService implements IAuthService {
   @override
   Future<Session?> getSession() async {
     return null;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    deleteAccountCallCount++;
+
+    if (deleteAccountError != null) {
+      throw deleteAccountError!;
+    }
   }
 }
 

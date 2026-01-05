@@ -306,6 +306,12 @@ class TestAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   }
 
   @override
+  Future<bool> deleteAccount() async {
+    state = const AuthState();
+    return true;
+  }
+
+  @override
   void continueToApp() {
     state = state.copyWith(signUpCompleted: false);
   }

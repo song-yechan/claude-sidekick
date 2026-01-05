@@ -57,11 +57,27 @@ void main() {
     testWidgets('shows app info section header', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 앱 정보 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('앱 정보'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.text('앱 정보'), findsOneWidget);
     });
 
     testWidgets('shows version info', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      // 버전 정보가 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('버전'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       expect(find.text('버전'), findsOneWidget);
       expect(find.text('1.0.0'), findsOneWidget);
@@ -228,6 +244,14 @@ void main() {
     testWidgets('shows info icon', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 앱 정보 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.info_outline_rounded),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.byIcon(Icons.info_outline_rounded), findsOneWidget);
     });
   });
@@ -258,6 +282,12 @@ class TestAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   @override
   Future<void> signOut() async {
     state = const AuthState();
+  }
+
+  @override
+  Future<bool> deleteAccount() async {
+    state = const AuthState();
+    return true;
   }
 
   @override

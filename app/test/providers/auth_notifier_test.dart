@@ -101,6 +101,23 @@ class TestableAuthNotifier extends StateNotifier<AuthState> {
     state = state.copyWith(signUpCompleted: false);
   }
 
+  /// deleteAccount 테스트용
+  Future<bool> deleteAccount() async {
+    state = state.copyWith(isLoading: true, errorMessage: null);
+
+    try {
+      await _authService.deleteAccount();
+      state = const AuthState();
+      return true;
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        errorMessage: '계정 삭제에 실패했습니다. 다시 시도해주세요.',
+      );
+      return false;
+    }
+  }
+
   /// 현재 상태 조회
   AuthState get currentState => state;
 }
@@ -308,6 +325,41 @@ void main() {
 
       // Then
       expect(authNotifier.currentState.signUpCompleted, false);
+    });
+  });
+
+  group('deleteAccount', () {
+    test('계정 삭제 성공 시 상태가 초기화된다', () async {
+      // When
+      final result = await authNotifier.deleteAccount();
+
+      // Then
+      expect(result, true);
+      expect(authNotifier.currentState.user, isNull);
+      expect(authNotifier.currentState.session, isNull);
+      expect(authNotifier.currentState.isLoading, false);
+      expect(authNotifier.currentState.isAuthenticated, false);
+    });
+
+    test('계정 삭제 시 AuthService.deleteAccount가 호출된다', () async {
+      // When
+      await authNotifier.deleteAccount();
+
+      // Then
+      expect(fakeAuthService.deleteAccountCallCount, 1);
+    });
+
+    test('계정 삭제 실패 시 에러 메시지가 설정된다', () async {
+      // Given
+      fakeAuthService.deleteAccountError = Exception('Failed to delete');
+
+      // When
+      final result = await authNotifier.deleteAccount();
+
+      // Then
+      expect(result, false);
+      expect(authNotifier.currentState.isLoading, false);
+      expect(authNotifier.currentState.errorMessage, '계정 삭제에 실패했습니다. 다시 시도해주세요.');
     });
   });
 

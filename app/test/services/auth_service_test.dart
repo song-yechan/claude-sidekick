@@ -255,4 +255,65 @@ void main() {
       expect(authService.currentSession, isNull);
     });
   });
+
+  group('deleteAccount', () {
+    test('로그인 상태에서 계정을 삭제한다', () async {
+      // Given
+      await authService.signIn(
+        email: TestUsers.email1,
+        password: TestUsers.password,
+      );
+      expect(authService.currentSession, isNotNull);
+      final initialUserCount = authService.registeredUserCount;
+
+      // When
+      await authService.deleteAccount();
+
+      // Then
+      expect(authService.currentSession, isNull);
+      expect(authService.registeredUserCount, initialUserCount - 1);
+    });
+
+    test('로그아웃 상태에서 계정 삭제 시 예외를 던진다', () async {
+      // When & Then
+      expect(
+        () => authService.deleteAccount(),
+        throwsA(predicate((e) => e.toString().contains('No active session'))),
+      );
+    });
+
+    test('계정 삭제 후 동일 이메일로 재가입 가능하다', () async {
+      // Given
+      await authService.signIn(
+        email: TestUsers.email1,
+        password: TestUsers.password,
+      );
+
+      // When - 계정 삭제
+      await authService.deleteAccount();
+
+      // Then - 동일 이메일로 재가입 가능
+      final response = await authService.signUp(
+        email: TestUsers.email1,
+        password: 'newpassword123',
+      );
+      expect(response.user, isNotNull);
+    });
+
+    test('계정 삭제 에러를 시뮬레이션할 수 있다', () async {
+      // Given
+      await authService.signIn(
+        email: TestUsers.email1,
+        password: TestUsers.password,
+      );
+      authService.shouldThrowOnDeleteAccount = true;
+      authService.customError = 'Delete account failed';
+
+      // When & Then
+      expect(
+        () => authService.deleteAccount(),
+        throwsA(predicate((e) => e.toString().contains('Delete account failed'))),
+      );
+    });
+  });
 }

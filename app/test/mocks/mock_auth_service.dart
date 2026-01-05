@@ -72,6 +72,7 @@ abstract class IAuthService {
   });
   Future<void> signOut();
   Future<MockSession?> getSession();
+  Future<void> deleteAccount();
   Stream<MockAuthState> get authStateChanges;
 }
 
@@ -96,6 +97,7 @@ class MockAuthService implements IAuthService {
   bool shouldThrowOnSignUp = false;
   bool shouldThrowOnSignIn = false;
   bool shouldThrowOnSignOut = false;
+  bool shouldThrowOnDeleteAccount = false;
   String? customError;
 
   /// 지연 시뮬레이션 (ms)
@@ -118,6 +120,7 @@ class MockAuthService implements IAuthService {
     shouldThrowOnSignUp = false;
     shouldThrowOnSignIn = false;
     shouldThrowOnSignOut = false;
+    shouldThrowOnDeleteAccount = false;
     customError = null;
     delayMs = 0;
 
@@ -234,6 +237,31 @@ class MockAuthService implements IAuthService {
   Future<MockSession?> getSession() async {
     await _simulateDelay();
     return _currentSession;
+  }
+
+  @override
+  Future<void> deleteAccount() async {
+    await _simulateDelay();
+
+    if (shouldThrowOnDeleteAccount) {
+      throw Exception(customError ?? TestErrors.unknownError);
+    }
+
+    // 현재 로그인된 사용자가 없으면 에러
+    if (_currentSession == null) {
+      throw Exception('No active session');
+    }
+
+    // 사용자 데이터 삭제
+    final email = _currentSession!.user.email;
+    _registeredUsers.remove(email);
+    _userInfo.remove(email);
+    _currentSession = null;
+
+    _authStateController.add(MockAuthState(
+      MockAuthChangeEvent.signedOut,
+      null,
+    ));
   }
 
   @override

@@ -71,6 +71,9 @@ class TestAuthNotifier extends StateNotifier<AuthState> implements AuthNotifier 
   Future<void> signOut() async {}
 
   @override
+  Future<bool> deleteAccount() async => true;
+
+  @override
   void continueToApp() {}
 
   @override
