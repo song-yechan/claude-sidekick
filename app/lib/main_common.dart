@@ -33,6 +33,9 @@ Future<void> runAppWithEnv(EnvConfig envConfig) async {
     anonKey: dotenv.env['SUPABASE_ANON_KEY']!,
   );
 
+  // Note: Airbridge SDK는 네이티브에서 초기화됨
+  // iOS: AppDelegate.swift, Android: MainApplication.kt
+
   // 환경 로그 출력 (개발 환경에서만)
   if (envConfig.isDev) {
     debugPrint('🔧 Running in ${envConfig.name} environment');

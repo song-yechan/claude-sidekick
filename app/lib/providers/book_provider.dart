@@ -220,6 +220,39 @@ Future<bool> deleteBook(WidgetRef ref, String bookId) async {
   }
 }
 
+/// 중복 책이 있는지 확인합니다.
+///
+/// [ref] Riverpod WidgetRef
+/// [isbn] ISBN (선택)
+/// [title] 책 제목
+/// [author] 저자
+///
+/// 중복 책이 있으면 해당 Book 객체를 반환하고, 없으면 null을 반환합니다.
+Future<Book?> findDuplicateBook(
+  WidgetRef ref, {
+  String? isbn,
+  required String title,
+  required String author,
+}) async {
+  final authState = ref.read(authProvider);
+  final bookService = ref.read(bookServiceProvider);
+
+  if (authState.user == null) {
+    return null;
+  }
+
+  try {
+    return await bookService.findDuplicateBook(
+      userId: authState.user!.id,
+      isbn: isbn,
+      title: title,
+      author: author,
+    );
+  } catch (e) {
+    return null;
+  }
+}
+
 /// 책의 카테고리를 업데이트합니다.
 ///
 /// [ref] Riverpod WidgetRef

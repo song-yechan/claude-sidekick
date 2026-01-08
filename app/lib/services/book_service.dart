@@ -9,6 +9,7 @@
 library;
 
 import '../core/supabase.dart';
+import '../core/airbridge_service.dart';
 import '../models/book.dart';
 
 /// BookService 인터페이스
@@ -16,6 +17,12 @@ import '../models/book.dart';
 /// 테스트에서 Mock 구현체를 사용할 수 있도록 인터페이스를 정의합니다.
 abstract class IBookService {
   Future<List<Book>> getBooks(String userId);
+  Future<Book?> findDuplicateBook({
+    required String userId,
+    String? isbn,
+    required String title,
+    required String author,
+  });
   Future<Book> addBook({
     required String userId,
     required String title,
@@ -45,6 +52,53 @@ abstract class IBookService {
 
 /// 책 데이터 CRUD 및 검색 기능을 제공하는 서비스 클래스
 class BookService implements IBookService {
+  /// 중복 책이 있는지 확인합니다.
+  ///
+  /// ISBN이 있으면 ISBN으로 먼저 체크하고,
+  /// ISBN이 없거나 일치하는 게 없으면 제목+저자로 체크합니다.
+  ///
+  /// [userId] 사용자 ID
+  /// [isbn] ISBN (선택)
+  /// [title] 책 제목
+  /// [author] 저자
+  ///
+  /// 반환값: 중복 책이 있으면 해당 Book 객체, 없으면 null
+  Future<Book?> findDuplicateBook({
+    required String userId,
+    String? isbn,
+    required String title,
+    required String author,
+  }) async {
+    // 1. ISBN으로 먼저 체크 (ISBN이 있는 경우)
+    if (isbn != null && isbn.isNotEmpty) {
+      final isbnResponse = await supabase
+          .from('books')
+          .select()
+          .eq('user_id', userId)
+          .eq('isbn', isbn)
+          .limit(1);
+
+      if ((isbnResponse as List).isNotEmpty) {
+        return Book.fromJson(isbnResponse.first);
+      }
+    }
+
+    // 2. 제목 + 저자로 체크
+    final titleAuthorResponse = await supabase
+        .from('books')
+        .select()
+        .eq('user_id', userId)
+        .ilike('title', title)
+        .ilike('author', author)
+        .limit(1);
+
+    if ((titleAuthorResponse as List).isNotEmpty) {
+      return Book.fromJson(titleAuthorResponse.first);
+    }
+
+    return null;
+  }
+
   /// 특정 사용자의 모든 책을 조회합니다.
   ///
   /// [userId] 조회할 사용자의 ID
@@ -106,6 +160,13 @@ class BookService implements IBookService {
         .single();
 
     final bookId = bookResponse['id'] as String;
+
+    // Airbridge 이벤트 트래킹
+    AirbridgeService.trackBookAdded(
+      bookTitle: title,
+      isbn: isbn,
+      author: author,
+    );
 
     // 2단계: book_categories 테이블에 카테고리 연결
     if (categoryIds.isNotEmpty) {
@@ -184,6 +245,9 @@ class BookService implements IBookService {
   /// 반환값: 검색 결과 목록
   Future<List<BookSearchResult>> searchBooks(String query) async {
     if (query.trim().isEmpty) return [];
+
+    // Airbridge 이벤트 트래킹
+    AirbridgeService.trackBookSearched(query: query);
 
     final response = await supabase.functions.invoke(
       'book-search',

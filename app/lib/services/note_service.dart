@@ -7,6 +7,7 @@
 library;
 
 import '../core/supabase.dart';
+import '../core/airbridge_service.dart';
 import '../models/note.dart';
 
 /// 노트 데이터 CRUD 기능을 제공하는 서비스 클래스
@@ -48,6 +49,7 @@ class NoteService {
   /// [pageNumber] 책의 페이지 번호 (선택)
   /// [tags] 태그 목록 (선택)
   /// [memo] 사용자 메모 (선택)
+  /// [usedOcr] OCR을 사용하여 텍스트를 추출했는지 여부
   ///
   /// 반환값: 생성된 Note 객체
   Future<Note> addNote({
@@ -58,6 +60,7 @@ class NoteService {
     int? pageNumber,
     List<String> tags = const [],
     String? memo,
+    bool usedOcr = false,
   }) async {
     final response = await supabase
         .from('notes')
@@ -72,6 +75,12 @@ class NoteService {
         })
         .select()
         .single();
+
+    // Airbridge 이벤트 트래킹
+    AirbridgeService.trackNoteCreated(
+      bookId: bookId,
+      usedOcr: usedOcr,
+    );
 
     return Note.fromJson(response);
   }

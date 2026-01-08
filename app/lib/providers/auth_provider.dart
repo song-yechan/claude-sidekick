@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import '../services/auth_service.dart';
 import '../core/supabase.dart';
+import '../core/airbridge_service.dart';
 
 /// 인증 서비스 인스턴스를 제공하는 Provider
 final authServiceProvider = Provider<IAuthService>((ref) => AuthService());
@@ -126,6 +127,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('🔐 SignUp 응답 - user: ${response.user?.id}, session: ${response.session?.accessToken != null}');
 
       if (response.user != null) {
+        // Airbridge 이벤트 트래킹
+        AirbridgeService.trackSignUp(method: 'email');
+        AirbridgeService.setUserId(response.user!.id);
+
         // 회원가입 완료 상태로 설정 (바로 홈으로 가지 않고 완료 화면 표시)
         state = AuthState(
           user: response.user,
@@ -185,6 +190,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
       print('🔐 SignIn 응답 - user: ${response.user?.id}, session: ${response.session?.accessToken != null}');
 
       if (response.user != null) {
+        // Airbridge 이벤트 트래킹
+        AirbridgeService.trackSignIn(method: 'email');
+        AirbridgeService.setUserId(response.user!.id);
+
         // 약간의 딜레이를 주어 Supabase 세션이 완전히 설정되도록 함
         await Future.delayed(const Duration(milliseconds: 100));
 
@@ -215,6 +224,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   /// 로그아웃
   Future<void> signOut() async {
+    // Airbridge 이벤트 트래킹
+    AirbridgeService.trackSignOut();
+    AirbridgeService.clearUser();
+
     await _authService.signOut();
     state = const AuthState();
   }

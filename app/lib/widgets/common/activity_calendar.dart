@@ -219,13 +219,17 @@ class ActivityCalendar extends StatelessWidget {
                               final dateKey =
                                   DateTime(date.year, date.month, date.day);
 
-                              // 미래 날짜는 빈 칸으로 표시
+                              // 미래 날짜는 빈 칸 색상으로 표시
                               final isFuture = dateKey.isAfter(today);
                               if (isFuture) {
                                 return Container(
                                   width: cellSize,
                                   height: cellSize,
                                   margin: const EdgeInsets.all(cellMargin),
+                                  decoration: BoxDecoration(
+                                    color: _getColor(context, 0),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
                                 );
                               }
 

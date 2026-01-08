@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/user_preferences_service.dart';
 import '../core/supabase.dart';
+import '../core/airbridge_service.dart';
 
 /// 온보딩 상태를 관리하는 Provider
 final onboardingProvider =
@@ -155,6 +156,12 @@ class OnboardingNotifier extends StateNotifier<OnboardingState> {
       isCompleted: true,
       userGoals: goals ?? state.userGoals,
       readingFrequency: frequency ?? state.readingFrequency,
+    );
+
+    // Airbridge 이벤트 트래킹
+    AirbridgeService.trackOnboardingCompleted(
+      goals: goals,
+      readingFrequency: frequency,
     );
 
     // 2. 클라우드에 저장 (동기화)

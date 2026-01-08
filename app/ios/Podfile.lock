@@ -1,4 +1,8 @@
 PODS:
+  - airbridge-ios-sdk (4.8.1)
+  - airbridge_flutter_sdk (4.8.0):
+    - airbridge-ios-sdk (= 4.8.1)
+    - Flutter
   - app_links (6.4.1):
     - Flutter
   - camera_avfoundation (0.0.1):
@@ -29,6 +33,7 @@ PODS:
     - Flutter
 
 DEPENDENCIES:
+  - airbridge_flutter_sdk (from `.symlinks/plugins/airbridge_flutter_sdk/ios`)
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - camera_avfoundation (from `.symlinks/plugins/camera_avfoundation/ios`)
   - Flutter (from `Flutter`)
@@ -44,9 +49,12 @@ DEPENDENCIES:
 
 SPEC REPOS:
   https://github.com/CocoaPods/Specs.git:
+    - airbridge-ios-sdk
     - TOCropViewController
 
 EXTERNAL SOURCES:
+  airbridge_flutter_sdk:
+    :path: ".symlinks/plugins/airbridge_flutter_sdk/ios"
   app_links:
     :path: ".symlinks/plugins/app_links/ios"
   camera_avfoundation:
@@ -73,6 +81,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/url_launcher_ios/ios"
 
 SPEC CHECKSUMS:
+  airbridge-ios-sdk: 1a224a4f7e70904219e923cc9217bf78b7b14d44
+  airbridge_flutter_sdk: cf5d53a6f223bf3c4607d93dae67abcc30a18596
   app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
   camera_avfoundation: 5675ca25298b6f81fa0a325188e7df62cc217741
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467

@@ -222,6 +222,8 @@
 				9705A1C41CF9048500538489 /* Embed Frameworks */,
 				3B06AD1E1E4923F5004D2608 /* Thin Binary */,
 				776AB5F5914EE0E4609A6F97 /* [CP] Embed Pods Frameworks */,
+				590CF1429134D9E784D77C46 /* [Airbridge] Copy airbridge.json */,
+				6C418D34C9D3F338F3B6844F /* [Airbridge] Create LibraryInfo.json */,
 			);
 			buildRules = (
 			);
@@ -309,6 +311,24 @@
 			shellPath = /bin/sh;
 			shellScript = "/bin/sh \"$FLUTTER_ROOT/packages/flutter_tools/bin/xcode_backend.sh\" embed_and_thin";
 		};
+		590CF1429134D9E784D77C46 /* [Airbridge] Copy airbridge.json */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Airbridge] Copy airbridge.json";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "ENVIRONMENT=$(echo \"${AIRBRIDGE_ENVIRONMENT:-}\" | tr '[:upper:]' '[:lower:]')\nENVIRONMENT=$(echo \"$ENVIRONMENT\" | grep -Eq '^[A-Za-z0-9_-]*$' && echo \"$ENVIRONMENT\" || echo \"\")\nFILENAME=\"${SRCROOT}/../airbridge.json\"\n\nCANDIDATE=\"${SRCROOT}/../airbridge.${ENVIRONMENT}.json\"\nif [ -r \"$CANDIDATE\" ]; then\n    FILENAME=\"$CANDIDATE\"\nfi\n\nif [ -r \"$FILENAME\" ]; then\n    cp \"$FILENAME\" \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/airbridge.json\"\nfi";
+		};
 		5A700E225499CBD2F31548F3 /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -330,6 +350,24 @@
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
+		};
+		6C418D34C9D3F338F3B6844F /* [Airbridge] Create LibraryInfo.json */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "[Airbridge] Create LibraryInfo.json";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "echo '{\"wrapperName\": \"airbridge-flutter-sdk\", \"wrapperVersion\": \"4.8.0\"}' > \"${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/LibraryInfo.json\"\n";
 		};
 		776AB5F5914EE0E4609A6F97 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;

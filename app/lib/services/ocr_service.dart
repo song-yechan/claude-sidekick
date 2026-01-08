@@ -10,6 +10,7 @@ library;
 import 'dart:convert';
 import 'dart:typed_data';
 import '../core/supabase.dart';
+import '../core/airbridge_service.dart';
 
 /// OcrService 인터페이스
 ///
@@ -56,6 +57,10 @@ class OcrService implements IOcrService {
 
     final text = response.data['text'] as String? ?? '';
     print('📷 OCR: Cloud Vision extracted ${text.length} chars');
+
+    // Airbridge 이벤트 트래킹 (성공)
+    AirbridgeService.trackOcrUsed(success: true);
+
     return text;
   }
 

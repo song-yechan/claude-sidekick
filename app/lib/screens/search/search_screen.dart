@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../../core/constants.dart';
+import '../../models/book.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/book/book_search_card.dart';
@@ -32,8 +33,25 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
     }
   }
 
-  Future<void> _addBook(BookSearchResult book) async {
+  Future<void> _addBook(BookSearchResult book, {bool skipDuplicateCheck = false}) async {
     try {
+      // 중복 체크 (skipDuplicateCheck가 false일 때만)
+      if (!skipDuplicateCheck) {
+        final duplicateBook = await findDuplicateBook(
+          ref,
+          isbn: book.isbn.isNotEmpty ? book.isbn : null,
+          title: book.title,
+          author: book.author,
+        );
+
+        if (duplicateBook != null && mounted) {
+          final shouldAdd = await _showDuplicateWarningDialog(book, duplicateBook);
+          if (shouldAdd != true) {
+            return; // 사용자가 취소함
+          }
+        }
+      }
+
       final result = await addBook(
         ref,
         title: book.title,
@@ -90,6 +108,160 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
         );
       }
     }
+  }
+
+  /// 중복 책 경고 다이얼로그를 표시합니다.
+  ///
+  /// 반환값: 사용자가 "그래도 추가"를 선택하면 true, 취소하면 false
+  Future<bool?> _showDuplicateWarningDialog(
+    BookSearchResult newBook,
+    Book existingBook,
+  ) {
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: context.surfaceContainerLowest,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppShapes.large),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.warning_amber_rounded,
+              color: context.colors.tertiary,
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            Text(
+              '이미 등록된 책',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '서재에 같은 책이 이미 있어요.',
+              style: TextStyle(
+                fontSize: 15,
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: context.surfaceContainerLow,
+                borderRadius: BorderRadius.circular(AppShapes.medium),
+              ),
+              child: Row(
+                children: [
+                  if (existingBook.coverImage != null &&
+                      existingBook.coverImage!.isNotEmpty)
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppShapes.small),
+                      child: Image.network(
+                        existingBook.coverImage!,
+                        width: 40,
+                        height: 56,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: 40,
+                          height: 56,
+                          color: context.surfaceContainerHigh,
+                          child: Icon(
+                            Icons.menu_book_rounded,
+                            color: context.colors.outline,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    )
+                  else
+                    Container(
+                      width: 40,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: context.surfaceContainerHigh,
+                        borderRadius: BorderRadius.circular(AppShapes.small),
+                      ),
+                      child: Icon(
+                        Icons.menu_book_rounded,
+                        color: context.colors.outline,
+                        size: 20,
+                      ),
+                    ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          existingBook.title,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: context.colors.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          existingBook.author,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: context.colors.onSurfaceVariant,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              '그래도 추가하시겠어요?',
+              style: TextStyle(
+                fontSize: 14,
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              '취소',
+              style: TextStyle(
+                color: context.colors.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              '그래도 추가',
+              style: TextStyle(
+                color: context.colors.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _showAddDialog(BookSearchResult book) {
