@@ -209,6 +209,8 @@ Future<Note?> addNote(
     // 전체 노트 목록과 해당 책의 노트 목록 모두 갱신
     ref.invalidate(notesProvider);
     ref.invalidate(notesByBookProvider(bookId));
+    // 활동 캘린더 갱신 (현재 연도)
+    ref.invalidate(noteCountsByDateProvider(DateTime.now().year));
 
     return note;
   } catch (e) {
@@ -271,6 +273,8 @@ Future<bool> deleteNote(WidgetRef ref, String noteId, {String? bookId}) async {
     if (bookId != null) {
       ref.invalidate(notesByBookProvider(bookId));
     }
+    // 활동 캘린더 갱신 (현재 연도)
+    ref.invalidate(noteCountsByDateProvider(DateTime.now().year));
     return true;
   } catch (e) {
     return false;

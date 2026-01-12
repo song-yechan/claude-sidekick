@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/theme.dart';
 
 /// GitHub 스타일 활동 캘린더 위젯
-class ActivityCalendar extends StatelessWidget {
+class ActivityCalendar extends StatefulWidget {
   final int year;
   final Map<DateTime, int> data;
   final Function(int)? onYearChanged;
@@ -14,6 +14,13 @@ class ActivityCalendar extends StatelessWidget {
     this.onYearChanged,
   });
 
+  @override
+  State<ActivityCalendar> createState() => _ActivityCalendarState();
+}
+
+class _ActivityCalendarState extends State<ActivityCalendar> {
+  late ScrollController _scrollController;
+
   /// 월 영어 약어
   static const _monthLabels = [
     'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
@@ -23,10 +30,82 @@ class ActivityCalendar extends StatelessWidget {
   /// 요일 라벨 (일, 월, 화, 수, 목, 금, 토 중 월, 수, 금만 표시)
   static const _dayLabels = ['', 'Mon', '', 'Wed', '', 'Fri', ''];
 
+  static const _cellSize = 11.0;
+  static const _cellMargin = 1.5;
+  static const _cellTotalSize = _cellSize + _cellMargin * 2;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToToday();
+    });
+  }
+
+  @override
+  void didUpdateWidget(ActivityCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.year != widget.year) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollToToday();
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  /// 오늘 날짜가 중앙에 오도록 스크롤
+  void _scrollToToday() {
+    if (!_scrollController.hasClients) return;
+
+    final now = DateTime.now();
+    final startDate = DateTime(widget.year, 1, 1);
+
+    // 현재 연도가 아니면 끝으로 스크롤
+    if (widget.year != now.year) {
+      _scrollController.jumpTo(0); // reverse: true이므로 0이 끝
+      return;
+    }
+
+    // 오늘까지의 주 수 계산
+    final firstDayOfWeek = startDate.weekday % 7;
+    final daysSinceStart = now.difference(startDate).inDays;
+    final weekIndex = (daysSinceStart + firstDayOfWeek) ~/ 7;
+
+    // 전체 주 수
+    final totalWeeks = 53; // 1년은 최대 53주
+
+    // 오늘 위치의 오프셋 (오른쪽 끝에서부터)
+    final todayOffset = (totalWeeks - weekIndex - 1) * _cellTotalSize;
+
+    // 화면 너비의 절반만큼 빼서 중앙에 오도록
+    final viewportWidth = _scrollController.position.viewportDimension;
+    final targetOffset = todayOffset - (viewportWidth / 2) + (_cellTotalSize / 2);
+
+    // 범위 내로 제한
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final clampedOffset = targetOffset.clamp(0.0, maxScroll);
+
+    _scrollController.jumpTo(clampedOffset);
+  }
+
   /// 활동량에 따른 색상 반환 (다크모드 대응)
-  Color _getColor(BuildContext context, int count) {
+  Color _getColor(BuildContext context, int count, {bool isFuture = false}) {
     final isDark = context.isDark;
     final baseColor = context.colors.primary;
+
+    // 미래 날짜는 더 연한 색상으로 구분
+    if (isFuture) {
+      return isDark
+          ? const Color(0xFF1E1E20)  // 다크모드: 더 어두운 색
+          : context.colors.outlineVariant.withValues(alpha: 0.3);  // 라이트모드: 연한 테두리색
+    }
+
     final emptyColor = isDark
         ? const Color(0xFF2B292D)
         : context.surfaceContainerHigh;
@@ -58,9 +137,9 @@ class ActivityCalendar extends StatelessWidget {
   Widget build(BuildContext context) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final startDate = DateTime(year, 1, 1);
+    final startDate = DateTime(widget.year, 1, 1);
     // 항상 12월 31일까지 그리드 표시 (미래 날짜는 빈 칸)
-    final endDate = DateTime(year, 12, 31);
+    final endDate = DateTime(widget.year, 12, 31);
 
     // 주별로 그룹화
     final weeks = <List<DateTime?>>[];
@@ -99,8 +178,6 @@ class ActivityCalendar extends StatelessWidget {
       monthLabelsForWeeks.add(_getMonthForWeek(weeks[i], previousWeek));
     }
 
-    const cellSize = 11.0;
-    const cellMargin = 1.5;
     const dayLabelWidth = 28.0;
 
     return Column(
@@ -111,7 +188,7 @@ class ActivityCalendar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '$year년 독서 활동',
+              '${widget.year}년 독서 활동',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -122,13 +199,13 @@ class ActivityCalendar extends StatelessWidget {
               children: [
                 _YearButton(
                   icon: Icons.chevron_left_rounded,
-                  onTap: () => onYearChanged?.call(year - 1),
+                  onTap: () => widget.onYearChanged?.call(widget.year - 1),
                 ),
                 const SizedBox(width: 4),
                 _YearButton(
                   icon: Icons.chevron_right_rounded,
-                  onTap: year < now.year
-                      ? () => onYearChanged?.call(year + 1)
+                  onTap: widget.year < now.year
+                      ? () => widget.onYearChanged?.call(widget.year + 1)
                       : null,
                 ),
               ],
@@ -153,7 +230,7 @@ class ActivityCalendar extends StatelessWidget {
                     // 요일 라벨
                     ...List.generate(7, (index) {
                       return SizedBox(
-                        height: cellSize + cellMargin * 2,
+                        height: _cellTotalSize,
                         child: Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
@@ -173,6 +250,7 @@ class ActivityCalendar extends StatelessWidget {
               // 스크롤 가능한 캘린더 영역
               Expanded(
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   scrollDirection: Axis.horizontal,
                   reverse: true,
                   child: Column(
@@ -186,7 +264,7 @@ class ActivityCalendar extends StatelessWidget {
                             final index = entry.key;
                             final month = monthLabelsForWeeks[index];
                             return SizedBox(
-                              width: cellSize + cellMargin * 2,
+                              width: _cellTotalSize,
                               child: month != null
                                   ? Text(
                                       _monthLabels[month - 1],
@@ -210,37 +288,41 @@ class ActivityCalendar extends StatelessWidget {
                             children: week.map((date) {
                               if (date == null) {
                                 return Container(
-                                  width: cellSize,
-                                  height: cellSize,
-                                  margin: const EdgeInsets.all(cellMargin),
+                                  width: _cellSize,
+                                  height: _cellSize,
+                                  margin: const EdgeInsets.all(_cellMargin),
                                 );
                               }
 
                               final dateKey =
                                   DateTime(date.year, date.month, date.day);
 
-                              // 미래 날짜는 빈 칸 색상으로 표시
+                              // 미래 날짜 체크
                               final isFuture = dateKey.isAfter(today);
+
                               if (isFuture) {
-                                return Container(
-                                  width: cellSize,
-                                  height: cellSize,
-                                  margin: const EdgeInsets.all(cellMargin),
-                                  decoration: BoxDecoration(
-                                    color: _getColor(context, 0),
-                                    borderRadius: BorderRadius.circular(2),
+                                return Tooltip(
+                                  message: '${date.month}월 ${date.day}일',
+                                  child: Container(
+                                    width: _cellSize,
+                                    height: _cellSize,
+                                    margin: const EdgeInsets.all(_cellMargin),
+                                    decoration: BoxDecoration(
+                                      color: _getColor(context, 0, isFuture: true),
+                                      borderRadius: BorderRadius.circular(2),
+                                    ),
                                   ),
                                 );
                               }
 
-                              final count = data[dateKey] ?? 0;
+                              final count = widget.data[dateKey] ?? 0;
 
                               return Tooltip(
                                 message: '${date.month}월 ${date.day}일: $count개',
                                 child: Container(
-                                  width: cellSize,
-                                  height: cellSize,
-                                  margin: const EdgeInsets.all(cellMargin),
+                                  width: _cellSize,
+                                  height: _cellSize,
+                                  margin: const EdgeInsets.all(_cellMargin),
                                   decoration: BoxDecoration(
                                     color: _getColor(context, count),
                                     borderRadius: BorderRadius.circular(2),
