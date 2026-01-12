@@ -12,12 +12,16 @@ library;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
+import '../services/review_service.dart';
 import 'auth_provider.dart';
 
 export '../models/book.dart' show BookSearchResult;
 
 /// BookService 인스턴스를 제공하는 Provider
 final bookServiceProvider = Provider<IBookService>((ref) => BookService());
+
+/// ReviewService 인스턴스를 제공하는 Provider
+final reviewServiceProvider = Provider<IReviewService>((ref) => ReviewService());
 
 /// 현재 로그인한 사용자의 책 목록을 제공하는 Provider
 ///
@@ -194,6 +198,11 @@ Future<Book?> addBook(
 
     // 책 목록 새로고침
     ref.invalidate(booksProvider);
+
+    // 책 2권 이상 저장 시 인앱 리뷰 요청
+    final reviewService = ref.read(reviewServiceProvider);
+    final books = await bookService.getBooks(authState.user!.id);
+    await reviewService.checkAndRequestReviewForBooks(books.length);
 
     return book;
   } catch (e) {

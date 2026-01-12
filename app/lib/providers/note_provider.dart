@@ -17,6 +17,7 @@ import '../models/note.dart';
 import '../services/note_service.dart';
 import '../services/ocr_service.dart' show IOcrService, OcrService;
 import 'auth_provider.dart';
+import 'book_provider.dart' show reviewServiceProvider;
 
 /// NoteService 인스턴스를 제공하는 Provider
 final noteServiceProvider = Provider<NoteService>((ref) => NoteService());
@@ -209,6 +210,11 @@ Future<Note?> addNote(
     // 전체 노트 목록과 해당 책의 노트 목록 모두 갱신
     ref.invalidate(notesProvider);
     ref.invalidate(notesByBookProvider(bookId));
+
+    // 노트 3개 이상 작성 시 인앱 리뷰 요청
+    final reviewService = ref.read(reviewServiceProvider);
+    final notes = await noteService.getNotes(authState.user!.id);
+    await reviewService.checkAndRequestReviewForNotes(notes.length);
 
     return note;
   } catch (e) {
