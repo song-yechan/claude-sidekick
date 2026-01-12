@@ -135,6 +135,104 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     }
   }
 
+  void _showEditDialog(String categoryId, String currentName) {
+    _nameController.text = currentName;
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.surfaceContainerLowest,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(AppShapes.extraLarge),
+        ),
+      ),
+      builder: (dialogContext) => Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          top: 20,
+          bottom: MediaQuery.of(dialogContext).viewInsets.bottom + 20,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 핸들
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: context.colors.outlineVariant,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              '카테고리 수정',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+            TextField(
+              controller: _nameController,
+              autofocus: true,
+              style: TextStyle(
+                fontSize: 16,
+                color: context.colors.onSurface,
+              ),
+              decoration: const InputDecoration(
+                hintText: '카테고리 이름',
+              ),
+              onSubmitted: (_) => _updateCategory(dialogContext, categoryId),
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: () => _updateCategory(dialogContext, categoryId),
+                child: const Text(
+                  '저장하기',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: AppSpacing.sm),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _updateCategory(BuildContext dialogContext, String categoryId) async {
+    final name = _nameController.text.trim();
+    if (name.isEmpty) return;
+
+    Navigator.pop(dialogContext);
+
+    final success = await updateCategory(ref, categoryId, name: name);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('카테고리가 수정되었습니다'),
+          backgroundColor: AppColors.success,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppShapes.small),
+          ),
+        ),
+      );
+    }
+  }
+
   void _showDeleteDialog(String categoryId, String name) {
     showDialog(
       context: context,
@@ -282,6 +380,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                           category: category,
                           bookCount: bookCount,
                           onTap: () => context.push('/categories/${category.id}'),
+                          onEdit: () =>
+                              _showEditDialog(category.id, category.name),
                           onDelete: () =>
                               _showDeleteDialog(category.id, category.name),
                         ),
