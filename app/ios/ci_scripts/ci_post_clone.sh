@@ -124,6 +124,19 @@ pod install --repo-update
 echo "Pods installed successfully"
 
 # -----------------------------------------------------------------------------
+# 6. Flutter Build iOS (for Xcode Cloud)
+# -----------------------------------------------------------------------------
+echo ""
+echo "Step 6: Building Flutter iOS..."
+
+cd "$APP_DIR"
+echo "Working directory: $(pwd)"
+
+# Build Flutter iOS (config only - let Xcode do the actual build)
+"$FLUTTER_HOME/bin/flutter" build ios --release --no-codesign
+echo "Flutter iOS build completed"
+
+# -----------------------------------------------------------------------------
 # Done
 # -----------------------------------------------------------------------------
 echo ""
