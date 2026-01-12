@@ -124,10 +124,32 @@ pod install --repo-update
 echo "Pods installed successfully"
 
 # -----------------------------------------------------------------------------
-# 6. Flutter Build iOS (for Xcode Cloud)
+# 6. Create .env file (for Xcode Cloud)
 # -----------------------------------------------------------------------------
 echo ""
-echo "Step 6: Building Flutter iOS..."
+echo "Step 6: Creating .env file..."
+
+cd "$APP_DIR"
+
+# .env 파일이 없으면 .env.prod를 복사 (프로덕션 빌드용)
+if [ ! -f ".env" ]; then
+    if [ -f ".env.prod" ]; then
+        cp .env.prod .env
+        echo ".env file created from .env.prod"
+    else
+        # .env.prod도 없으면 빈 파일 생성
+        touch .env
+        echo "Empty .env file created"
+    fi
+else
+    echo ".env file already exists"
+fi
+
+# -----------------------------------------------------------------------------
+# 7. Flutter Build iOS (for Xcode Cloud)
+# -----------------------------------------------------------------------------
+echo ""
+echo "Step 7: Building Flutter iOS..."
 
 cd "$APP_DIR"
 echo "Working directory: $(pwd)"
