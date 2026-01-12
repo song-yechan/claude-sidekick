@@ -243,3 +243,135 @@ npx supabase functions logs <function-name>
 - Aladin API: TTBKey 필요, 일일 호출 제한 있음
 - iOS 최소 버전: 13.0
 - Android minSdk: 21
+
+---
+
+## 12. 테스트 전략
+
+### 테스트 유형별 위치
+| 유형 | 위치 | 목적 |
+|------|------|------|
+| Unit Test | `test/` | 로직 검증 (services, providers) |
+| Widget Test | `test/widgets/` | UI 컴포넌트 검증 |
+| Integration Test | `integration_test/` | E2E 사용자 흐름 |
+
+### 새 기능 추가 시 필수 테스트
+- [ ] 관련 Provider에 대한 unit test
+- [ ] 주요 화면에 대한 widget test
+- [ ] 기존 테스트 통과 확인: `flutter test`
+
+### 회귀 테스트 (Regression)
+기존 기능 영향 여부 확인 - 아래 핵심 흐름이 정상 동작하는지 검증:
+- 책 추가/수정/삭제 흐름
+- 노트 OCR → 저장 흐름
+- 로그인/로그아웃 흐름
+- 카테고리 관리 흐름
+
+---
+
+## 13. 릴리즈 전 체크리스트
+
+### 코드 품질
+- [ ] `print()` / `debugPrint()` 문 제거 또는 `kDebugMode` 조건 추가
+- [ ] 불필요한 주석 정리
+- [ ] `flutter analyze` 경고 0개 확인
+
+### 테스트
+- [ ] `flutter test` 전체 통과
+- [ ] TestFlight(iOS) / 내부 테스트(Android)에서 수동 테스트
+- [ ] 주요 사용자 흐름 검증 (책 추가 → 노트 작성 → OCR)
+
+### 버전 관리
+- [ ] `pubspec.yaml` 버전 업데이트 (`version: x.y.z+buildNumber`)
+- [ ] 변경사항 문서화 (릴리즈 노트)
+
+### 배포 후
+- [ ] 에러 모니터링 대시보드 확인
+- [ ] 단계적 출시 (Staged Rollout) 권장 - 10% → 50% → 100%
+
+---
+
+## 14. CI/CD (Xcode Cloud)
+
+### 워크플로우 설정
+- App Store Connect → 앱 선택 → Xcode Cloud
+- dev/prod 앱 각각 별도 워크플로우 필요
+- TestFlight 배포: 첫 빌드 완료 후 Post-Actions에서 활성화
+
+### ci_post_clone.sh 필수 단계
+스크립트 수정 시 아래 순서 유지:
+```bash
+1. Flutter SDK 설치 (git clone)
+2. flutter pub get
+3. flutter precache --ios
+4. pod install --repo-update
+5. flutter build ios --release --no-codesign  # ← 필수! 누락 시 빌드 실패
+```
+
+### 빌드 실패 시 확인
+| 에러 | 원인 | 해결 |
+|------|------|------|
+| `PhaseScriptExecution failed` | ci_post_clone.sh에서 flutter build 누락 | 스크립트에 flutter build ios 추가 |
+| `exit code 65` | Scheme 또는 빌드 설정 문제 | Xcode에서 scheme 확인 |
+| `FLUTTER_ROOT not set` | Flutter 경로 문제 | PATH 설정 확인 |
+
+### Flavor별 빌드 명령어
+```bash
+# Dev 빌드
+flutter build ipa --flavor dev --release
+
+# Prod 빌드
+flutter build ipa --flavor prod --release
+```
+
+---
+
+## 15. 에러 모니터링
+
+### 로깅 규칙
+```dart
+// 개발 환경에서만 출력
+if (kDebugMode) {
+  print('Debug: $message');
+}
+
+// 또는 조건부 로깅
+debugPrint('Info: $message');  // release 빌드에서 자동 제거됨
+```
+
+### 프로덕션 에러 추적
+- 크래시 발생 시 즉시 확인할 수 있도록 모니터링 도구 연동 권장
+- Firebase Crashlytics 또는 Sentry 등
+
+---
+
+## 16. 변경사항 검증 방법
+
+### 코드 변경 후 필수 실행
+```bash
+flutter analyze          # 정적 분석 - 경고/에러 확인
+flutter test             # 테스트 실행
+flutter build ios --flavor dev --release  # 빌드 확인 (선택)
+```
+
+### Provider 수정 시
+- 해당 Provider를 사용하는 모든 화면에서 수동 테스트
+- `ref.watch()` / `ref.read()` 사용처 확인
+
+### Service 수정 시
+- 관련 Provider 동작 확인
+- API 호출 결과 검증
+
+### Edge Function 수정 시
+```bash
+# 로컬 테스트
+npx supabase functions serve <function-name>
+
+# 배포 (반드시 --no-verify-jwt 플래그)
+npx supabase functions deploy <function-name> --no-verify-jwt
+```
+
+### 모델 수정 시
+- `fromJson()` / `toJson()` 호환성 확인
+- DB 스키마 변경 필요 여부 확인
+- 관련 서비스/프로바이더 모두 테스트
