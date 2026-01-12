@@ -63,6 +63,7 @@ class CategoryCard extends StatelessWidget {
   final Category category;
   final int bookCount;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
   const CategoryCard({
@@ -70,6 +71,7 @@ class CategoryCard extends StatelessWidget {
     required this.category,
     this.bookCount = 0,
     this.onTap,
+    this.onEdit,
     this.onDelete,
   });
 
@@ -129,6 +131,25 @@ class CategoryCard extends StatelessWidget {
                 ],
               ),
             ),
+            // 수정 버튼
+            if (onEdit != null)
+              GestureDetector(
+                onTap: onEdit,
+                child: Container(
+                  width: 32,
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: context.surfaceContainerHigh,
+                    borderRadius: BorderRadius.circular(AppShapes.small),
+                  ),
+                  child: Icon(
+                    Icons.edit_outlined,
+                    size: 18,
+                    color: context.colors.onSurfaceVariant,
+                  ),
+                ),
+              ),
+            if (onEdit != null) const SizedBox(width: AppSpacing.sm),
             // 삭제 버튼
             if (onDelete != null)
               GestureDetector(
