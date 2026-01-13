@@ -399,12 +399,19 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     color: context.colors.onSurface,
                   ),
                 ),
-                if (!_isEditingMemo)
-                  TextButton.icon(
-                    icon: const Icon(Icons.edit_rounded, size: 18),
-                    label: const Text('수정'),
-                    onPressed: () => setState(() => _isEditingMemo = true),
+                TextButton.icon(
+                  icon: Icon(
+                    _isEditingMemo ? Icons.close : Icons.edit_rounded,
+                    size: 18,
                   ),
+                  label: Text(_isEditingMemo ? '취소' : '수정'),
+                  onPressed: () {
+                    if (_isEditingMemo) {
+                      _memoController.text = note.memo ?? '';
+                    }
+                    setState(() => _isEditingMemo = !_isEditingMemo);
+                  },
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -423,22 +430,12 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      TextButton(
-                        onPressed: () {
-                          _memoController.text = note.memo ?? '';
-                          setState(() => _isEditingMemo = false);
-                        },
-                        child: const Text('취소'),
-                      ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
-                        onPressed: _saveMemo,
-                        child: const Text('저장'),
-                      ),
-                    ],
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _saveMemo,
+                      child: const Text('저장'),
+                    ),
                   ),
                 ],
               )
