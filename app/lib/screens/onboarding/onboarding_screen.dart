@@ -291,23 +291,23 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<OnboardingPage> _pages = [
+  List<OnboardingPage> _getPages(BuildContext context) => [
     OnboardingPage(
       icon: Icons.camera_alt_rounded,
-      title: '문장을 촬영하세요',
-      subtitle: '책 속 마음에 드는 문장을\n카메라로 간편하게 촬영하세요',
+      title: context.l10n.onboarding_benefit_title1,
+      subtitle: context.l10n.onboarding_benefit_desc1,
       color: const Color(0xFF5B6BBF),
     ),
     OnboardingPage(
       icon: Icons.auto_awesome,
-      title: 'AI가 요약해드려요',
-      subtitle: '촬영한 문장을 자동으로 인식하고\nAI가 핵심만 요약해드립니다',
+      title: context.l10n.note_aiSummarize,
+      subtitle: context.l10n.onboarding_benefit_desc2,
       color: const Color(0xFF795369),
     ),
     OnboardingPage(
       icon: Icons.calendar_month_rounded,
-      title: '독서 습관을 만드세요',
-      subtitle: '매일의 독서 기록이 쌓여\n나만의 독서 캘린더가 완성됩니다',
+      title: context.l10n.onboarding_benefit_title3,
+      subtitle: context.l10n.onboarding_benefit_desc3,
       color: const Color(0xFF2E7D32),
     ),
   ];
@@ -351,9 +351,9 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                     _currentPage = index;
                   });
                 },
-                itemCount: _pages.length,
+                itemCount: _getPages(context).length,
                 itemBuilder: (context, index) {
-                  final page = _pages[index];
+                  final page = _getPages(context)[index];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
                     child: Column(
@@ -408,7 +408,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: List.generate(
-                _pages.length,
+                _getPages(context).length,
                 (index) => AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   margin: const EdgeInsets.symmetric(horizontal: 4),
@@ -432,7 +432,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_currentPage < _pages.length - 1) {
+                    if (_currentPage < _getPages(context).length - 1) {
                       _pageController.nextPage(
                         duration: const Duration(milliseconds: 300),
                         curve: Curves.easeInOut,
@@ -442,7 +442,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                     }
                   },
                   child: Text(
-                    _currentPage < _pages.length - 1 ? context.l10n.common_next : context.l10n.common_start,
+                    _currentPage < _getPages(context).length - 1 ? context.l10n.common_next : context.l10n.common_start,
                   ),
                 ),
               ),
@@ -562,7 +562,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           ),
           const SizedBox(height: AppSpacing.xxl),
           Text(
-            '환영합니다! 👋',
+            context.l10n.auth_welcomeWithEmoji,
             style: TextStyle(
               fontSize: 32,
               fontWeight: FontWeight.w700,
@@ -571,7 +571,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
-            '북스크라이브와 함께\n더 풍요로운 독서 생활을 시작해보세요',
+            context.l10n.onboarding_minimal_cta,
             style: TextStyle(
               fontSize: 16,
               color: context.colors.onSurfaceVariant,
@@ -598,10 +598,10 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
 
   Widget _buildGoalsStep(BuildContext context) {
     final goals = [
-      ('📖', '독서 습관 만들기'),
-      ('✨', '좋은 문장 수집하기'),
-      ('📝', '독서 기록 남기기'),
-      ('🧠', '읽은 내용 기억하기'),
+      ('📖', context.l10n.onboarding_buildHabit),
+      ('✨', context.l10n.onboarding_collectSentences),
+      ('📝', context.l10n.onboarding_keepRecord),
+      ('🧠', context.l10n.onboarding_rememberContent),
     ];
 
     return Padding(
@@ -612,7 +612,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
         children: [
           const SizedBox(height: AppSpacing.xxl),
           Text(
-            '북스크라이브를 통해\n무엇을 하고 싶으세요?',
+            context.l10n.onboarding_whatDoYouWant,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -622,7 +622,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '여러 개를 선택할 수 있어요',
+            context.l10n.onboarding_multiSelect,
             style: TextStyle(
               fontSize: 14,
               color: context.colors.onSurfaceVariant,
@@ -714,9 +714,9 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
 
   Widget _buildFrequencyStep(BuildContext context) {
     final frequencies = [
-      ('매일 조금씩', '하루 10분이면 충분해요'),
-      ('주 2-3회', '꾸준함이 중요해요'),
-      ('여유 있을 때', '부담 없이 즐기세요'),
+      (context.l10n.onboarding_habit_daily, context.l10n.onboarding_habit_10min),
+      (context.l10n.onboarding_freqMedium, context.l10n.onboarding_habit_title),
+      (context.l10n.onboarding_freqOccasional, context.l10n.onboarding_habit_noStress),
     ];
 
     return Padding(
@@ -727,7 +727,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
         children: [
           const SizedBox(height: AppSpacing.xxl),
           Text(
-            '얼마나 자주\n책을 읽으시나요?',
+            context.l10n.onboarding_howOften,
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w700,
@@ -940,7 +940,7 @@ class OnboardingVariant3 extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.sm),
               Text(
-                '책 속 문장을 기록하는 가장 스마트한 방법',
+                context.l10n.onboarding_minimal_subhead,
                 style: TextStyle(
                   fontSize: 16,
                   color: context.colors.onSurfaceVariant,
@@ -954,22 +954,22 @@ class OnboardingVariant3 extends ConsumerWidget {
               _buildFeatureItem(
                 context,
                 icon: Icons.camera_alt_outlined,
-                title: '촬영',
-                description: '문장을 찍으면 텍스트로 변환',
+                title: context.l10n.ocr_capture,
+                description: context.l10n.onboarding_benefit_title2,
               ),
               const SizedBox(height: AppSpacing.lg),
               _buildFeatureItem(
                 context,
                 icon: Icons.psychology_outlined,
-                title: 'AI 요약',
-                description: '핵심만 쏙쏙 정리',
+                title: context.l10n.note_aiSummary,
+                description: context.l10n.ocr_summarize,
               ),
               const SizedBox(height: AppSpacing.lg),
               _buildFeatureItem(
                 context,
                 icon: Icons.grid_view_rounded,
-                title: '캘린더',
-                description: '나만의 독서 기록',
+                title: context.l10n.calendar_title,
+                description: context.l10n.onboarding_benefit_title4,
               ),
 
               const Spacer(),
@@ -982,14 +982,14 @@ class OnboardingVariant3 extends ConsumerWidget {
                     ref.read(onboardingProvider.notifier).completeOnboarding();
                     context.go('/');
                   },
-                  child: const Text('바로 시작하기'),
+                  child: Text(context.l10n.common_startNow),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
 
               // 부가 정보
               Text(
-                '30초면 시작할 수 있어요',
+                context.l10n.auth_quickStart,
                 style: TextStyle(
                   fontSize: 13,
                   color: context.colors.onSurfaceVariant,

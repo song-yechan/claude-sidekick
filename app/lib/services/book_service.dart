@@ -11,6 +11,7 @@ library;
 import '../core/supabase.dart';
 import '../core/airbridge_service.dart';
 import '../models/book.dart';
+import '../providers/language_provider.dart';
 
 /// BookService 인터페이스
 ///
@@ -47,7 +48,7 @@ abstract class IBookService {
     List<String>? categoryIds,
   });
   Future<void> deleteBook(String bookId);
-  Future<List<BookSearchResult>> searchBooks(String query);
+  Future<List<BookSearchResult>> searchBooks(String query, {AppLanguage language = AppLanguage.ko});
 }
 
 /// 책 데이터 CRUD 및 검색 기능을 제공하는 서비스 클래스
@@ -63,6 +64,7 @@ class BookService implements IBookService {
   /// [author] 저자
   ///
   /// 반환값: 중복 책이 있으면 해당 Book 객체, 없으면 null
+  @override
   Future<Book?> findDuplicateBook({
     required String userId,
     String? isbn,
@@ -105,6 +107,7 @@ class BookService implements IBookService {
   ///
   /// 책 정보와 함께 연결된 카테고리 ID 목록도 함께 가져옵니다.
   /// 최신 등록순으로 정렬됩니다.
+  @override
   Future<List<Book>> getBooks(String userId) async {
     // books 테이블과 book_categories 테이블을 조인하여 조회
     final response = await supabase
@@ -130,6 +133,7 @@ class BookService implements IBookService {
   ///
   /// 책 정보를 저장한 후, 카테고리 연결도 함께 처리합니다.
   /// 반환값: 생성된 Book 객체
+  @override
   Future<Book> addBook({
     required String userId,
     required String title,
@@ -187,6 +191,7 @@ class BookService implements IBookService {
   ///
   /// null이 아닌 필드만 업데이트됩니다.
   /// categoryIds가 제공되면 기존 카테고리 연결을 모두 삭제하고 새로 설정합니다.
+  @override
   Future<void> updateBook({
     required String bookId,
     String? title,
@@ -233,24 +238,33 @@ class BookService implements IBookService {
   ///
   /// [bookId] 삭제할 책의 ID
   /// 연결된 book_categories 레코드는 CASCADE로 자동 삭제됩니다.
+  @override
   Future<void> deleteBook(String bookId) async {
     await supabase.from('books').delete().eq('id', bookId);
   }
 
-  /// 알라딘 API를 통해 도서를 검색합니다.
+  /// 도서를 검색합니다.
   ///
   /// [query] 검색어 (제목, 저자 등)
+  /// [language] 앱 언어 설정 (한국어: 알라딘 API, 영어: Open Library API)
   ///
-  /// Supabase Edge Function(book-search)을 호출하여 검색을 수행합니다.
+  /// Supabase Edge Function을 호출하여 검색을 수행합니다.
+  /// - 한국어: book-search (알라딘 API)
+  /// - 영어: book-search-openlib (Open Library API)
+  ///
   /// 반환값: 검색 결과 목록
-  Future<List<BookSearchResult>> searchBooks(String query) async {
+  @override
+  Future<List<BookSearchResult>> searchBooks(String query, {AppLanguage language = AppLanguage.ko}) async {
     if (query.trim().isEmpty) return [];
 
     // Airbridge 이벤트 트래킹
     AirbridgeService.trackBookSearched(query: query);
 
+    // 언어에 따라 다른 Edge Function 호출
+    final functionName = language == AppLanguage.ko ? 'book-search' : 'book-search-openlib';
+
     final response = await supabase.functions.invoke(
-      'book-search',
+      functionName,
       body: {'query': query},
     );
 

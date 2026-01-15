@@ -14,6 +14,7 @@ import '../models/book.dart';
 import '../services/book_service.dart';
 import '../services/review_service.dart';
 import 'auth_provider.dart';
+import 'language_provider.dart';
 
 export '../models/book.dart' show BookSearchResult;
 
@@ -108,12 +109,15 @@ class BookSearchState {
 
 /// 도서 검색 기능을 관리하는 StateNotifier
 ///
-/// 알라딘 API를 통해 도서를 검색하고 결과를 상태로 관리합니다.
+/// 언어 설정에 따라 적절한 API로 도서를 검색합니다.
+/// - 한국어: 알라딘 API
+/// - 영어: Google Books API
 /// 검색어가 비어있으면 상태를 초기화합니다.
 class BookSearchNotifier extends StateNotifier<BookSearchState> {
   final IBookService _bookService;
+  final AppLanguage _language;
 
-  BookSearchNotifier(this._bookService) : super(const BookSearchState());
+  BookSearchNotifier(this._bookService, this._language) : super(const BookSearchState());
 
   /// 도서 검색을 수행합니다.
   ///
@@ -128,7 +132,7 @@ class BookSearchNotifier extends StateNotifier<BookSearchState> {
     state = state.copyWith(isLoading: true, error: null);
 
     try {
-      final results = await _bookService.searchBooks(query);
+      final results = await _bookService.searchBooks(query, language: _language);
       state = BookSearchState(results: results);
     } catch (e) {
       state = state.copyWith(isLoading: false, error: e.toString());
@@ -142,10 +146,13 @@ class BookSearchNotifier extends StateNotifier<BookSearchState> {
 }
 
 /// 도서 검색 상태를 관리하는 Provider
+///
+/// languageProvider를 구독하여 언어 변경 시 자동으로 새로운 Notifier를 생성합니다.
 final bookSearchProvider =
     StateNotifierProvider<BookSearchNotifier, BookSearchState>((ref) {
   final bookService = ref.watch(bookServiceProvider);
-  return BookSearchNotifier(bookService);
+  final language = ref.watch(languageProvider);
+  return BookSearchNotifier(bookService, language);
 });
 
 /// 새 책을 서재에 추가합니다.

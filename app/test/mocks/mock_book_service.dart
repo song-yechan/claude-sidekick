@@ -5,39 +5,9 @@
 library;
 
 import 'package:bookscribe/models/book.dart';
+import 'package:bookscribe/providers/language_provider.dart';
+import 'package:bookscribe/services/book_service.dart';
 import 'test_fixtures.dart';
-
-/// BookService 인터페이스
-///
-/// 실제 BookService와 MockBookService가 공유하는 인터페이스입니다.
-abstract class IBookService {
-  Future<List<Book>> getBooks(String userId);
-  Future<Book> addBook({
-    required String userId,
-    required String title,
-    required String author,
-    String? isbn,
-    String? publisher,
-    String? publishDate,
-    String? coverImage,
-    String? description,
-    int? pageCount,
-    List<String> categoryIds,
-  });
-  Future<void> updateBook({
-    required String bookId,
-    String? title,
-    String? author,
-    String? isbn,
-    String? publisher,
-    String? publishDate,
-    String? coverImage,
-    String? description,
-    List<String>? categoryIds,
-  });
-  Future<void> deleteBook(String bookId);
-  Future<List<BookSearchResult>> searchBooks(String query);
-}
 
 /// Mock BookService
 ///
@@ -103,6 +73,25 @@ class MockBookService implements IBookService {
     if (delayMs > 0) {
       await Future.delayed(Duration(milliseconds: delayMs));
     }
+  }
+
+  @override
+  Future<Book?> findDuplicateBook({
+    required String userId,
+    String? isbn,
+    required String title,
+    required String author,
+  }) async {
+    for (final book in _books) {
+      if (_bookOwners[book.id] != userId) continue;
+      if (isbn != null && isbn.isNotEmpty && book.isbn == isbn) {
+        return book;
+      }
+      if (book.title == title && book.author == author) {
+        return book;
+      }
+    }
+    return null;
   }
 
   @override
@@ -205,7 +194,7 @@ class MockBookService implements IBookService {
   }
 
   @override
-  Future<List<BookSearchResult>> searchBooks(String query) async {
+  Future<List<BookSearchResult>> searchBooks(String query, {AppLanguage language = AppLanguage.ko}) async {
     await _simulateDelay();
     if (shouldThrowOnSearch) {
       throw Exception(errorMessage);

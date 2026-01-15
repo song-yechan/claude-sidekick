@@ -5,6 +5,7 @@
 library;
 
 import 'package:bookscribe/models/book.dart';
+import 'package:bookscribe/providers/language_provider.dart';
 import 'package:bookscribe/services/book_service.dart';
 import 'test_fixtures.dart';
 
@@ -195,7 +196,7 @@ class FakeBookService implements IBookService {
   }
 
   @override
-  Future<List<BookSearchResult>> searchBooks(String query) async {
+  Future<List<BookSearchResult>> searchBooks(String query, {AppLanguage language = AppLanguage.ko}) async {
     searchCallCount++;
     lastSearchQuery = query;
 
