@@ -35,7 +35,7 @@ class LibraryScreen extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Text(
-                '내 서재',
+                context.l10n.library_title,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -69,7 +69,7 @@ class LibraryScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           Text(
-                            '아직 등록된 책이 없어요',
+                            context.l10n.library_noBooks,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -78,7 +78,7 @@ class LibraryScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
-                            '검색 탭에서 책을 추가해보세요',
+                            context.l10n.library_addFromSearch,
                             style: TextStyle(
                               fontSize: 14,
                               color: context.colors.onSurfaceVariant,
@@ -88,7 +88,7 @@ class LibraryScreen extends ConsumerWidget {
                           ElevatedButton.icon(
                             onPressed: () => context.go('/search'),
                             icon: const Icon(Icons.search_rounded, size: 18),
-                            label: const Text('책 검색하기'),
+                            label: Text(context.l10n.search_searchBooks),
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(0, 44),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -143,7 +143,7 @@ class LibraryScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        '불러오기에 실패했어요',
+                        context.l10n.error_loadFailedMessage,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -152,7 +152,7 @@ class LibraryScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        getUserFriendlyErrorMessage(error),
+                        getUserFriendlyErrorMessage(context, error),
                         style: TextStyle(
                           fontSize: 14,
                           color: context.colors.onSurfaceVariant,
@@ -162,7 +162,7 @@ class LibraryScreen extends ConsumerWidget {
                       const SizedBox(height: AppSpacing.xl),
                       OutlinedButton(
                         onPressed: () => ref.invalidate(booksProvider),
-                        child: const Text('다시 시도'),
+                        child: Text(context.l10n.common_retry),
                       ),
                     ],
                   ),

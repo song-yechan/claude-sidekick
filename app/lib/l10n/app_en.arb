@@ -1,0 +1,296 @@
+{
+  "@@locale": "en",
+
+  "appName": "BookScribe",
+
+  "common_confirm": "OK",
+  "common_cancel": "Cancel",
+  "common_delete": "Delete",
+  "common_save": "Save",
+  "common_saving": "Save",
+  "common_edit": "Edit",
+  "common_next": "Next",
+  "common_skip": "Skip",
+  "common_done": "Done",
+  "common_retry": "Retry",
+  "common_add": "Add",
+  "common_preview": "Preview",
+  "common_start": "Get Started",
+  "common_startNow": "Start Now",
+  "common_preparing": "Preparing...",
+  "common_version": "Version",
+
+  "auth_login": "Log In",
+  "auth_logout": "Log Out",
+  "auth_signUp": "Sign Up",
+  "auth_signUpButton": "Sign Up",
+  "auth_email": "Email",
+  "auth_password": "Password",
+  "auth_passwordConfirm": "Confirm Password",
+  "auth_emailPlaceholder": "Enter your email",
+  "auth_passwordPlaceholder": "Enter your password",
+  "auth_passwordConfirmPlaceholder": "Re-enter your password",
+  "auth_noAccount": "Don't have an account? Sign Up",
+  "auth_hasAccount": "Already have an account? Log In",
+  "auth_loginRequired": "Login Required",
+  "auth_loginRequiredMessage": "Please log in to continue",
+  "auth_logoutConfirm": "Are you sure you want to log out?",
+  "auth_welcomeBack": "Welcome back!",
+  "auth_welcome": "Welcome!",
+  "auth_welcomeWithEmoji": "Welcome! 👋",
+  "auth_simpleSignUp": "Get started with a simple sign up",
+  "auth_quickStart": "Takes only 30 seconds",
+
+  "auth_error_invalidEmail": "Please enter a valid email",
+  "auth_error_invalidEmailWithPeriod": "Please enter a valid email.",
+  "auth_error_passwordTooShort": "Password must be at least 6 characters",
+  "auth_error_passwordTooShortWithPeriod": "Password must be at least 6 characters.",
+  "auth_error_passwordMismatch": "Passwords do not match",
+  "auth_error_minLength": "Must be at least 6 characters",
+  "auth_error_loginFailed": "Login failed.",
+  "auth_error_signUpFailed": "Sign up failed.",
+  "auth_error_wrongCredentials": "Invalid email or password.",
+  "auth_error_emailExists": "This email is already registered.",
+  "auth_error_emailVerification": "Email verification required.",
+
+  "account_title": "Account",
+  "account_info": "Account Info",
+  "account_loggedIn": "Logged in as",
+  "account_delete": "Delete Account",
+  "account_deleteConfirm": "Deleting your account will permanently remove:",
+  "account_deleteWarning": "All data will be permanently deleted",
+  "account_deleteIrreversible": "This action cannot be undone.",
+  "account_deleting": "Deleting account...",
+  "account_deleteFailed": "Failed to delete account. Please try again.",
+
+  "onboarding_selectStyle": "Select onboarding style",
+  "onboarding_styleSelection": "Onboarding Style",
+  "onboarding_previewSelected": "Preview selected style",
+  "onboarding_selectFromThree": "Choose from 3 different styles to preview",
+  "onboarding_style1Title": "Style 1: Benefit-focused",
+  "onboarding_style1Desc": "Calm, Blinkist style\nSlide-based feature introduction",
+  "onboarding_style2Title": "Style 2: Interactive",
+  "onboarding_style2Desc": "Spotify, Duolingo style\nPersonalized experience based on goals",
+  "onboarding_style3Title": "Style 3: Minimal Quick-start",
+  "onboarding_style3Desc": "Loom style\nSingle page with essential info only",
+
+  "onboarding_hello": "Hello",
+  "onboarding_customExperience": "Let us personalize your experience",
+  "onboarding_whatDoYouWant": "What do you want to do\nwith BookScribe?",
+  "onboarding_multiSelect": "You can select multiple options",
+  "onboarding_collectSentences": "Collect favorite quotes",
+  "onboarding_keepRecord": "Keep reading records",
+  "onboarding_rememberContent": "Remember what I read",
+  "onboarding_buildHabit": "Build a reading habit",
+  "onboarding_howOften": "How often\ndo you read?",
+  "onboarding_freqHigh": "A lot",
+  "onboarding_freqMedium": "2-3 times a week",
+  "onboarding_freqLow": "Rarely",
+  "onboarding_freqOccasional": "When I have time",
+
+  "onboarding_benefit_title1": "Collect your favorite quotes",
+  "onboarding_benefit_desc1": "Capture your favorite sentences\nwith your camera",
+  "onboarding_benefit_title2": "Photo to text instantly",
+  "onboarding_benefit_desc2": "Automatic text recognition\nwith AI-powered summarization",
+  "onboarding_benefit_title3": "Build your reading habit",
+  "onboarding_benefit_desc3": "Track your daily reading\nand create your own calendar",
+  "onboarding_benefit_title4": "Your personal reading journal",
+  "onboarding_benefit_desc4": "Start collecting your favorite\nquotes with BookScribe",
+
+  "onboarding_minimal_headline": "Turn book quotes into your records",
+  "onboarding_minimal_subhead": "The smartest way to capture book quotes",
+  "onboarding_minimal_cta": "Start your enriched reading journey\nwith BookScribe",
+
+  "onboarding_habit_title": "Consistency is key",
+  "onboarding_habit_daily": "A little every day",
+  "onboarding_habit_10min": "Just 10 minutes a day",
+  "onboarding_habit_noStress": "No pressure, just enjoy",
+
+  "nav_home": "Home",
+  "nav_search": "Search",
+  "nav_library": "Library",
+  "nav_categories": "Categories",
+
+  "home_recentNotes": "Recent quotes",
+  "home_noNotes": "No quotes collected yet",
+  "home_addBook": "Add a book and save your favorite quotes",
+
+  "search_title": "Search Books",
+  "search_searchBooks": "Search Books",
+  "search_placeholder": "Search by title, author, or ISBN",
+  "search_hint": "Search by title, author, or ISBN",
+  "search_try": "Try searching for a book",
+  "search_failed": "Search failed",
+  "search_addToLibrary": "Add to Library",
+
+  "library_title": "My Library",
+  "library_noBooks": "No books yet",
+  "library_addFromSearch": "Add books from the Search tab",
+  "library_allBooks": "All registered books",
+  "library_registeredBooks": "Registered books",
+  "library_allNotes": "All collected quotes",
+  "library_collectedNotes": "Collected quotes",
+  "library_bookCount": "{count} books",
+  "@library_bookCount": {
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+
+  "book_delete": "Delete Book",
+  "book_deleteConfirm": "Delete {title}?\nAll notes will also be deleted.",
+  "@book_deleteConfirm": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "book_added": "{title} has been added",
+  "@book_added": {
+    "placeholders": {
+      "title": {"type": "String"}
+    }
+  },
+  "book_deleted": "Book deleted",
+  "book_addFailed": "Failed to add book",
+  "book_notFound": "Book not found",
+  "book_alreadyExists": "Already registered",
+  "book_alreadyInLibrary": "This book is already in your library.",
+  "book_addAnyway": "Add anyway",
+  "book_addAnywayConfirm": "Add anyway?",
+
+  "category_title": "Categories",
+  "category_new": "New Category",
+  "category_add": "Add Category",
+  "category_edit": "Edit Category",
+  "category_delete": "Delete Category",
+  "category_name": "Category name",
+  "category_namePlaceholder": "e.g., Fiction, Essays, Self-help",
+  "category_select": "Select category (optional)",
+  "category_noCategories": "No categories yet",
+  "category_addHint": "Add categories to organize your books",
+  "category_noBooksInCategory": "No books in this category",
+  "category_addBookHint": "Select this category when adding books from Search",
+  "category_added": "{name} category added",
+  "@category_added": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "category_updated": "Category updated",
+  "category_deleted": "{name} category deleted",
+  "@category_deleted": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "category_deleteConfirm": "Delete {name} category?",
+  "@category_deleteConfirm": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "category_loadFailed": "Failed to load categories",
+  "category_notFound": "Category not found",
+  "category_loadError": "Cannot load categories",
+  "category_noList": "No categories",
+  "category_noListHint": "No categories.\nAdd one from the Categories tab first.",
+
+  "note_title": "Notes",
+  "note_delete": "Delete Note",
+  "note_deleteConfirm": "Delete this note?",
+  "note_saved": "Note saved",
+  "note_deleted": "Note deleted",
+  "note_notFound": "Note not found",
+  "note_collect": "Collect Quote",
+  "note_collectHint": "Tap the collect button to save a quote",
+  "note_saveSentence": "Save Quote",
+  "note_original": "Original",
+  "note_aiSummary": "AI Summary",
+  "note_aiSummarize": "AI will summarize for you",
+  "note_memo": "My Memo",
+  "note_memoOptional": "Memo (optional)",
+  "note_memoPlaceholder": "Write your thoughts about this quote...",
+  "note_memoSaved": "Memo saved",
+  "note_noMemo": "No memo yet. Tap edit to add one.",
+  "note_pageNumber": "Page number (optional)",
+  "note_editContent": "Edit content...",
+  "note_contentSaved": "Content saved",
+  "note_tag": "Tags",
+
+  "ocr_capture": "Capture",
+  "ocr_camera": "Camera",
+  "ocr_gallery": "Gallery",
+  "ocr_selectArea": "Select Area",
+  "ocr_takePhoto": "Take a photo of the text",
+  "ocr_extracting": "Extracting text",
+  "ocr_extractedText": "Extracted text",
+  "ocr_editExtracted": "Edit extracted text...",
+  "ocr_canEdit": "You can edit the text",
+  "ocr_summarize": "Get the key points",
+  "ocr_processing": "Recognizing text from image.\nPlease wait...",
+  "ocr_failed": "OCR processing failed",
+  "ocr_extractFailed": "Text extraction failed",
+  "ocr_imageFailed": "Image processing failed",
+  "ocr_imageTooLarge": "Image is too large.\nPlease select a different image",
+
+  "calendar_title": "Calendar",
+  "calendar_yearActivity": "{year} Reading Activity",
+  "@calendar_yearActivity": {
+    "placeholders": {
+      "year": {"type": "int"}
+    }
+  },
+  "calendar_dateCount": "{month}/{day}: {count} notes",
+  "@calendar_dateCount": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"},
+      "count": {"type": "int"}
+    }
+  },
+  "calendar_date": "{month}/{day}",
+  "@calendar_date": {
+    "placeholders": {
+      "month": {"type": "int"},
+      "day": {"type": "int"}
+    }
+  },
+  "calendar_loadFailed": "Failed to load calendar",
+
+  "settings_title": "Settings",
+  "settings_appInfo": "App Info",
+  "settings_display": "Display",
+  "settings_theme_light": "Light Mode",
+  "settings_theme_lightDesc": "Use light theme",
+  "settings_theme_dark": "Dark Mode",
+  "settings_theme_darkDesc": "Use dark theme",
+  "settings_theme_system": "System",
+  "settings_theme_systemDesc": "Follow system settings",
+
+  "settings_language": "Language",
+  "settings_language_korean": "한국어",
+  "settings_language_koreanDesc": "Display in Korean",
+  "settings_language_english": "English",
+  "settings_language_englishDesc": "Display in English",
+
+  "error_generic": "An error occurred",
+  "error_genericWithDetail": "Error: {error}",
+  "@error_genericWithDetail": {
+    "placeholders": {
+      "error": {"type": "String"}
+    }
+  },
+  "error_tryAgain": "An error occurred. Please try again.",
+  "error_tryAgainLater": "Please try again later.",
+  "error_loadFailed": "Load failed",
+  "error_loadFailedMessage": "Failed to load",
+  "error_network": "Please check your network connection",
+  "error_networkWithPeriod": "Please check your network connection.",
+  "error_timeout": "Request timed out.\nPlease check your network",
+  "error_tooManyRequests": "Too many requests.\nPlease try again later",
+  "error_serverError": "Server error.\nPlease try again later",
+  "error_temporaryError": "Temporary error.\nPlease try again later",
+  "error_noPermission": "Access denied",
+
+  "dateFormat_full": "MMM dd, yyyy HH:mm"
+}

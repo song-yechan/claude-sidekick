@@ -87,7 +87,7 @@ class NoteCard extends StatelessWidget {
                             ),
                             const SizedBox(width: 4),
                             Text(
-                              showSummary ? 'AI 요약' : '원문',
+                              showSummary ? context.l10n.note_aiSummary : context.l10n.note_original,
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,

@@ -5,11 +5,14 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'core/env_config.dart';
 import 'core/theme.dart';
+import 'l10n/app_localizations.dart';
+import 'providers/language_provider.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
 
@@ -59,6 +62,7 @@ class BookScanApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final appThemeMode = ref.watch(themeProvider);
+    final appLanguage = ref.watch(languageProvider);
 
     // AppThemeMode를 ThemeMode로 변환
     final themeMode = switch (appThemeMode) {
@@ -67,6 +71,9 @@ class BookScanApp extends ConsumerWidget {
       AppThemeMode.system => ThemeMode.system,
     };
 
+    // AppLanguage를 Locale로 변환
+    final locale = Locale(appLanguage.name);
+
     return MaterialApp.router(
       title: currentEnv.appName,
       debugShowCheckedModeBanner: currentEnv.isDev,
@@ -74,6 +81,14 @@ class BookScanApp extends ConsumerWidget {
       darkTheme: AppTheme.dark,
       themeMode: themeMode,
       routerConfig: router,
+      localizationsDelegates: const [
+        L10n.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: L10n.supportedLocales,
+      locale: locale,
     );
   }
 }

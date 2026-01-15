@@ -41,7 +41,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          '노트 삭제',
+          context.l10n.note_delete,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -49,7 +49,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
           ),
         ),
         content: Text(
-          '이 노트를 삭제하시겠습니까?',
+          context.l10n.note_deleteConfirm,
           style: TextStyle(
             fontSize: 15,
             color: context.colors.onSurfaceVariant,
@@ -58,7 +58,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
+            child: Text(context.l10n.common_cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -71,7 +71,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('노트가 삭제되었습니다'),
+                    content: Text(context.l10n.note_deleted),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppShapes.small),
@@ -83,7 +83,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             style: TextButton.styleFrom(
               foregroundColor: context.colors.error,
             ),
-            child: const Text('삭제'),
+            child: Text(context.l10n.common_delete),
           ),
         ],
       ),
@@ -100,7 +100,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (success && mounted) {
       setState(() => _isEditingMemo = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('메모가 저장되었습니다')),
+        SnackBar(content: Text(context.l10n.note_memoSaved)),
       );
     }
   }
@@ -115,7 +115,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
     if (success && mounted) {
       setState(() => _isEditingContent = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('본문이 저장되었습니다')),
+        SnackBar(content: Text(context.l10n.note_contentSaved)),
       );
     }
   }
@@ -130,7 +130,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
         appBar: AppBar(),
         body: Center(
           child: Text(
-            '노트를 찾을 수 없습니다',
+            context.l10n.note_notFound,
             style: TextStyle(color: context.colors.onSurfaceVariant),
           ),
         ),
@@ -149,7 +149,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('노트'),
+        title: Text(context.l10n.note_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -264,7 +264,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 children: [
                   _buildToggleChip(
                     context: context,
-                    label: 'AI 요약',
+                    label: context.l10n.note_aiSummary,
                     icon: Icons.auto_awesome,
                     isSelected: _showSummary,
                     onTap: () => setState(() => _showSummary = true),
@@ -272,7 +272,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                   const SizedBox(width: 8),
                   _buildToggleChip(
                     context: context,
-                    label: '원문',
+                    label: context.l10n.note_original,
                     icon: Icons.format_quote_rounded,
                     isSelected: !_showSummary,
                     onTap: () => setState(() => _showSummary = false),
@@ -306,7 +306,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        _showSummary && note.summary != null ? 'AI 요약' : '원문',
+                        _showSummary && note.summary != null ? context.l10n.note_aiSummary : context.l10n.note_original,
                         style: TextStyle(
                           fontWeight: FontWeight.w600,
                           color: _showSummary && note.summary != null
@@ -322,7 +322,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                             _isEditingContent ? Icons.close : Icons.edit_rounded,
                             size: 16,
                           ),
-                          label: Text(_isEditingContent ? '취소' : '수정'),
+                          label: Text(_isEditingContent ? context.l10n.common_cancel : context.l10n.common_edit),
                           style: TextButton.styleFrom(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             minimumSize: Size.zero,
@@ -358,7 +358,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                               borderRadius: BorderRadius.circular(AppShapes.medium),
                               borderSide: BorderSide.none,
                             ),
-                            hintText: '본문을 수정하세요...',
+                            hintText: context.l10n.note_editContent,
                           ),
                         ),
                         const SizedBox(height: AppSpacing.md),
@@ -366,7 +366,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                           width: double.infinity,
                           child: ElevatedButton(
                             onPressed: _saveContent,
-                            child: const Text('저장'),
+                            child: Text(context.l10n.common_save),
                           ),
                         ),
                       ],
@@ -392,7 +392,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  '내 메모',
+                  context.l10n.note_memo,
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -404,7 +404,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     _isEditingMemo ? Icons.close : Icons.edit_rounded,
                     size: 18,
                   ),
-                  label: Text(_isEditingMemo ? '취소' : '수정'),
+                  label: Text(_isEditingMemo ? context.l10n.common_cancel : context.l10n.common_edit),
                   onPressed: () {
                     if (_isEditingMemo) {
                       _memoController.text = note.memo ?? '';
@@ -425,8 +425,8 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                       fontSize: 15,
                       color: context.colors.onSurface,
                     ),
-                    decoration: const InputDecoration(
-                      hintText: '이 문장에 대한 생각을 적어보세요...',
+                    decoration: InputDecoration(
+                      hintText: context.l10n.note_memoPlaceholder,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -434,7 +434,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: _saveMemo,
-                      child: const Text('저장'),
+                      child: Text(context.l10n.common_save),
                     ),
                   ),
                 ],
@@ -458,7 +458,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
                 child: Text(
                   note.memo?.isNotEmpty == true
                       ? note.memo!
-                      : '아직 메모가 없습니다. 수정 버튼을 눌러 메모를 추가해보세요.',
+                      : context.l10n.note_noMemo,
                   style: TextStyle(
                     fontSize: 15,
                     color: note.memo?.isNotEmpty == true
@@ -473,7 +473,7 @@ class _NoteDetailScreenState extends ConsumerState<NoteDetailScreen> {
             // 태그
             if (note.tags.isNotEmpty) ...[
               Text(
-                '태그',
+                context.l10n.note_tag,
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

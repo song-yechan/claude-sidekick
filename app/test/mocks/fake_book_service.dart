@@ -65,6 +65,31 @@ class FakeBookService implements IBookService {
   List<Book> get books => List.unmodifiable(_books);
 
   @override
+  Future<Book?> findDuplicateBook({
+    required String userId,
+    String? isbn,
+    String? title,
+    String? author,
+  }) async {
+    // 간단한 중복 체크 로직
+    for (final book in _books) {
+      if (_bookOwners[book.id] != userId) continue;
+
+      // ISBN이 있으면 ISBN으로 비교
+      if (isbn != null && isbn.isNotEmpty && book.isbn == isbn) {
+        return book;
+      }
+
+      // 제목과 저자로 비교
+      if (title != null && author != null &&
+          book.title == title && book.author == author) {
+        return book;
+      }
+    }
+    return null;
+  }
+
+  @override
   Future<List<Book>> getBooks(String userId) async {
     getBooksCallCount++;
 

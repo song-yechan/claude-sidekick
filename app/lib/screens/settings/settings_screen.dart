@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
-import '../../providers/theme_provider.dart';
 import '../../providers/auth_provider.dart';
+import '../../providers/language_provider.dart';
+import '../../providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -11,11 +12,12 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final currentTheme = ref.watch(themeProvider);
+    final currentLanguage = ref.watch(languageProvider);
     final authState = ref.watch(authProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('설정'),
+        title: Text(context.l10n.settings_title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => context.pop(),
@@ -25,7 +27,7 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
         children: [
           // 테마 설정 섹션
-          _buildSectionHeader(context, '화면'),
+          _buildSectionHeader(context, context.l10n.settings_display),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
@@ -36,8 +38,8 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 _ThemeOptionTile(
                   icon: Icons.brightness_auto_rounded,
-                  title: '시스템 설정',
-                  subtitle: '기기 설정에 따라 자동 전환',
+                  title: context.l10n.settings_theme_system,
+                  subtitle: context.l10n.settings_theme_systemDesc,
                   isSelected: currentTheme == AppThemeMode.system,
                   onTap: () => ref
                       .read(themeProvider.notifier)
@@ -46,8 +48,8 @@ class SettingsScreen extends ConsumerWidget {
                 Divider(height: 1, indent: 56, color: context.colors.outlineVariant),
                 _ThemeOptionTile(
                   icon: Icons.light_mode_rounded,
-                  title: '라이트 모드',
-                  subtitle: '밝은 테마 사용',
+                  title: context.l10n.settings_theme_light,
+                  subtitle: context.l10n.settings_theme_lightDesc,
                   isSelected: currentTheme == AppThemeMode.light,
                   onTap: () => ref
                       .read(themeProvider.notifier)
@@ -56,8 +58,8 @@ class SettingsScreen extends ConsumerWidget {
                 Divider(height: 1, indent: 56, color: context.colors.outlineVariant),
                 _ThemeOptionTile(
                   icon: Icons.dark_mode_rounded,
-                  title: '다크 모드',
-                  subtitle: '어두운 테마 사용',
+                  title: context.l10n.settings_theme_dark,
+                  subtitle: context.l10n.settings_theme_darkDesc,
                   isSelected: currentTheme == AppThemeMode.dark,
                   onTap: () => ref
                       .read(themeProvider.notifier)
@@ -68,8 +70,42 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
 
+          // 언어 설정 섹션
+          _buildSectionHeader(context, context.l10n.settings_language),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: context.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppShapes.large),
+            ),
+            child: Column(
+              children: [
+                _LanguageOptionTile(
+                  flag: '🇰🇷',
+                  title: context.l10n.settings_language_korean,
+                  subtitle: context.l10n.settings_language_koreanDesc,
+                  isSelected: currentLanguage == AppLanguage.ko,
+                  onTap: () => ref
+                      .read(languageProvider.notifier)
+                      .setLanguage(AppLanguage.ko),
+                ),
+                Divider(height: 1, indent: 56, color: context.colors.outlineVariant),
+                _LanguageOptionTile(
+                  flag: '🇺🇸',
+                  title: context.l10n.settings_language_english,
+                  subtitle: context.l10n.settings_language_englishDesc,
+                  isSelected: currentLanguage == AppLanguage.en,
+                  onTap: () => ref
+                      .read(languageProvider.notifier)
+                      .setLanguage(AppLanguage.en),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
           // 계정 섹션
-          _buildSectionHeader(context, '계정'),
+          _buildSectionHeader(context, context.l10n.account_title),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
@@ -93,14 +129,14 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   title: Text(
-                    authState.user?.email ?? '로그인 필요',
+                    authState.user?.email ?? context.l10n.auth_loginRequired,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: context.colors.onSurface,
                     ),
                   ),
                   subtitle: Text(
-                    '로그인된 계정',
+                    context.l10n.account_loggedIn,
                     style: TextStyle(
                       fontSize: 13,
                       color: context.colors.onSurfaceVariant,
@@ -123,7 +159,7 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   title: Text(
-                    '로그아웃',
+                    context.l10n.auth_logout,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: context.colors.error,
@@ -147,14 +183,14 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                   ),
                   title: Text(
-                    '계정 삭제',
+                    context.l10n.account_delete,
                     style: TextStyle(
                       fontWeight: FontWeight.w500,
                       color: context.colors.error,
                     ),
                   ),
                   subtitle: Text(
-                    '모든 데이터가 영구적으로 삭제됩니다',
+                    context.l10n.account_deleteWarning,
                     style: TextStyle(
                       fontSize: 12,
                       color: context.colors.onSurfaceVariant,
@@ -168,7 +204,7 @@ class SettingsScreen extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xl),
 
           // 앱 정보
-          _buildSectionHeader(context, '앱 정보'),
+          _buildSectionHeader(context, context.l10n.settings_appInfo),
           Container(
             margin: const EdgeInsets.symmetric(horizontal: 20),
             decoration: BoxDecoration(
@@ -190,7 +226,7 @@ class SettingsScreen extends ConsumerWidget {
                 ),
               ),
               title: Text(
-                '버전',
+                context.l10n.common_version,
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   color: context.colors.onSurface,
@@ -228,7 +264,7 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          '로그아웃',
+          context.l10n.auth_logout,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -236,7 +272,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
         content: Text(
-          '정말 로그아웃 하시겠습니까?',
+          context.l10n.auth_logoutConfirm,
           style: TextStyle(
             fontSize: 15,
             color: context.colors.onSurfaceVariant,
@@ -245,7 +281,7 @@ class SettingsScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
+            child: Text(context.l10n.common_cancel),
           ),
           TextButton(
             onPressed: () {
@@ -256,7 +292,7 @@ class SettingsScreen extends ConsumerWidget {
             style: TextButton.styleFrom(
               foregroundColor: context.colors.error,
             ),
-            child: const Text('로그아웃'),
+            child: Text(context.l10n.auth_logout),
           ),
         ],
       ),
@@ -276,7 +312,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(width: 8),
             Text(
-              '계정 삭제',
+              context.l10n.account_delete,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -290,19 +326,19 @@ class SettingsScreen extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '계정을 삭제하면 다음 데이터가 영구적으로 삭제됩니다:',
+              context.l10n.account_deleteConfirm,
               style: TextStyle(
                 fontSize: 15,
                 color: context.colors.onSurfaceVariant,
               ),
             ),
             const SizedBox(height: 12),
-            _buildDeleteItem(context, '등록한 모든 책'),
-            _buildDeleteItem(context, '수집한 모든 문장'),
-            _buildDeleteItem(context, '계정 정보'),
+            _buildDeleteItem(context, context.l10n.library_allBooks),
+            _buildDeleteItem(context, context.l10n.library_allNotes),
+            _buildDeleteItem(context, context.l10n.account_info),
             const SizedBox(height: 16),
             Text(
-              '이 작업은 되돌릴 수 없습니다.',
+              context.l10n.account_deleteIrreversible,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
@@ -314,7 +350,7 @@ class SettingsScreen extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
+            child: Text(context.l10n.common_cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -333,7 +369,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(width: 20),
                       Text(
-                        '계정을 삭제하는 중...',
+                        context.l10n.account_deleting,
                         style: TextStyle(
                           color: context.colors.onSurface,
                         ),
@@ -353,7 +389,7 @@ class SettingsScreen extends ConsumerWidget {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: const Text('계정 삭제에 실패했습니다. 다시 시도해주세요.'),
+                      content: Text(context.l10n.account_deleteFailed),
                       backgroundColor: context.colors.error,
                     ),
                   );
@@ -363,7 +399,7 @@ class SettingsScreen extends ConsumerWidget {
             style: TextButton.styleFrom(
               foregroundColor: context.colors.error,
             ),
-            child: const Text('삭제'),
+            child: Text(context.l10n.common_delete),
           ),
         ],
       ),
@@ -427,6 +463,65 @@ class _ThemeOptionTile extends StatelessWidget {
               ? context.colors.onPrimaryContainer
               : context.colors.onSurfaceVariant,
           size: 20,
+        ),
+      ),
+      title: Text(
+        title,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+          color: context.colors.onSurface,
+        ),
+      ),
+      subtitle: Text(
+        subtitle,
+        style: TextStyle(
+          fontSize: 13,
+          color: context.colors.onSurfaceVariant,
+        ),
+      ),
+      trailing: isSelected
+          ? Icon(
+              Icons.check_circle_rounded,
+              color: context.colors.primary,
+            )
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
+class _LanguageOptionTile extends StatelessWidget {
+  final String flag;
+  final String title;
+  final String subtitle;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _LanguageOptionTile({
+    required this.flag,
+    required this.title,
+    required this.subtitle,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isSelected
+              ? context.colors.primaryContainer
+              : context.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(AppShapes.medium),
+        ),
+        child: Center(
+          child: Text(
+            flag,
+            style: const TextStyle(fontSize: 20),
+          ),
         ),
       ),
       title: Text(

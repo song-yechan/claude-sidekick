@@ -68,7 +68,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       if (result != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('${book.title}이(가) 추가되었습니다'),
+            content: Text(context.l10n.book_added(book.title)),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -85,7 +85,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('책 추가에 실패했습니다'),
+            content: Text(context.l10n.book_addFailed),
             backgroundColor: context.colors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -98,7 +98,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('오류: $e'),
+            content: Text(context.l10n.error_genericWithDetail(e.toString())),
             backgroundColor: context.colors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -133,7 +133,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(width: 12),
             Text(
-              '이미 등록된 책',
+              context.l10n.book_alreadyExists,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
@@ -147,7 +147,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '서재에 같은 책이 이미 있어요.',
+              context.l10n.book_alreadyInLibrary,
               style: TextStyle(
                 fontSize: 15,
                 color: context.colors.onSurfaceVariant,
@@ -230,7 +230,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             ),
             const SizedBox(height: 12),
             Text(
-              '그래도 추가하시겠어요?',
+              context.l10n.book_addAnywayConfirm,
               style: TextStyle(
                 fontSize: 14,
                 color: context.colors.onSurfaceVariant,
@@ -242,7 +242,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: Text(
-              '취소',
+              context.l10n.common_cancel,
               style: TextStyle(
                 color: context.colors.onSurfaceVariant,
                 fontWeight: FontWeight.w500,
@@ -252,7 +252,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(
-              '그래도 추가',
+              context.l10n.book_addAnyway,
               style: TextStyle(
                 color: context.colors.primary,
                 fontWeight: FontWeight.w600,
@@ -302,7 +302,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               ),
               const SizedBox(height: 20),
               Text(
-                '서재에 추가',
+                context.l10n.search_addToLibrary,
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
@@ -377,7 +377,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    '카테고리 선택 (선택사항)',
+                    context.l10n.category_select,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -403,7 +403,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                 data: (categories) {
                   if (categories.isEmpty) {
                     return Text(
-                      '카테고리가 없습니다',
+                      context.l10n.category_noList,
                       style: TextStyle(color: context.colors.onSurfaceVariant),
                     );
                   }
@@ -442,7 +442,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   strokeWidth: 2,
                 ),
                 error: (e, s) => Text(
-                  '카테고리 로딩 실패',
+                  context.l10n.category_loadFailed,
                   style: TextStyle(color: context.colors.error),
                 ),
               ),
@@ -456,9 +456,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     Navigator.pop(modalContext);
                     _addBook(book);
                   },
-                  child: const Text(
-                    '추가하기',
-                    style: TextStyle(
+                  child: Text(
+                    context.l10n.common_add,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),
@@ -488,7 +488,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Text(
-                '책 검색',
+                context.l10n.search_title,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -508,7 +508,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                   color: context.colors.onSurface,
                 ),
                 decoration: InputDecoration(
-                  hintText: '책 제목, 저자, ISBN으로 검색',
+                  hintText: context.l10n.search_placeholder,
                   prefixIcon: Icon(
                     Icons.search_rounded,
                     color: context.colors.onSurfaceVariant,
@@ -564,7 +564,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               Text(
-                                '검색에 실패했어요',
+                                context.l10n.search_failed,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -602,7 +602,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   ),
                                   const SizedBox(height: AppSpacing.lg),
                                   Text(
-                                    '책을 검색해보세요',
+                                    context.l10n.search_try,
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -611,7 +611,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    '제목, 저자, ISBN으로 검색할 수 있어요',
+                                    context.l10n.search_hint,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: context.colors.onSurfaceVariant,

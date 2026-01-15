@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/models/note.dart';
 import 'package:bookscribe/widgets/note/note_card.dart';
+import '../helpers/test_app.dart';
 
 void main() {
   group('NoteCard', () {
@@ -19,10 +20,8 @@ void main() {
 
     testWidgets('displays note content', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: testNote),
-          ),
+        TestApp(
+          child: NoteCard(note: testNote),
         ),
       );
 
@@ -31,10 +30,8 @@ void main() {
 
     testWidgets('displays formatted date', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: testNote),
-          ),
+        TestApp(
+          child: NoteCard(note: testNote),
         ),
       );
 
@@ -45,10 +42,8 @@ void main() {
       final noteWithPage = testNote.copyWith(pageNumber: 42);
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: noteWithPage),
-          ),
+        TestApp(
+          child: NoteCard(note: noteWithPage),
         ),
       );
 
@@ -57,10 +52,8 @@ void main() {
 
     testWidgets('does not show page number when null', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: testNote),
-          ),
+        TestApp(
+          child: NoteCard(note: testNote),
         ),
       );
 
@@ -73,12 +66,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(
-              note: noteWithSummary,
-              showSummary: true,
-            ),
+        TestApp(
+          child: NoteCard(
+            note: noteWithSummary,
+            showSummary: true,
           ),
         ),
       );
@@ -93,12 +84,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(
-              note: noteWithSummary,
-              showSummary: false,
-            ),
+        TestApp(
+          child: NoteCard(
+            note: noteWithSummary,
+            showSummary: false,
           ),
         ),
       );
@@ -113,10 +102,8 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: noteWithMemo),
-          ),
+        TestApp(
+          child: NoteCard(note: noteWithMemo),
         ),
       );
 
@@ -130,10 +117,8 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: noteWithTags),
-          ),
+        TestApp(
+          child: NoteCard(note: noteWithTags),
         ),
       );
 
@@ -146,12 +131,10 @@ void main() {
       var tapped = false;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(
-              note: testNote,
-              onTap: () => tapped = true,
-            ),
+        TestApp(
+          child: NoteCard(
+            note: testNote,
+            onTap: () => tapped = true,
           ),
         ),
       );
@@ -174,11 +157,9 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SingleChildScrollView(
-              child: NoteCard(note: fullNote),
-            ),
+        TestApp(
+          child: SingleChildScrollView(
+            child: NoteCard(note: fullNote),
           ),
         ),
       );
@@ -194,10 +175,8 @@ void main() {
       final noteWithEmptyMemo = testNote.copyWith(memo: '');
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: noteWithEmptyMemo),
-          ),
+        TestApp(
+          child: NoteCard(note: noteWithEmptyMemo),
         ),
       );
 
@@ -207,10 +186,8 @@ void main() {
 
     testWidgets('handles empty tags list gracefully', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: NoteCard(note: testNote),
-          ),
+        TestApp(
+          child: NoteCard(note: testNote),
         ),
       );
 
@@ -230,12 +207,10 @@ void main() {
       );
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: SizedBox(
-              height: 200,
-              child: NoteCard(note: longNote),
-            ),
+        TestApp(
+          child: SizedBox(
+            height: 200,
+            child: NoteCard(note: longNote),
           ),
         ),
       );

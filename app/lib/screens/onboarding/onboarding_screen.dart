@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../providers/language_provider.dart';
 import '../../providers/onboarding_provider.dart';
 
 /// 온보딩 시안 선택 및 표시 화면
@@ -28,7 +29,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     return Scaffold(
       backgroundColor: context.surfaceContainerLowest,
       appBar: AppBar(
-        title: const Text('온보딩 시안 선택'),
+        title: Text(context.l10n.onboarding_styleSelection),
         backgroundColor: context.surfaceContainerLowest,
         actions: [
           TextButton(
@@ -36,7 +37,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               // provider 상태 변경하지 않음 - 로컬 상태만 사용
               _showOnboarding(context);
             },
-            child: const Text('미리보기'),
+            child: Text(context.l10n.common_preview),
           ),
         ],
       ),
@@ -50,7 +51,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '온보딩 스타일을 선택하세요',
+                      context.l10n.onboarding_selectStyle,
                       style: TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.w600,
@@ -59,7 +60,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Text(
-                      '3가지 시안 중 하나를 선택하여 미리볼 수 있습니다',
+                      context.l10n.onboarding_selectFromThree,
                       style: TextStyle(
                         fontSize: 14,
                         color: context.colors.onSurfaceVariant,
@@ -70,8 +71,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _buildVariantCard(
                       context,
                       variant: 0,
-                      title: '시안 1: 혜택 중심형',
-                      description: 'Calm, Blinkist 스타일\n슬라이드로 주요 기능과 혜택 소개',
+                      title: context.l10n.onboarding_style1Title,
+                      description: context.l10n.onboarding_style1Desc,
                       icon: Icons.auto_awesome,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -79,8 +80,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _buildVariantCard(
                       context,
                       variant: 1,
-                      title: '시안 2: 인터랙티브형',
-                      description: 'Spotify, Duolingo 스타일\n사용자 목표를 묻고 개인화된 경험 제공',
+                      title: context.l10n.onboarding_style2Title,
+                      description: context.l10n.onboarding_style2Desc,
                       icon: Icons.touch_app,
                     ),
                     const SizedBox(height: AppSpacing.md),
@@ -88,8 +89,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     _buildVariantCard(
                       context,
                       variant: 2,
-                      title: '시안 3: 미니멀 빠른시작',
-                      description: 'Loom 스타일\n단일 페이지로 핵심만 빠르게 전달',
+                      title: context.l10n.onboarding_style3Title,
+                      description: context.l10n.onboarding_style3Desc,
                       icon: Icons.bolt,
                     ),
                   ],
@@ -108,7 +109,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     // provider 상태 변경하지 않음 - 로컬 상태만 사용
                     _showOnboarding(context);
                   },
-                  child: const Text('선택한 시안 미리보기'),
+                  child: Text(context.l10n.onboarding_previewSelected),
                 ),
               ),
             ),
@@ -332,7 +333,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                 child: TextButton(
                   onPressed: () => _complete(context),
                   child: Text(
-                    '건너뛰기',
+                    context.l10n.common_skip,
                     style: TextStyle(
                       color: context.colors.onSurfaceVariant,
                     ),
@@ -441,7 +442,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                     }
                   },
                   child: Text(
-                    _currentPage < _pages.length - 1 ? '다음' : '시작하기',
+                    _currentPage < _pages.length - 1 ? context.l10n.common_next : context.l10n.common_start,
                   ),
                 ),
               ),
@@ -479,7 +480,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
       body: SafeArea(
         child: Column(
           children: [
-            // 프로그레스 바
+            // 프로그레스 바 + 언어 선택
             Padding(
               padding: const EdgeInsets.all(AppSpacing.lg),
               child: Row(
@@ -497,11 +498,14 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.md),
+                  const SizedBox(width: AppSpacing.sm),
+                  // 언어 선택 드롭다운
+                  _buildLanguageDropdown(context),
+                  const SizedBox(width: AppSpacing.xs),
                   TextButton(
                     onPressed: () => _complete(context),
                     child: Text(
-                      '건너뛰기',
+                      context.l10n.common_skip,
                       style: TextStyle(
                         color: context.colors.onSurfaceVariant,
                       ),
@@ -584,7 +588,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
                   _currentStep = 1;
                 });
               },
-              child: const Text('시작하기'),
+              child: Text(context.l10n.common_start),
             ),
           ),
         ],
@@ -643,7 +647,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
                       });
                     }
                   : null,
-              child: const Text('다음'),
+              child: Text(context.l10n.common_next),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
@@ -733,7 +737,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
-            '맞춤 경험을 제공해드릴게요',
+            context.l10n.onboarding_customExperience,
             style: TextStyle(
               fontSize: 14,
               color: context.colors.onSurfaceVariant,
@@ -754,7 +758,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
               onPressed: _selectedFrequency != null
                   ? () => _complete(context)
                   : null,
-              child: const Text('완료'),
+              child: Text(context.l10n.common_done),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
@@ -823,6 +827,67 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
     );
   }
 
+  /// 언어 선택 드롭다운 버튼
+  Widget _buildLanguageDropdown(BuildContext context) {
+    final currentLanguage = ref.watch(languageProvider);
+
+    return PopupMenuButton<AppLanguage>(
+      initialValue: currentLanguage,
+      onSelected: (AppLanguage language) {
+        ref.read(languageProvider.notifier).setLanguage(language);
+      },
+      itemBuilder: (context) => [
+        PopupMenuItem(
+          value: AppLanguage.ko,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🇰🇷'),
+              const SizedBox(width: AppSpacing.sm),
+              Text(context.l10n.settings_language_korean),
+            ],
+          ),
+        ),
+        PopupMenuItem(
+          value: AppLanguage.en,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('🇺🇸'),
+              const SizedBox(width: AppSpacing.sm),
+              Text(context.l10n.settings_language_english),
+            ],
+          ),
+        ),
+      ],
+      child: Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.sm,
+          vertical: AppSpacing.xs,
+        ),
+        decoration: BoxDecoration(
+          border: Border.all(color: context.colors.outlineVariant),
+          borderRadius: BorderRadius.circular(AppShapes.small),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              currentLanguage == AppLanguage.ko ? '🇰🇷' : '🇺🇸',
+              style: const TextStyle(fontSize: 16),
+            ),
+            const SizedBox(width: AppSpacing.xs),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 20,
+              color: context.colors.onSurfaceVariant,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _complete(BuildContext context) {
     // 사용자 선택값 저장과 함께 온보딩 완료
     ref.read(onboardingProvider.notifier).completeOnboarding(
@@ -866,7 +931,7 @@ class OnboardingVariant3 extends ConsumerWidget {
 
               // 환영 메시지
               Text(
-                '북스크라이브',
+                context.l10n.appName,
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,

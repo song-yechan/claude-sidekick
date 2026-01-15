@@ -15,11 +15,15 @@
 library;
 
 import 'package:flutter/material.dart';
+import '../l10n/app_localizations.dart';
 
 /// BuildContext 확장 - 테마 색상에 쉽게 접근
 ///
 /// 사용 예: context.colors.primary, context.isDark
 extension ThemeExtension on BuildContext {
+  /// L10n에 쉽게 접근
+  L10n get l10n => L10n.of(this);
+
   ColorScheme get colors => Theme.of(this).colorScheme;
   TextTheme get textTheme => Theme.of(this).textTheme;
   bool get isDark => Theme.of(this).brightness == Brightness.dark;

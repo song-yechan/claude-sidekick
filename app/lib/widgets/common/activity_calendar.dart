@@ -188,7 +188,7 @@ class _ActivityCalendarState extends State<ActivityCalendar> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              '${widget.year}년 독서 활동',
+              context.l10n.calendar_yearActivity(widget.year),
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -302,7 +302,7 @@ class _ActivityCalendarState extends State<ActivityCalendar> {
 
                               if (isFuture) {
                                 return Tooltip(
-                                  message: '${date.month}월 ${date.day}일',
+                                  message: context.l10n.calendar_date(date.month, date.day),
                                   child: Container(
                                     width: _cellSize,
                                     height: _cellSize,
@@ -318,7 +318,7 @@ class _ActivityCalendarState extends State<ActivityCalendar> {
                               final count = widget.data[dateKey] ?? 0;
 
                               return Tooltip(
-                                message: '${date.month}월 ${date.day}일: $count개',
+                                message: context.l10n.calendar_dateCount(date.month, date.day, count),
                                 child: Container(
                                   width: _cellSize,
                                   height: _cellSize,

@@ -279,7 +279,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                     ),
                     const SizedBox(height: 12),
                     Text(
-                      '준비 중...',
+                      context.l10n.common_preparing,
                       style: TextStyle(
                         fontSize: 13,
                         color: context.colors.onSurfaceVariant,

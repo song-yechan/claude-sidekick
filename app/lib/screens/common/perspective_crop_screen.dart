@@ -163,7 +163,7 @@ class _PerspectiveCropScreenState extends State<PerspectiveCropScreen> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('영역 선택'),
+        title: Text(context.l10n.ocr_selectArea),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => Navigator.pop(context),
@@ -181,7 +181,7 @@ class _PerspectiveCropScreenState extends State<PerspectiveCropScreen> {
                     ),
                   )
                 : Text(
-                    '완료',
+                    context.l10n.common_done,
                     style: TextStyle(
                       color: context.colors.primary,
                       fontWeight: FontWeight.w600,

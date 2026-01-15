@@ -65,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '안녕하세요',
+                          context.l10n.onboarding_hello,
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.w700,
@@ -102,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.menu_book_rounded,
-                        label: '등록한 책',
+                        label: context.l10n.library_registeredBooks,
                         value: booksAsync.whenOrNull(
                               data: (books) => books.length.toString(),
                             ) ??
@@ -115,7 +115,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Expanded(
                       child: _StatCard(
                         icon: Icons.edit_note_rounded,
-                        label: '수집한 문장',
+                        label: context.l10n.library_collectedNotes,
                         value: notesAsync.whenOrNull(
                               data: (notes) => notes.length.toString(),
                             ) ??
@@ -163,7 +163,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       height: 140,
                       child: Center(
                         child: Text(
-                          '캘린더를 불러오지 못했습니다',
+                          context.l10n.calendar_loadFailed,
                           style: TextStyle(color: context.colors.onSurfaceVariant),
                         ),
                       ),
@@ -177,7 +177,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Text(
-                  '최근 수집한 문장',
+                  context.l10n.home_recentNotes,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -221,7 +221,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               const SizedBox(height: AppSpacing.lg),
                               Text(
-                                '아직 수집한 문장이 없어요',
+                                context.l10n.home_noNotes,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
@@ -230,7 +230,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               ),
                               const SizedBox(height: 4),
                               Text(
-                                '책을 등록하고 마음에 드는 문장을 저장해보세요',
+                                context.l10n.home_addBook,
                                 style: TextStyle(
                                   fontSize: 14,
                                   color: context.colors.onSurfaceVariant,
@@ -343,7 +343,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   padding: const EdgeInsets.all(32),
                   child: Center(
                     child: Text(
-                      '불러오기 실패',
+                      context.l10n.error_loadFailed,
                       style: TextStyle(color: context.colors.onSurfaceVariant),
                     ),
                   ),

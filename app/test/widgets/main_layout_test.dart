@@ -4,13 +4,14 @@
 /// GoRouter 의존성으로 인해 네비게이션 동작 테스트는 통합 테스트에서 수행합니다.
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import '../helpers/test_app.dart';
 
 void main() {
   group('MainLayout 하단 네비게이션', () {
     testWidgets('shows 4 navigation icons', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(),
           ),
         ),
@@ -25,8 +26,8 @@ void main() {
 
     testWidgets('home icon is selected by default', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(currentIndex: 0),
           ),
         ),
@@ -38,8 +39,8 @@ void main() {
 
     testWidgets('search icon is selected when currentIndex is 1', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(currentIndex: 1),
           ),
         ),
@@ -54,8 +55,8 @@ void main() {
       var tappedIndex = -1;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(
               onTap: (index) => tappedIndex = index,
             ),
@@ -83,8 +84,8 @@ void main() {
       final tappedItems = <int>[];
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(
               onTap: (index) => tappedItems.add(index),
             ),
@@ -107,8 +108,8 @@ void main() {
 
     testWidgets('navigation bar has SafeArea', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
+        TestAppNoScaffold(
+          child: Scaffold(
             bottomNavigationBar: _TestBottomNavBar(),
           ),
         ),

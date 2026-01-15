@@ -21,7 +21,7 @@ class CategoryDetailScreen extends ConsumerWidget {
         appBar: AppBar(),
         body: Center(
           child: Text(
-            '카테고리를 찾을 수 없습니다',
+            context.l10n.category_notFound,
             style: TextStyle(color: context.colors.onSurfaceVariant),
           ),
         ),
@@ -70,7 +70,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   Text(
-                    '이 카테고리에 책이 없어요',
+                    context.l10n.category_noBooksInCategory,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
@@ -79,7 +79,7 @@ class CategoryDetailScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
-                    '검색에서 책을 추가할 때 이 카테고리를 선택해보세요',
+                    context.l10n.category_addBookHint,
                     style: TextStyle(
                       fontSize: 14,
                       color: context.colors.onSurfaceVariant,

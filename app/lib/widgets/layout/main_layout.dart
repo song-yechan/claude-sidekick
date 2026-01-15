@@ -178,11 +178,11 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   }
 
   Widget _buildBottomNavBar(BuildContext context) {
-    const items = [
-      _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home_rounded, label: '홈'),
-      _NavItem(icon: Icons.search_outlined, selectedIcon: Icons.search_rounded, label: '검색'),
-      _NavItem(icon: Icons.shelves, selectedIcon: Icons.shelves, label: '서재'),
-      _NavItem(icon: Icons.folder_outlined, selectedIcon: Icons.folder_rounded, label: '카테고리'),
+    final items = [
+      _NavItem(icon: Icons.home_outlined, selectedIcon: Icons.home_rounded, label: context.l10n.nav_home),
+      _NavItem(icon: Icons.search_outlined, selectedIcon: Icons.search_rounded, label: context.l10n.nav_search),
+      _NavItem(icon: Icons.shelves, selectedIcon: Icons.shelves, label: context.l10n.nav_library),
+      _NavItem(icon: Icons.folder_outlined, selectedIcon: Icons.folder_rounded, label: context.l10n.nav_categories),
     ];
 
     return Container(
@@ -234,8 +234,8 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                       color: Colors.transparent,
                       child: InkWell(
                         onTap: () => _onItemTapped(index),
-                        splashColor: context.colors.primary.withValues(alpha: 0.1),
-                        highlightColor: context.colors.primary.withValues(alpha: 0.05),
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
                         child: SizedBox(
                           height: 56,
                           child: Center(

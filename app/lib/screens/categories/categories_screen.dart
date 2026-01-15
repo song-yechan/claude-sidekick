@@ -72,7 +72,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              '새 카테고리',
+              context.l10n.category_new,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -87,8 +87,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 fontSize: 16,
                 color: context.colors.onSurface,
               ),
-              decoration: const InputDecoration(
-                hintText: '예: 소설, 에세이, 자기계발',
+              decoration: InputDecoration(
+                hintText: context.l10n.category_namePlaceholder,
               ),
               onSubmitted: (_) => _addCategory(dialogContext),
             ),
@@ -98,9 +98,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               height: 52,
               child: ElevatedButton(
                 onPressed: () => _addCategory(dialogContext),
-                child: const Text(
-                  '추가하기',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.common_add,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -124,7 +124,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     if (result != null && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('$name 카테고리가 추가되었습니다'),
+          content: Text(context.l10n.category_added(name)),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -170,7 +170,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             ),
             const SizedBox(height: 20),
             Text(
-              '카테고리 수정',
+              context.l10n.category_edit,
               style: TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -185,8 +185,8 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                 fontSize: 16,
                 color: context.colors.onSurface,
               ),
-              decoration: const InputDecoration(
-                hintText: '카테고리 이름',
+              decoration: InputDecoration(
+                hintText: context.l10n.category_name,
               ),
               onSubmitted: (_) => _updateCategory(dialogContext, categoryId),
             ),
@@ -196,9 +196,9 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               height: 52,
               child: ElevatedButton(
                 onPressed: () => _updateCategory(dialogContext, categoryId),
-                child: const Text(
-                  '저장하기',
-                  style: TextStyle(
+                child: Text(
+                  context.l10n.common_saving,
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
@@ -222,7 +222,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
     if (success && mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('카테고리가 수정되었습니다'),
+          content: Text(context.l10n.category_updated),
           backgroundColor: AppColors.success,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -238,7 +238,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          '카테고리 삭제',
+          context.l10n.category_delete,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -246,7 +246,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
           ),
         ),
         content: Text(
-          '$name 카테고리를 삭제하시겠습니까?',
+          context.l10n.category_deleteConfirm(name),
           style: TextStyle(
             fontSize: 15,
             color: context.colors.onSurfaceVariant,
@@ -255,7 +255,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
+            child: Text(context.l10n.common_cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -264,7 +264,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
               if (success && mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: Text('$name 카테고리가 삭제되었습니다'),
+                    content: Text(context.l10n.category_deleted(name)),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppShapes.small),
@@ -276,7 +276,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             style: TextButton.styleFrom(
               foregroundColor: context.colors.error,
             ),
-            child: const Text('삭제'),
+            child: Text(context.l10n.common_delete),
           ),
         ],
       ),
@@ -297,7 +297,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
             Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
               child: Text(
-                '카테고리',
+                context.l10n.category_title,
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w700,
@@ -331,7 +331,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                           ),
                           const SizedBox(height: AppSpacing.xl),
                           Text(
-                            '아직 카테고리가 없어요',
+                            context.l10n.category_noCategories,
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -340,7 +340,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
-                            '카테고리를 추가해서 책을 정리해보세요',
+                            context.l10n.category_addHint,
                             style: TextStyle(
                               fontSize: 14,
                               color: context.colors.onSurfaceVariant,
@@ -350,7 +350,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                           ElevatedButton.icon(
                             onPressed: _showAddDialog,
                             icon: const Icon(Icons.add_rounded, size: 18),
-                            label: const Text('카테고리 추가'),
+                            label: Text(context.l10n.category_add),
                             style: ElevatedButton.styleFrom(
                               minimumSize: const Size(0, 44),
                               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -414,7 +414,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: AppSpacing.lg),
                       Text(
-                        '불러오기에 실패했어요',
+                        context.l10n.error_loadFailedMessage,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -423,7 +423,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       ),
                       const SizedBox(height: AppSpacing.sm),
                       Text(
-                        getUserFriendlyErrorMessage(error),
+                        getUserFriendlyErrorMessage(context, error),
                         style: TextStyle(
                           fontSize: 14,
                           color: context.colors.onSurfaceVariant,
@@ -433,7 +433,7 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                       const SizedBox(height: AppSpacing.xl),
                       OutlinedButton(
                         onPressed: () => ref.invalidate(categoriesProvider),
-                        child: const Text('다시 시도'),
+                        child: Text(context.l10n.common_retry),
                       ),
                     ],
                   ),

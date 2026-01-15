@@ -65,7 +65,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                 ),
               ),
               title: Text(
-                '카메라',
+                context.l10n.ocr_camera,
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   color: context.colors.onSurface,
@@ -87,7 +87,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                 ),
               ),
               title: Text(
-                '갤러리',
+                context.l10n.ocr_gallery,
                 style: TextStyle(
                   fontWeight: FontWeight.w500,
                   color: context.colors.onSurface,
@@ -220,7 +220,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                     ),
                     const SizedBox(height: 24),
                     Text(
-                      '텍스트 추출 중',
+                      context.l10n.ocr_extracting,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
@@ -229,7 +229,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '이미지에서 텍스트를 인식하고 있습니다.\n잠시만 기다려주세요...',
+                      context.l10n.ocr_processing,
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontSize: 14,
@@ -245,15 +245,15 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
           if (ocrState.error != null) {
             return AlertDialog(
-              title: const Text('텍스트 추출 실패'),
-              content: Text(getUserFriendlyErrorMessage(ocrState.error!)),
+              title: Text(context.l10n.ocr_extractFailed),
+              content: Text(getUserFriendlyErrorMessage(context, ocrState.error!)),
               actions: [
                 TextButton(
                   onPressed: () {
                     Navigator.pop(dialogContext);
                     ref.read(ocrProvider.notifier).clear();
                   },
-                  child: const Text('확인'),
+                  child: Text(context.l10n.common_confirm),
                 ),
               ],
             );
@@ -315,7 +315,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        '카테고리 수정',
+                        context.l10n.category_edit,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -343,7 +343,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           child: Center(
                             child: Text(
-                              '카테고리가 없습니다.\n카테고리 탭에서 먼저 추가해주세요.',
+                              context.l10n.category_noListHint,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 color: context.colors.onSurfaceVariant,
@@ -385,7 +385,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         child: CircularProgressIndicator(),
                       ),
                     ),
-                    error: (e, s) => const Text('카테고리를 불러올 수 없습니다'),
+                    error: (e, s) => Text(context.l10n.category_loadError),
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -403,7 +403,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                               if (success && mounted) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: const Text('카테고리가 수정되었습니다'),
+                                    content: Text(context.l10n.category_updated),
                                     behavior: SnackBarBehavior.floating,
                                     shape: RoundedRectangleBorder(
                                       borderRadius:
@@ -413,7 +413,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                                 );
                               }
                             },
-                      child: const Text('저장'),
+                      child: Text(context.l10n.common_save),
                     ),
                   ),
                 ],
@@ -459,7 +459,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          '카테고리',
+                          context.l10n.category_title,
                           style: TextStyle(
                             fontSize: 13,
                             color: context.colors.onSurfaceVariant,
@@ -492,7 +492,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
               size: 20,
               color: context.colors.onSurfaceVariant,
             ),
-            tooltip: '카테고리 수정',
+            tooltip: context.l10n.category_edit,
           ),
       ],
     );
@@ -506,7 +506,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(
-          '책 삭제',
+          context.l10n.book_delete,
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w600,
@@ -514,7 +514,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
           ),
         ),
         content: Text(
-          '${book.title}을(를) 삭제하시겠습니까?\n모든 노트도 함께 삭제됩니다.',
+          context.l10n.book_deleteConfirm(book.title),
           style: TextStyle(
             fontSize: 15,
             color: context.colors.onSurfaceVariant,
@@ -523,7 +523,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('취소'),
+            child: Text(context.l10n.common_cancel),
           ),
           TextButton(
             onPressed: () async {
@@ -533,7 +533,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                 context.pop();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
-                    content: const Text('책이 삭제되었습니다'),
+                    content: Text(context.l10n.book_deleted),
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(AppShapes.small),
@@ -545,7 +545,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             style: TextButton.styleFrom(
               foregroundColor: context.colors.error,
             ),
-            child: const Text('삭제'),
+            child: Text(context.l10n.common_delete),
           ),
         ],
       ),
@@ -560,7 +560,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
     if (book == null) {
       return Scaffold(
         appBar: AppBar(),
-        body: const Center(child: Text('책을 찾을 수 없습니다')),
+        body: Center(child: Text(context.l10n.book_notFound)),
       );
     }
 
@@ -668,7 +668,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                   Row(
                     children: [
                       Text(
-                        '수집한 문장',
+                        context.l10n.library_collectedNotes,
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
@@ -707,7 +707,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         ),
                         const SizedBox(height: AppSpacing.xl),
                         Text(
-                          '아직 수집한 문장이 없어요',
+                          context.l10n.home_noNotes,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w600,
@@ -716,7 +716,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Text(
-                          '문장 수집 버튼을 눌러 문장을 수집해보세요',
+                          context.l10n.note_collectHint,
                           style: TextStyle(
                             fontSize: 14,
                             color: context.colors.onSurfaceVariant,
@@ -759,7 +759,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
             error: (error, _) => SliverFillRemaining(
               child: Center(
                 child: Text(
-                  getUserFriendlyErrorMessage(error),
+                  getUserFriendlyErrorMessage(context, error),
                   style: TextStyle(color: context.colors.onSurfaceVariant),
                   textAlign: TextAlign.center,
                 ),
@@ -776,7 +776,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _pickImage,
         icon: const Icon(Icons.camera_alt),
-        label: const Text('문장 수집'),
+        label: Text(context.l10n.note_collect),
       ),
     );
   }
@@ -836,7 +836,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
       widget.onSaved();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('노트가 저장되었습니다')),
+          SnackBar(content: Text(context.l10n.note_saved)),
         );
       }
     }
@@ -845,7 +845,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('문장 저장'),
+      title: Text(context.l10n.note_saveSentence),
       content: SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -864,7 +864,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      '추출된 텍스트',
+                      context.l10n.ocr_extractedText,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w500,
@@ -873,7 +873,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                     ),
                     const Spacer(),
                     Text(
-                      '텍스트를 수정할 수 있습니다',
+                      context.l10n.ocr_canEdit,
                       style: TextStyle(
                         fontSize: 11,
                         color: context.colors.outline,
@@ -899,7 +899,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                       borderRadius: BorderRadius.circular(AppShapes.medium),
                       borderSide: BorderSide.none,
                     ),
-                    hintText: '추출된 텍스트를 수정하세요...',
+                    hintText: context.l10n.ocr_editExtracted,
                   ),
                 ),
               ],
@@ -910,9 +910,9 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
             TextField(
               controller: _pageController,
               keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: '페이지 번호 (선택)',
-                prefixIcon: Icon(Icons.bookmark_outline),
+              decoration: InputDecoration(
+                labelText: context.l10n.note_pageNumber,
+                prefixIcon: const Icon(Icons.bookmark_outline),
               ),
             ),
             const SizedBox(height: 12),
@@ -921,9 +921,9 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
             TextField(
               controller: _memoController,
               maxLines: 2,
-              decoration: const InputDecoration(
-                labelText: '메모 (선택)',
-                prefixIcon: Icon(Icons.edit_note),
+              decoration: InputDecoration(
+                labelText: context.l10n.note_memoOptional,
+                prefixIcon: const Icon(Icons.edit_note),
               ),
             ),
           ],
@@ -937,7 +937,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
             Expanded(
               child: OutlinedButton(
                 onPressed: _isSaving ? null : () => Navigator.pop(context),
-                child: const Text('취소'),
+                child: Text(context.l10n.common_cancel),
               ),
             ),
             const SizedBox(width: 12),
@@ -950,7 +950,7 @@ class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
                         height: 20,
                         child: CircularProgressIndicator(strokeWidth: 2),
                       )
-                    : const Text('저장'),
+                    : Text(context.l10n.common_save),
               ),
             ),
           ],

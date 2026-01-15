@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bookscribe/widgets/common/activity_calendar.dart';
+import '../helpers/test_app.dart';
 
 void main() {
   group('ActivityCalendar', () {
     testWidgets('displays year title correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {},
           ),
         ),
       );
@@ -21,12 +20,10 @@ void main() {
 
     testWidgets('shows navigation buttons', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {},
           ),
         ),
       );
@@ -39,13 +36,11 @@ void main() {
       int? changedYear;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {},
-              onYearChanged: (year) => changedYear = year,
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {},
+            onYearChanged: (year) => changedYear = year,
           ),
         ),
       );
@@ -56,12 +51,10 @@ void main() {
 
     testWidgets('shows legend text', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {},
           ),
         ),
       );
@@ -78,12 +71,10 @@ void main() {
       };
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: data,
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: data,
           ),
         ),
       );
@@ -94,12 +85,10 @@ void main() {
 
     testWidgets('renders with empty data', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {},
           ),
         ),
       );
@@ -111,12 +100,10 @@ void main() {
       final currentYear = DateTime.now().year;
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: currentYear,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: currentYear,
+            data: {},
           ),
         ),
       );
@@ -126,12 +113,10 @@ void main() {
 
     testWidgets('handles past year correctly', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2020,
-              data: {},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2020,
+            data: {},
           ),
         ),
       );
@@ -141,12 +126,10 @@ void main() {
 
     testWidgets('renders tooltip containers', (tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: {DateTime(2024, 1, 1): 5},
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: {DateTime(2024, 1, 1): 5},
           ),
         ),
       );
@@ -169,12 +152,10 @@ void main() {
       };
 
       await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: ActivityCalendar(
-              year: 2024,
-              data: data,
-            ),
+        TestApp(
+          child: ActivityCalendar(
+            year: 2024,
+            data: data,
           ),
         ),
       );

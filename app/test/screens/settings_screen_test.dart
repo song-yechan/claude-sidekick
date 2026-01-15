@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:bookscribe/l10n/app_localizations.dart';
 import 'package:bookscribe/screens/settings/settings_screen.dart';
 import 'package:bookscribe/providers/theme_provider.dart';
 import 'package:bookscribe/providers/auth_provider.dart';
@@ -19,6 +21,14 @@ void main() {
         authProvider.overrideWith((ref) => TestAuthNotifier()),
       ],
       child: MaterialApp(
+        localizationsDelegates: const [
+          L10n.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: L10n.supportedLocales,
+        locale: const Locale('ko'),
         home: const SettingsScreen(),
         onGenerateRoute: (settings) {
           return MaterialPageRoute(
@@ -114,7 +124,8 @@ void main() {
         buildSettingsScreen(initialTheme: AppThemeMode.system),
       );
 
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // 테마 1개 + 언어 1개 = 2개 체크 아이콘
+      expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(2));
     });
 
     testWidgets('light theme shows check icon when selected', (tester) async {
@@ -122,7 +133,8 @@ void main() {
         buildSettingsScreen(initialTheme: AppThemeMode.light),
       );
 
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // 테마 1개 + 언어 1개 = 2개 체크 아이콘
+      expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(2));
     });
 
     testWidgets('dark theme shows check icon when selected', (tester) async {
@@ -130,7 +142,8 @@ void main() {
         buildSettingsScreen(initialTheme: AppThemeMode.dark),
       );
 
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // 테마 1개 + 언어 1개 = 2개 체크 아이콘
+      expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(2));
     });
 
     testWidgets('tapping light mode triggers state change', (tester) async {
@@ -141,7 +154,8 @@ void main() {
       await tester.tap(find.text('라이트 모드'));
       await tester.pump();
 
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // 테마 1개 + 언어 1개 = 2개 체크 아이콘
+      expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(2));
     });
 
     testWidgets('tapping dark mode triggers state change', (tester) async {
@@ -152,7 +166,8 @@ void main() {
       await tester.tap(find.text('다크 모드'));
       await tester.pump();
 
-      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+      // 테마 1개 + 언어 1개 = 2개 체크 아이콘
+      expect(find.byIcon(Icons.check_circle_rounded), findsNWidgets(2));
     });
   });
 
@@ -190,6 +205,14 @@ void main() {
     testWidgets('tapping logout shows confirmation dialog', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 로그아웃 버튼이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('로그아웃'));
       await tester.pumpAndSettle();
 
@@ -198,6 +221,13 @@ void main() {
 
     testWidgets('logout dialog has title', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('로그아웃'));
       await tester.pumpAndSettle();
@@ -210,6 +240,13 @@ void main() {
     testWidgets('logout dialog shows cancel button', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       await tester.tap(find.text('로그아웃'));
       await tester.pumpAndSettle();
 
@@ -218,6 +255,13 @@ void main() {
 
     testWidgets('logout dialog shows confirm button', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('로그아웃'));
       await tester.pumpAndSettle();
@@ -229,6 +273,13 @@ void main() {
 
     testWidgets('cancel button closes dialog', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       await tester.tap(find.text('로그아웃'));
       await tester.pumpAndSettle();

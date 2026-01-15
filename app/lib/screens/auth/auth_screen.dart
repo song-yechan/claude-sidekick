@@ -45,7 +45,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       final errorMessage = ref.read(authProvider).errorMessage;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(errorMessage ?? '오류가 발생했습니다'),
+          content: Text(errorMessage ?? context.l10n.error_generic),
           backgroundColor: context.colors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
@@ -59,6 +59,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
+    final l10n = context.l10n;
 
     // 회원가입 완료 화면 표시
     if (authState.signUpCompleted) {
@@ -111,7 +112,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '책 속 문장을 나만의 기록으로',
+                          l10n.onboarding_minimal_headline,
                           style: TextStyle(
                             fontSize: 14,
                             color: context.colors.onSurfaceVariant,
@@ -124,7 +125,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
                   // 헤더
                   Text(
-                    _isSignUp ? '회원가입' : '로그인',
+                    _isSignUp ? l10n.auth_signUp : l10n.auth_login,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w700,
@@ -134,8 +135,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   const SizedBox(height: 6),
                   Text(
                     _isSignUp
-                        ? '간단한 가입으로 시작하세요'
-                        : '다시 만나서 반가워요',
+                        ? l10n.auth_simpleSignUp
+                        : l10n.auth_welcomeBack,
                     style: TextStyle(
                       fontSize: 15,
                       color: context.colors.onSurfaceVariant,
@@ -146,7 +147,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
                   // 이메일 입력
                   Text(
-                    '이메일',
+                    l10n.auth_email,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -166,10 +167,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return '이메일을 입력해주세요';
+                        return l10n.auth_emailPlaceholder;
                       }
                       if (!value.contains('@')) {
-                        return '올바른 이메일 형식이 아닙니다';
+                        return l10n.auth_error_invalidEmail;
                       }
                       return null;
                     },
@@ -178,7 +179,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
                   // 비밀번호 입력
                   Text(
-                    '비밀번호',
+                    l10n.auth_password,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -194,7 +195,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       color: context.colors.onSurface,
                     ),
                     decoration: InputDecoration(
-                      hintText: '6자 이상 입력해주세요',
+                      hintText: l10n.auth_error_minLength,
                       suffixIcon: IconButton(
                         icon: Icon(
                           _obscurePassword
@@ -212,10 +213,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
-                        return '비밀번호를 입력해주세요';
+                        return l10n.auth_passwordPlaceholder;
                       }
                       if (value.length < 6) {
-                        return '비밀번호는 6자 이상이어야 합니다';
+                        return l10n.auth_error_passwordTooShort;
                       }
                       return null;
                     },
@@ -225,7 +226,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   if (_isSignUp) ...[
                     const SizedBox(height: AppSpacing.lg),
                     Text(
-                      '비밀번호 확인',
+                      l10n.auth_passwordConfirm,
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -241,7 +242,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                         color: context.colors.onSurface,
                       ),
                       decoration: InputDecoration(
-                        hintText: '비밀번호를 다시 입력해주세요',
+                        hintText: l10n.auth_passwordConfirmPlaceholder,
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscureConfirmPassword
@@ -259,10 +260,10 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return '비밀번호를 다시 입력해주세요';
+                          return l10n.auth_passwordConfirmPlaceholder;
                         }
                         if (value != _passwordController.text) {
-                          return '비밀번호가 일치하지 않습니다';
+                          return l10n.auth_error_passwordMismatch;
                         }
                         return null;
                       },
@@ -292,7 +293,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                               ),
                             )
                           : Text(
-                              _isSignUp ? '가입하기' : '로그인',
+                              _isSignUp ? l10n.auth_signUpButton : l10n.auth_login,
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -313,8 +314,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                       },
                       child: Text(
                         _isSignUp
-                            ? '이미 계정이 있으신가요? 로그인'
-                            : '계정이 없으신가요? 회원가입',
+                            ? l10n.auth_hasAccount
+                            : l10n.auth_noAccount,
                         style: TextStyle(
                           fontSize: 14,
                           color: context.colors.onSurfaceVariant,
@@ -334,6 +335,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
   /// 회원가입 완료 화면
   Widget _buildSignUpCompleteScreen(BuildContext context) {
+    final l10n = context.l10n;
     return Scaffold(
       backgroundColor: context.surfaceContainerLowest,
       body: SafeArea(
@@ -374,7 +376,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
 
               // 완료 메시지
               Text(
-                '환영합니다!',
+                l10n.auth_welcome,
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -383,7 +385,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                '이제 BookScribe와 함께\n책 속 문장을 수집해보세요',
+                l10n.onboarding_benefit_desc4,
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 16,
@@ -401,9 +403,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   onPressed: () {
                     ref.read(authProvider.notifier).continueToApp();
                   },
-                  child: const Text(
-                    '시작하기',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.common_start,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                     ),

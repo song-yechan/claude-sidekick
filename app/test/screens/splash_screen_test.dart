@@ -5,6 +5,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:bookscribe/l10n/app_localizations.dart';
 import 'package:bookscribe/screens/splash/splash_screen.dart';
 import 'package:bookscribe/providers/auth_provider.dart';
 import 'package:bookscribe/providers/onboarding_provider.dart';
@@ -23,8 +25,16 @@ void main() {
               onboardingState ?? const OnboardingState(isLoading: true),
             )),
       ],
-      child: const MaterialApp(
-        home: SplashScreen(),
+      child: MaterialApp(
+        localizationsDelegates: const [
+          L10n.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: L10n.supportedLocales,
+        locale: const Locale('ko'),
+        home: const SplashScreen(),
       ),
     );
   }
