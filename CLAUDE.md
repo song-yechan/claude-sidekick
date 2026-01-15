@@ -283,7 +283,24 @@ npx supabase functions logs <function-name>
 
 ### 버전 관리
 - [ ] `pubspec.yaml` 버전 업데이트 (`version: x.y.z+buildNumber`)
-- [ ] 변경사항 문서화 (릴리즈 노트)
+- [ ] 변경사항 문서화 → `../release-notes/v{버전}.md`에 작성
+
+### 릴리즈 노트 작성 (필수)
+작업 마무리 시 `/history-insight`로 세션 분석 후 `../release-notes/v{버전}.md`에 기록:
+
+```
+release-notes/
+├── README.md
+├── v1.0.2.md
+└── v{버전}.md  ← 새 버전 추가
+```
+
+**포함 내용:**
+1. 이번 버전에서 한 일
+2. 대화에서 얻은 인사이트 (기술 선택 이유, 문제 해결 방법 등)
+3. 트러블슈팅
+4. 다음에 기억할 것
+5. 후속 작업
 
 ### 배포 후
 - [ ] 에러 모니터링 대시보드 확인
@@ -375,3 +392,67 @@ npx supabase functions deploy <function-name> --no-verify-jwt
 - `fromJson()` / `toJson()` 호환성 확인
 - DB 스키마 변경 필요 여부 확인
 - 관련 서비스/프로바이더 모두 테스트
+
+---
+
+## 17. 다국어 지원 (i18n)
+
+### 설정 파일
+- `l10n.yaml`: L10n 생성 설정
+- `lib/l10n/app_ko.arb`: 한국어 번역 (기본)
+- `lib/l10n/app_en.arb`: 영어 번역
+
+### 사용법
+```dart
+// 화면에서 L10n 키 사용
+import 'package:bookscribe/l10n/app_localizations.dart';
+
+// context extension으로 간편 접근
+Text(context.l10n.appName)  // "BookScribe"
+Text(context.l10n.loginButton)  // "로그인" / "Login"
+
+// 또는 직접 접근
+final l10n = L10n.of(context);
+Text(l10n.welcomeMessage)
+```
+
+### 새 문자열 추가
+1. `app_ko.arb`에 키 추가:
+```json
+"loginButton": "로그인",
+"@loginButton": {
+  "description": "로그인 버튼 텍스트"
+}
+```
+
+2. `app_en.arb`에 동일 키 추가:
+```json
+"loginButton": "Login"
+```
+
+3. 코드 생성 실행:
+```bash
+flutter gen-l10n
+```
+
+### 주의사항
+- **Provider/Service에서는 L10n 사용 불가** - BuildContext 없음
+  - 에러 메시지는 `error_utils.dart`에서 context 파라미터로 처리
+- **테스트 코드 작성 시**: `test/helpers/test_app.dart`의 `TestApp` 래퍼 사용
+- **ARB 키 네이밍**: camelCase 사용, 의미 명확하게 (예: `bookDetailTitle`, `errorNetworkFailed`)
+
+### Widget Test L10n 설정
+```dart
+import '../helpers/test_app.dart';
+
+testWidgets('test example', (tester) async {
+  await tester.pumpWidget(
+    TestApp(
+      child: MyWidget(),
+      locale: const Locale('ko'),  // 선택적
+    ),
+  );
+
+  expect(find.text('예상 텍스트'), findsOneWidget);
+});
+```
