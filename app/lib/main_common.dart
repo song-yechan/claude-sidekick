@@ -15,6 +15,7 @@ import 'l10n/app_localizations.dart';
 import 'providers/language_provider.dart';
 import 'providers/theme_provider.dart';
 import 'router/app_router.dart';
+import 'services/notification_service.dart';
 
 /// 환경에 따라 앱을 초기화하고 실행합니다.
 Future<void> runAppWithEnv(EnvConfig envConfig) async {
@@ -38,6 +39,9 @@ Future<void> runAppWithEnv(EnvConfig envConfig) async {
 
   // Note: Airbridge SDK는 네이티브에서 초기화됨
   // iOS: AppDelegate.swift, Android: MainApplication.kt
+
+  // Initialize notification service
+  await NotificationService().initialize();
 
   // 환경 로그 출력 (개발 환경에서만)
   if (envConfig.isDev) {

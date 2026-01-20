@@ -16,7 +16,9 @@ import '../../core/theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
+import '../../providers/streak_provider.dart';
 import '../../widgets/common/activity_calendar.dart';
+import '../../widgets/home/streak_card.dart';
 
 /// 홈 화면 위젯
 ///
@@ -36,6 +38,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void initState() {
     super.initState();
     _selectedYear = DateTime.now().year;
+
+    // 앱 시작 시 스트릭 데이터 동기화
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(streakNotifierProvider.notifier).recalculateStreak();
+    });
   }
 
   @override
@@ -126,6 +133,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ],
                 ),
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              // 스트릭 카드
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
+                child: StreakCard(),
               ),
               const SizedBox(height: AppSpacing.xl),
 

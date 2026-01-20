@@ -292,5 +292,53 @@
   "error_temporaryError": "Temporary error.\nPlease try again later",
   "error_noPermission": "Access denied",
 
-  "dateFormat_full": "MMM dd, yyyy HH:mm"
+  "dateFormat_full": "MMM dd, yyyy HH:mm",
+
+  "streak_title": "Reading Streak",
+  "streak_currentDays": "{days} day streak",
+  "@streak_currentDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "streak_longestRecord": "Longest: {days} days",
+  "@streak_longestRecord": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "streak_todayDone": "Today's reading done!",
+  "streak_todayPending": "Haven't read today yet",
+  "streak_startNew": "Start a new streak",
+  "streak_keepGoing": "Great job! Keep going",
+  "streak_almostThere": "Almost there! Don't break your streak",
+  "streak_comeBack": "Welcome back! Ready to start again?",
+
+  "notification_title": "Notifications",
+  "notification_enable": "Reading Reminders",
+  "notification_enableDesc": "Get daily reading reminders",
+  "notification_time": "Reminder Time",
+  "notification_timeDesc": "When to receive reading reminders",
+  "notification_smartNudge": "Smart Nudge",
+  "notification_smartNudgeDesc": "Adjust reminder intensity based on activity",
+  "notification_permissionDenied": "Notification permission denied",
+  "notification_goToSettings": "Go to Settings",
+
+  "notification_title_reading_reminder": "Reading Time",
+  "notification_message_normal": "Time for your daily reading! 📚",
+  "notification_message_gentle": "Missed yesterday? How about today?",
+  "notification_message_moderate": "Keep your {days}-day streak going!",
+  "@notification_message_moderate": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "notification_message_strong": "Your books miss you. Ready to start again?",
+
+  "settings_notification": "Notification Settings",
+
+  "onboarding_notification_title": "Get reading reminders",
+  "onboarding_notification_subtitle": "We'll send you a daily reminder at your chosen time",
+  "onboarding_notification_timeLabel": "Reminder time",
+  "onboarding_notification_skipHint": "You can change this later in Settings"
 }

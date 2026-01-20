@@ -1398,6 +1398,174 @@ abstract class L10n {
   /// In ko, this message translates to:
   /// **'yyyy년 MM월 dd일 HH:mm'**
   String get dateFormat_full;
+
+  /// No description provided for @streak_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'연속 독서'**
+  String get streak_title;
+
+  /// No description provided for @streak_currentDays.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일 연속'**
+  String streak_currentDays(int days);
+
+  /// No description provided for @streak_longestRecord.
+  ///
+  /// In ko, this message translates to:
+  /// **'최장 기록: {days}일'**
+  String streak_longestRecord(int days);
+
+  /// No description provided for @streak_todayDone.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 독서 완료!'**
+  String get streak_todayDone;
+
+  /// No description provided for @streak_todayPending.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘 아직 독서하지 않았어요'**
+  String get streak_todayPending;
+
+  /// No description provided for @streak_startNew.
+  ///
+  /// In ko, this message translates to:
+  /// **'새로운 연속 기록을 시작해보세요'**
+  String get streak_startNew;
+
+  /// No description provided for @streak_keepGoing.
+  ///
+  /// In ko, this message translates to:
+  /// **'잘하고 있어요! 계속해보세요'**
+  String get streak_keepGoing;
+
+  /// No description provided for @streak_almostThere.
+  ///
+  /// In ko, this message translates to:
+  /// **'조금만 더! 스트릭을 이어가세요'**
+  String get streak_almostThere;
+
+  /// No description provided for @streak_comeBack.
+  ///
+  /// In ko, this message translates to:
+  /// **'돌아오셨군요! 다시 시작해볼까요?'**
+  String get streak_comeBack;
+
+  /// No description provided for @notification_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림'**
+  String get notification_title;
+
+  /// No description provided for @notification_enable.
+  ///
+  /// In ko, this message translates to:
+  /// **'독서 알림'**
+  String get notification_enable;
+
+  /// No description provided for @notification_enableDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'매일 독서 리마인더를 받습니다'**
+  String get notification_enableDesc;
+
+  /// No description provided for @notification_time.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 시간'**
+  String get notification_time;
+
+  /// No description provided for @notification_timeDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'독서 알림을 받을 시간'**
+  String get notification_timeDesc;
+
+  /// No description provided for @notification_smartNudge.
+  ///
+  /// In ko, this message translates to:
+  /// **'스마트 넛지'**
+  String get notification_smartNudge;
+
+  /// No description provided for @notification_smartNudgeDesc.
+  ///
+  /// In ko, this message translates to:
+  /// **'비활성 기간에 따라 알림 강도 조정'**
+  String get notification_smartNudgeDesc;
+
+  /// No description provided for @notification_permissionDenied.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 권한이 거부되었습니다'**
+  String get notification_permissionDenied;
+
+  /// No description provided for @notification_goToSettings.
+  ///
+  /// In ko, this message translates to:
+  /// **'설정으로 이동'**
+  String get notification_goToSettings;
+
+  /// No description provided for @notification_title_reading_reminder.
+  ///
+  /// In ko, this message translates to:
+  /// **'독서 시간'**
+  String get notification_title_reading_reminder;
+
+  /// No description provided for @notification_message_normal.
+  ///
+  /// In ko, this message translates to:
+  /// **'오늘의 독서 시간이에요! 📚'**
+  String get notification_message_normal;
+
+  /// No description provided for @notification_message_gentle.
+  ///
+  /// In ko, this message translates to:
+  /// **'어제 못 읽었죠? 오늘은 어때요?'**
+  String get notification_message_gentle;
+
+  /// No description provided for @notification_message_moderate.
+  ///
+  /// In ko, this message translates to:
+  /// **'{days}일 연속 기록을 이어가세요!'**
+  String notification_message_moderate(int days);
+
+  /// No description provided for @notification_message_strong.
+  ///
+  /// In ko, this message translates to:
+  /// **'책이 기다리고 있어요. 다시 시작해볼까요?'**
+  String get notification_message_strong;
+
+  /// No description provided for @settings_notification.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 설정'**
+  String get settings_notification;
+
+  /// No description provided for @onboarding_notification_title.
+  ///
+  /// In ko, this message translates to:
+  /// **'독서 알림을 받아보세요'**
+  String get onboarding_notification_title;
+
+  /// No description provided for @onboarding_notification_subtitle.
+  ///
+  /// In ko, this message translates to:
+  /// **'매일 같은 시간에 독서 리마인더를 보내드릴게요'**
+  String get onboarding_notification_subtitle;
+
+  /// No description provided for @onboarding_notification_timeLabel.
+  ///
+  /// In ko, this message translates to:
+  /// **'알림 받을 시간'**
+  String get onboarding_notification_timeLabel;
+
+  /// No description provided for @onboarding_notification_skipHint.
+  ///
+  /// In ko, this message translates to:
+  /// **'나중에 설정에서 변경할 수 있어요'**
+  String get onboarding_notification_skipHint;
 }
 
 class _L10nDelegate extends LocalizationsDelegate<L10n> {

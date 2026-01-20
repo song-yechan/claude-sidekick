@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../../providers/language_provider.dart';
+import '../../providers/notification_provider.dart';
 import '../../providers/onboarding_provider.dart';
 
 /// 온보딩 시안 선택 및 표시 화면
@@ -472,6 +473,8 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
   int _currentStep = 0;
   final List<String> _selectedGoals = [];
   String? _selectedFrequency;
+  TimeOfDay _notificationTime = const TimeOfDay(hour: 21, minute: 0);
+  bool _notificationEnabled = true;
 
   @override
   Widget build(BuildContext context) {
@@ -489,7 +492,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(4),
                       child: LinearProgressIndicator(
-                        value: (_currentStep + 1) / 3,
+                        value: (_currentStep + 1) / 4,
                         backgroundColor: context.colors.outlineVariant,
                         valueColor: AlwaysStoppedAnimation<Color>(
                           context.colors.primary,
@@ -535,6 +538,8 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
         return _buildGoalsStep(context);
       case 2:
         return _buildFrequencyStep(context);
+      case 3:
+        return _buildNotificationStep(context);
       default:
         return const SizedBox();
     }
@@ -756,9 +761,13 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
             width: double.infinity,
             child: ElevatedButton(
               onPressed: _selectedFrequency != null
-                  ? () => _complete(context)
+                  ? () {
+                      setState(() {
+                        _currentStep = 3;
+                      });
+                    }
                   : null,
-              child: Text(context.l10n.common_done),
+              child: Text(context.l10n.common_next),
             ),
           ),
           const SizedBox(height: AppSpacing.xxl),
@@ -825,6 +834,249 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
         ),
       ),
     );
+  }
+
+  Widget _buildNotificationStep(BuildContext context) {
+    return Padding(
+      key: const ValueKey(3),
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: AppSpacing.xxl),
+
+          // 아이콘
+          Center(
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: context.colors.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.notifications_rounded,
+                size: 50,
+                color: context.colors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
+          // 제목
+          Center(
+            child: Text(
+              context.l10n.onboarding_notification_title,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.w700,
+                color: context.colors.onSurface,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Center(
+            child: Text(
+              context.l10n.onboarding_notification_subtitle,
+              style: TextStyle(
+                fontSize: 14,
+                color: context.colors.onSurfaceVariant,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xxxl),
+
+          // 알림 활성화 토글
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _notificationEnabled = !_notificationEnabled;
+              });
+            },
+            child: Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: _notificationEnabled
+                    ? context.colors.primaryContainer
+                    : context.surfaceContainer,
+                borderRadius: BorderRadius.circular(AppShapes.medium),
+                border: Border.all(
+                  color: _notificationEnabled
+                      ? context.colors.primary
+                      : context.colors.outlineVariant,
+                  width: _notificationEnabled ? 2 : 1,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.notifications_active_rounded,
+                    color: _notificationEnabled
+                        ? context.colors.primary
+                        : context.colors.onSurfaceVariant,
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: Text(
+                      context.l10n.notification_enable,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: context.colors.onSurface,
+                      ),
+                    ),
+                  ),
+                  Switch.adaptive(
+                    value: _notificationEnabled,
+                    onChanged: (value) {
+                      setState(() {
+                        _notificationEnabled = value;
+                      });
+                    },
+                    activeColor: context.colors.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // 시간 선택 (알림 활성화 시만 표시)
+          if (_notificationEnabled)
+            GestureDetector(
+              onTap: () => _showTimePicker(context),
+              child: Container(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: context.colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
+                  border: Border.all(
+                    color: context.colors.primary,
+                    width: 2,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.access_time_rounded,
+                      color: context.colors.primary,
+                    ),
+                    const SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            context.l10n.onboarding_notification_timeLabel,
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: context.colors.onSurfaceVariant,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            _formatTime(_notificationTime),
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: context.colors.onSurface,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.edit_rounded,
+                      color: context.colors.primary,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          const Spacer(),
+
+          // 힌트 텍스트
+          Center(
+            child: Text(
+              context.l10n.onboarding_notification_skipHint,
+              style: TextStyle(
+                fontSize: 13,
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+
+          // 완료 버튼
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _completeWithNotification(context),
+              child: Text(context.l10n.common_done),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // 건너뛰기 버튼
+          SizedBox(
+            width: double.infinity,
+            child: TextButton(
+              onPressed: () => _complete(context),
+              child: Text(
+                context.l10n.common_skip,
+                style: TextStyle(
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _showTimePicker(BuildContext context) async {
+    final newTime = await showTimePicker(
+      context: context,
+      initialTime: _notificationTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: context.colors,
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (newTime != null) {
+      setState(() {
+        _notificationTime = newTime;
+      });
+    }
+  }
+
+  String _formatTime(TimeOfDay time) {
+    final hour = time.hourOfPeriod == 0 ? 12 : time.hourOfPeriod;
+    final minute = time.minute.toString().padLeft(2, '0');
+    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
+    return '$hour:$minute $period';
+  }
+
+  Future<void> _completeWithNotification(BuildContext context) async {
+    if (_notificationEnabled) {
+      // 알림 설정 저장
+      final notifier = ref.read(notificationNotifierProvider.notifier);
+      await notifier.loadSettings();
+      await notifier.setNotificationEnabled(true);
+      await notifier.setNotificationTime(_notificationTime);
+    }
+    if (!mounted) return;
+    _complete(context);
   }
 
   /// 언어 선택 드롭다운 버튼

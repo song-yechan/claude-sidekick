@@ -699,4 +699,99 @@ class L10nEn extends L10n {
 
   @override
   String get dateFormat_full => 'MMM dd, yyyy HH:mm';
+
+  @override
+  String get streak_title => 'Reading Streak';
+
+  @override
+  String streak_currentDays(int days) {
+    return '$days day streak';
+  }
+
+  @override
+  String streak_longestRecord(int days) {
+    return 'Longest: $days days';
+  }
+
+  @override
+  String get streak_todayDone => 'Today\'s reading done!';
+
+  @override
+  String get streak_todayPending => 'Haven\'t read today yet';
+
+  @override
+  String get streak_startNew => 'Start a new streak';
+
+  @override
+  String get streak_keepGoing => 'Great job! Keep going';
+
+  @override
+  String get streak_almostThere => 'Almost there! Don\'t break your streak';
+
+  @override
+  String get streak_comeBack => 'Welcome back! Ready to start again?';
+
+  @override
+  String get notification_title => 'Notifications';
+
+  @override
+  String get notification_enable => 'Reading Reminders';
+
+  @override
+  String get notification_enableDesc => 'Get daily reading reminders';
+
+  @override
+  String get notification_time => 'Reminder Time';
+
+  @override
+  String get notification_timeDesc => 'When to receive reading reminders';
+
+  @override
+  String get notification_smartNudge => 'Smart Nudge';
+
+  @override
+  String get notification_smartNudgeDesc =>
+      'Adjust reminder intensity based on activity';
+
+  @override
+  String get notification_permissionDenied => 'Notification permission denied';
+
+  @override
+  String get notification_goToSettings => 'Go to Settings';
+
+  @override
+  String get notification_title_reading_reminder => 'Reading Time';
+
+  @override
+  String get notification_message_normal => 'Time for your daily reading! 📚';
+
+  @override
+  String get notification_message_gentle =>
+      'Missed yesterday? How about today?';
+
+  @override
+  String notification_message_moderate(int days) {
+    return 'Keep your $days-day streak going!';
+  }
+
+  @override
+  String get notification_message_strong =>
+      'Your books miss you. Ready to start again?';
+
+  @override
+  String get settings_notification => 'Notification Settings';
+
+  @override
+  String get onboarding_notification_title => 'Get reading reminders';
+
+  @override
+  String get onboarding_notification_subtitle =>
+      'We\'ll send you a daily reminder at your chosen time';
+
+  @override
+  String get onboarding_notification_timeLabel => 'Reminder time';
+
+  @override
+  String get onboarding_notification_skipHint =>
+      'You can change this later in Settings';
 }

@@ -18,6 +18,7 @@ import '../services/note_service.dart';
 import '../services/ocr_service.dart' show IOcrService, OcrService;
 import 'auth_provider.dart';
 import 'book_provider.dart' show reviewServiceProvider;
+import 'streak_provider.dart';
 
 /// NoteService 인스턴스를 제공하는 Provider
 final noteServiceProvider = Provider<NoteService>((ref) => NoteService());
@@ -212,6 +213,9 @@ Future<Note?> addNote(
     ref.invalidate(notesByBookProvider(bookId));
     // 활동 캘린더 갱신 (현재 연도)
     ref.invalidate(noteCountsByDateProvider(DateTime.now().year));
+
+    // 스트릭 업데이트 (노트 작성 = 독서 활동)
+    await ref.read(streakNotifierProvider.notifier).updateAfterActivity();
 
     // 노트 3개 이상 작성 시 인앱 리뷰 요청
     final reviewService = ref.read(reviewServiceProvider);

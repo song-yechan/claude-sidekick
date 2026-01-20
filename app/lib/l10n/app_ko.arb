@@ -292,5 +292,53 @@
   "error_temporaryError": "일시적인 오류가 발생했습니다.\n잠시 후 다시 시도해주세요",
   "error_noPermission": "접근 권한이 없습니다",
 
-  "dateFormat_full": "yyyy년 MM월 dd일 HH:mm"
+  "dateFormat_full": "yyyy년 MM월 dd일 HH:mm",
+
+  "streak_title": "연속 독서",
+  "streak_currentDays": "{days}일 연속",
+  "@streak_currentDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "streak_longestRecord": "최장 기록: {days}일",
+  "@streak_longestRecord": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "streak_todayDone": "오늘 독서 완료!",
+  "streak_todayPending": "오늘 아직 독서하지 않았어요",
+  "streak_startNew": "새로운 연속 기록을 시작해보세요",
+  "streak_keepGoing": "잘하고 있어요! 계속해보세요",
+  "streak_almostThere": "조금만 더! 스트릭을 이어가세요",
+  "streak_comeBack": "돌아오셨군요! 다시 시작해볼까요?",
+
+  "notification_title": "알림",
+  "notification_enable": "독서 알림",
+  "notification_enableDesc": "매일 독서 리마인더를 받습니다",
+  "notification_time": "알림 시간",
+  "notification_timeDesc": "독서 알림을 받을 시간",
+  "notification_smartNudge": "스마트 넛지",
+  "notification_smartNudgeDesc": "비활성 기간에 따라 알림 강도 조정",
+  "notification_permissionDenied": "알림 권한이 거부되었습니다",
+  "notification_goToSettings": "설정으로 이동",
+
+  "notification_title_reading_reminder": "독서 시간",
+  "notification_message_normal": "오늘의 독서 시간이에요! 📚",
+  "notification_message_gentle": "어제 못 읽었죠? 오늘은 어때요?",
+  "notification_message_moderate": "{days}일 연속 기록을 이어가세요!",
+  "@notification_message_moderate": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "notification_message_strong": "책이 기다리고 있어요. 다시 시작해볼까요?",
+
+  "settings_notification": "알림 설정",
+
+  "onboarding_notification_title": "독서 알림을 받아보세요",
+  "onboarding_notification_subtitle": "매일 같은 시간에 독서 리마인더를 보내드릴게요",
+  "onboarding_notification_timeLabel": "알림 받을 시간",
+  "onboarding_notification_skipHint": "나중에 설정에서 변경할 수 있어요"
 }

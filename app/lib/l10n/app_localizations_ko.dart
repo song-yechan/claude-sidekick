@@ -679,4 +679,94 @@ class L10nKo extends L10n {
 
   @override
   String get dateFormat_full => 'yyyy년 MM월 dd일 HH:mm';
+
+  @override
+  String get streak_title => '연속 독서';
+
+  @override
+  String streak_currentDays(int days) {
+    return '$days일 연속';
+  }
+
+  @override
+  String streak_longestRecord(int days) {
+    return '최장 기록: $days일';
+  }
+
+  @override
+  String get streak_todayDone => '오늘 독서 완료!';
+
+  @override
+  String get streak_todayPending => '오늘 아직 독서하지 않았어요';
+
+  @override
+  String get streak_startNew => '새로운 연속 기록을 시작해보세요';
+
+  @override
+  String get streak_keepGoing => '잘하고 있어요! 계속해보세요';
+
+  @override
+  String get streak_almostThere => '조금만 더! 스트릭을 이어가세요';
+
+  @override
+  String get streak_comeBack => '돌아오셨군요! 다시 시작해볼까요?';
+
+  @override
+  String get notification_title => '알림';
+
+  @override
+  String get notification_enable => '독서 알림';
+
+  @override
+  String get notification_enableDesc => '매일 독서 리마인더를 받습니다';
+
+  @override
+  String get notification_time => '알림 시간';
+
+  @override
+  String get notification_timeDesc => '독서 알림을 받을 시간';
+
+  @override
+  String get notification_smartNudge => '스마트 넛지';
+
+  @override
+  String get notification_smartNudgeDesc => '비활성 기간에 따라 알림 강도 조정';
+
+  @override
+  String get notification_permissionDenied => '알림 권한이 거부되었습니다';
+
+  @override
+  String get notification_goToSettings => '설정으로 이동';
+
+  @override
+  String get notification_title_reading_reminder => '독서 시간';
+
+  @override
+  String get notification_message_normal => '오늘의 독서 시간이에요! 📚';
+
+  @override
+  String get notification_message_gentle => '어제 못 읽었죠? 오늘은 어때요?';
+
+  @override
+  String notification_message_moderate(int days) {
+    return '$days일 연속 기록을 이어가세요!';
+  }
+
+  @override
+  String get notification_message_strong => '책이 기다리고 있어요. 다시 시작해볼까요?';
+
+  @override
+  String get settings_notification => '알림 설정';
+
+  @override
+  String get onboarding_notification_title => '독서 알림을 받아보세요';
+
+  @override
+  String get onboarding_notification_subtitle => '매일 같은 시간에 독서 리마인더를 보내드릴게요';
+
+  @override
+  String get onboarding_notification_timeLabel => '알림 받을 시간';
+
+  @override
+  String get onboarding_notification_skipHint => '나중에 설정에서 변경할 수 있어요';
 }

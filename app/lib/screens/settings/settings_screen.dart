@@ -104,6 +104,51 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.xl),
 
+          // 알림 설정 섹션
+          _buildSectionHeader(context, context.l10n.notification_title),
+          Container(
+            margin: const EdgeInsets.symmetric(horizontal: 20),
+            decoration: BoxDecoration(
+              color: context.surfaceContainerLowest,
+              borderRadius: BorderRadius.circular(AppShapes.large),
+            ),
+            child: ListTile(
+              leading: Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: context.colors.primaryContainer,
+                  borderRadius: BorderRadius.circular(AppShapes.medium),
+                ),
+                child: Icon(
+                  Icons.notifications_rounded,
+                  color: context.colors.onPrimaryContainer,
+                  size: 20,
+                ),
+              ),
+              title: Text(
+                context.l10n.settings_notification,
+                style: TextStyle(
+                  fontWeight: FontWeight.w500,
+                  color: context.colors.onSurface,
+                ),
+              ),
+              subtitle: Text(
+                context.l10n.notification_enableDesc,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: context.colors.onSurfaceVariant,
+                ),
+              ),
+              trailing: Icon(
+                Icons.chevron_right_rounded,
+                color: context.colors.onSurfaceVariant,
+              ),
+              onTap: () => context.push('/settings/notifications'),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+
           // 계정 섹션
           _buildSectionHeader(context, context.l10n.account_title),
           Container(

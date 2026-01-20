@@ -1,8 +1,10 @@
 /// 사용자 설정 서비스
 ///
 /// Supabase Database를 사용하여 사용자 온보딩 설정을 저장/조회합니다.
-/// 독서 목표, 독서 빈도 등 개인화 정보를 관리합니다.
+/// 독서 목표, 독서 빈도, 알림 설정 등 개인화 정보를 관리합니다.
 library;
+
+import 'package:flutter/material.dart';
 
 import '../core/supabase.dart';
 
@@ -13,6 +15,16 @@ class UserPreferences {
   final List<String> readingGoals;
   final String? readingFrequency;
   final bool onboardingCompleted;
+
+  /// 알림 활성화 여부
+  final bool notificationEnabled;
+
+  /// 알림 시간 (기본값: 21:00)
+  final TimeOfDay notificationTime;
+
+  /// 스마트 넛지 활성화 여부
+  final bool smartNudgeEnabled;
+
   final DateTime createdAt;
   final DateTime updatedAt;
 
@@ -22,19 +34,64 @@ class UserPreferences {
     required this.readingGoals,
     this.readingFrequency,
     required this.onboardingCompleted,
+    this.notificationEnabled = false,
+    this.notificationTime = const TimeOfDay(hour: 21, minute: 0),
+    this.smartNudgeEnabled = true,
     required this.createdAt,
     required this.updatedAt,
   });
 
   factory UserPreferences.fromJson(Map<String, dynamic> json) {
+    // notification_time 파싱 (HH:MM:SS 형식)
+    TimeOfDay notificationTime = const TimeOfDay(hour: 21, minute: 0);
+    if (json['notification_time'] != null) {
+      final timeParts = (json['notification_time'] as String).split(':');
+      if (timeParts.length >= 2) {
+        notificationTime = TimeOfDay(
+          hour: int.tryParse(timeParts[0]) ?? 21,
+          minute: int.tryParse(timeParts[1]) ?? 0,
+        );
+      }
+    }
+
     return UserPreferences(
       id: json['id'] as String,
       userId: json['user_id'] as String,
       readingGoals: (json['reading_goals'] as List?)?.cast<String>() ?? [],
       readingFrequency: json['reading_frequency'] as String?,
       onboardingCompleted: json['onboarding_completed'] as bool? ?? false,
+      notificationEnabled: json['notification_enabled'] as bool? ?? false,
+      notificationTime: notificationTime,
+      smartNudgeEnabled: json['smart_nudge_enabled'] as bool? ?? true,
       createdAt: DateTime.parse(json['created_at'] as String),
       updatedAt: DateTime.parse(json['updated_at'] as String),
+    );
+  }
+
+  /// 복사본 생성 (일부 필드 업데이트)
+  UserPreferences copyWith({
+    String? id,
+    String? userId,
+    List<String>? readingGoals,
+    String? readingFrequency,
+    bool? onboardingCompleted,
+    bool? notificationEnabled,
+    TimeOfDay? notificationTime,
+    bool? smartNudgeEnabled,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+  }) {
+    return UserPreferences(
+      id: id ?? this.id,
+      userId: userId ?? this.userId,
+      readingGoals: readingGoals ?? this.readingGoals,
+      readingFrequency: readingFrequency ?? this.readingFrequency,
+      onboardingCompleted: onboardingCompleted ?? this.onboardingCompleted,
+      notificationEnabled: notificationEnabled ?? this.notificationEnabled,
+      notificationTime: notificationTime ?? this.notificationTime,
+      smartNudgeEnabled: smartNudgeEnabled ?? this.smartNudgeEnabled,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
     );
   }
 }
@@ -93,5 +150,43 @@ class UserPreferencesService {
       readingFrequency: frequency,
       onboardingCompleted: true,
     );
+  }
+
+  /// 알림 설정을 업데이트합니다.
+  ///
+  /// [userId] 사용자 ID
+  /// [notificationEnabled] 알림 활성화 여부
+  /// [notificationTime] 알림 시간
+  /// [smartNudgeEnabled] 스마트 넛지 활성화 여부
+  Future<UserPreferences> updateNotificationSettings({
+    required String userId,
+    bool? notificationEnabled,
+    TimeOfDay? notificationTime,
+    bool? smartNudgeEnabled,
+  }) async {
+    final data = <String, dynamic>{
+      'user_id': userId,
+    };
+
+    if (notificationEnabled != null) {
+      data['notification_enabled'] = notificationEnabled;
+    }
+    if (notificationTime != null) {
+      // TimeOfDay를 HH:MM:SS 형식으로 변환
+      final hour = notificationTime.hour.toString().padLeft(2, '0');
+      final minute = notificationTime.minute.toString().padLeft(2, '0');
+      data['notification_time'] = '$hour:$minute:00';
+    }
+    if (smartNudgeEnabled != null) {
+      data['smart_nudge_enabled'] = smartNudgeEnabled;
+    }
+
+    final response = await supabase
+        .from('user_preferences')
+        .upsert(data, onConflict: 'user_id')
+        .select()
+        .single();
+
+    return UserPreferences.fromJson(response);
   }
 }

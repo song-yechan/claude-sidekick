@@ -61,6 +61,14 @@ void main() {
     testWidgets('shows account section header', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('계정'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.text('계정'), findsOneWidget);
     });
 
@@ -175,11 +183,27 @@ void main() {
     testWidgets('shows login required when not logged in', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('로그인 필요'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.text('로그인 필요'), findsOneWidget);
     });
 
     testWidgets('shows logged in account label', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('로그인된 계정'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       expect(find.text('로그인된 계정'), findsOneWidget);
     });
@@ -187,17 +211,41 @@ void main() {
     testWidgets('shows logout option', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.text('로그아웃'),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.text('로그아웃'), findsOneWidget);
     });
 
     testWidgets('shows logout icon', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
 
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.logout_rounded),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
+
       expect(find.byIcon(Icons.logout_rounded), findsOneWidget);
     });
 
     testWidgets('shows person icon for account', (tester) async {
       await tester.pumpWidget(buildSettingsScreen());
+
+      // 계정 섹션이 스크롤 아래에 있으므로 스크롤
+      await tester.scrollUntilVisible(
+        find.byIcon(Icons.person_rounded),
+        200,
+        scrollable: find.byType(Scrollable).first,
+      );
+      await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.person_rounded), findsOneWidget);
     });
