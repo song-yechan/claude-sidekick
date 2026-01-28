@@ -1,22 +1,34 @@
+/// 책 상세 화면
+///
+/// 책 정보와 수집된 노트 목록을 표시합니다.
+/// OCR을 통해 새 노트를 추가할 수 있습니다.
+library;
+
 import 'dart:io';
 import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import '../common/perspective_crop_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:image/image.dart' as img;
+
+import '../common/perspective_crop_screen.dart';
 import '../../core/theme.dart';
 import '../../core/error_utils.dart';
-import '../../core/constants.dart';
 import '../../models/book.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
 import '../../providers/category_provider.dart';
 import '../../widgets/note/note_card.dart';
 import '../../widgets/category/category_chip.dart';
+import 'widgets/image_source_sheet.dart';
+import 'widgets/ocr_processing_dialog.dart';
+import 'widgets/category_edit_sheet.dart';
+import 'widgets/book_delete_dialog.dart';
 
+/// 책 상세 화면
 class BookDetailScreen extends ConsumerStatefulWidget {
   final String bookId;
 
@@ -27,83 +39,12 @@ class BookDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
+  /// 이미지를 선택하고 OCR 처리를 시작합니다.
   Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final source = await showModalBottomSheet<ImageSource>(
-      context: context,
-      backgroundColor: context.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppShapes.extraLarge),
-        ),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 8),
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: context.colors.outlineVariant,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ListTile(
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: context.colors.primaryContainer,
-                  borderRadius: BorderRadius.circular(AppShapes.medium),
-                ),
-                child: Icon(
-                  Icons.camera_alt_rounded,
-                  color: context.colors.onPrimaryContainer,
-                ),
-              ),
-              title: Text(
-                context.l10n.ocr_camera,
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: context.colors.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(sheetContext, ImageSource.camera),
-            ),
-            ListTile(
-              leading: Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: context.colors.secondaryContainer,
-                  borderRadius: BorderRadius.circular(AppShapes.medium),
-                ),
-                child: Icon(
-                  Icons.photo_library_rounded,
-                  color: context.colors.onSecondaryContainer,
-                ),
-              ),
-              title: Text(
-                context.l10n.ocr_gallery,
-                style: TextStyle(
-                  fontWeight: FontWeight.w500,
-                  color: context.colors.onSurface,
-                ),
-              ),
-              onTap: () => Navigator.pop(sheetContext, ImageSource.gallery),
-            ),
-            const SizedBox(height: 16),
-          ],
-        ),
-      ),
-    );
-
+    final source = await showImageSourceSheet(context);
     if (source == null) return;
 
-    // iOS에서 HEIC 형식을 JPEG으로 자동 변환하도록 설정
+    final picker = ImagePicker();
     final image = await picker.pickImage(
       source: source,
       maxWidth: 1920,
@@ -124,45 +65,42 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
     // OCR 처리 시작
     if (mounted) {
-      _showOcrDialog(resizedBytes);
+      showOcrProcessingDialog(
+        context: context,
+        ref: ref,
+        bookId: widget.bookId,
+        imageBytes: resizedBytes,
+      );
     }
   }
 
   /// 이미지 크롭 화면을 표시합니다.
-  /// 4개 꼭지점 개별 조정 + 엣지 조정이 가능한 perspective crop 사용
   Future<File?> _cropImage(String imagePath) async {
-    final result = await Navigator.push<File>(
+    return Navigator.push<File>(
       context,
       MaterialPageRoute(
         builder: (context) => PerspectiveCropScreen(imagePath: imagePath),
       ),
     );
-
-    return result;
   }
 
   /// 이미지 리사이즈 (OCR 최적화)
-  /// 최대 1920px 너비/높이, JPEG 85% 품질로 압축
   Future<Uint8List> _resizeImageForOcr(Uint8List bytes) async {
     const maxDimension = 1920;
     const jpegQuality = 85;
 
     try {
-      // 이미지 디코딩
       final originalImage = img.decodeImage(bytes);
       if (originalImage == null) return bytes;
 
-      // 리사이즈가 필요한지 확인
       final width = originalImage.width;
       final height = originalImage.height;
 
       if (width <= maxDimension && height <= maxDimension) {
-        // 이미 충분히 작은 경우 JPEG으로 압축만 수행
         final compressed = img.encodeJpg(originalImage, quality: jpegQuality);
         return Uint8List.fromList(compressed);
       }
 
-      // 비율 유지하며 리사이즈
       img.Image resized;
       if (width > height) {
         resized = img.copyResize(originalImage, width: maxDimension);
@@ -170,262 +108,214 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
         resized = img.copyResize(originalImage, height: maxDimension);
       }
 
-      // JPEG으로 인코딩
       final encoded = img.encodeJpg(resized, quality: jpegQuality);
       return Uint8List.fromList(encoded);
     } catch (e) {
-      // 리사이즈 실패 시 원본 반환
       return bytes;
     }
   }
 
-  void _showOcrDialog(Uint8List imageBytes) {
-    // OCR 처리 시작
-    ref.read(ocrProvider.notifier).processImage(imageBytes);
+  @override
+  Widget build(BuildContext context) {
+    final book = ref.watch(bookProvider(widget.bookId));
+    final notesAsync = ref.watch(notesByBookProvider(widget.bookId));
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (dialogContext) => Consumer(
-        builder: (dialogContext, ref, _) {
-          final ocrState = ref.watch(ocrProvider);
+    if (book == null) {
+      return Scaffold(
+        appBar: AppBar(),
+        body: Center(child: Text(context.l10n.book_notFound)),
+      );
+    }
 
-          if (ocrState.isProcessing) {
-            return AlertDialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              content: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 64,
-                      height: 64,
-                      decoration: BoxDecoration(
-                        color: Theme.of(dialogContext).colorScheme.primaryContainer,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            color: Theme.of(dialogContext).colorScheme.primary,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Text(
-                      context.l10n.ocr_extracting,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(dialogContext).colorScheme.onSurface,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      context.l10n.ocr_processing,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(dialogContext).colorScheme.onSurfaceVariant,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
-          }
-
-          if (ocrState.error != null) {
-            return AlertDialog(
-              title: Text(context.l10n.ocr_extractFailed),
-              content: Text(getUserFriendlyErrorMessage(context, ocrState.error!)),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(dialogContext);
-                    ref.read(ocrProvider.notifier).clear();
-                  },
-                  child: Text(context.l10n.common_confirm),
-                ),
-              ],
-            );
-          }
-
-          // OCR 성공 - 저장 다이얼로그 표시
-          return _SaveNoteDialog(
-            bookId: widget.bookId,
-            extractedText: ocrState.extractedText ?? '',
-            onSaved: () {
-              Navigator.pop(dialogContext);
-              ref.read(ocrProvider.notifier).clear();
-            },
-          );
-        },
+    return Scaffold(
+      body: CustomScrollView(
+        slivers: [
+          _BookDetailAppBar(
+            book: book,
+            onDelete: () => showBookDeleteDialog(
+              context: context,
+              ref: ref,
+              bookId: widget.bookId,
+              bookTitle: book.title,
+            ),
+          ),
+          _BookInfoSection(
+            book: book,
+            onEditCategories: () => showCategoryEditSheet(
+              context: context,
+              ref: ref,
+              bookId: widget.bookId,
+              initialCategoryIds: book.categoryIds,
+            ),
+          ),
+          _NotesSection(notesAsync: notesAsync),
+          const SliverToBoxAdapter(child: SizedBox(height: 80)),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _pickImage,
+        icon: const Icon(Icons.camera_alt),
+        label: Text(context.l10n.note_collect),
       ),
     );
   }
+}
 
-  void _showCategoryEditSheet() {
-    final book = ref.read(bookProvider(widget.bookId));
-    if (book == null) return;
+/// 책 상세 앱바
+class _BookDetailAppBar extends StatelessWidget {
+  final Book book;
+  final VoidCallback onDelete;
 
-    final selectedIds = Set<String>.from(book.categoryIds);
+  const _BookDetailAppBar({
+    required this.book,
+    required this.onDelete,
+  });
 
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: context.surfaceContainerLowest,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(AppShapes.extraLarge),
+  @override
+  Widget build(BuildContext context) {
+    final surfaceColor = Theme.of(context).colorScheme.surface;
+
+    return SliverAppBar(
+      expandedHeight: 200,
+      pinned: true,
+      backgroundColor: surfaceColor,
+      leading: IconButton(
+        icon: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: surfaceColor.withValues(alpha: 0.8),
+            borderRadius: BorderRadius.circular(18),
+          ),
+          child: Icon(
+            Icons.arrow_back_rounded,
+            size: 20,
+            color: context.colors.onSurface,
+          ),
         ),
+        onPressed: () => context.pop(),
       ),
-      builder: (sheetContext) => StatefulBuilder(
-        builder: (sheetContext, setSheetState) {
-          final categoriesAsync = ref.watch(categoriesProvider);
-          final isMaxReached = selectedIds.length >= maxCategoriesPerBook;
+      actions: [
+        IconButton(
+          icon: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: surfaceColor.withValues(alpha: 0.8),
+              borderRadius: BorderRadius.circular(18),
+            ),
+            child: Icon(
+              Icons.delete_outline_rounded,
+              size: 20,
+              color: context.colors.onSurface,
+            ),
+          ),
+          onPressed: onDelete,
+        ),
+      ],
+      flexibleSpace: FlexibleSpaceBar(
+        background: book.coverImage != null
+            ? CachedNetworkImage(
+                imageUrl: book.coverImage!,
+                fit: BoxFit.cover,
+                color: Colors.black.withValues(alpha: 0.3),
+                colorBlendMode: BlendMode.darken,
+              )
+            : Container(color: context.colors.primaryContainer),
+      ),
+    );
+  }
+}
 
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 핸들 바
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: context.colors.outlineVariant,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        context.l10n.category_edit,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: context.colors.onSurface,
-                        ),
-                      ),
-                      Text(
-                        '${selectedIds.length}/$maxCategoriesPerBook',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isMaxReached
-                              ? context.colors.primary
-                              : context.colors.onSurfaceVariant,
-                          fontWeight:
-                              isMaxReached ? FontWeight.w600 : FontWeight.normal,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  categoriesAsync.when(
-                    data: (categories) {
-                      if (categories.isEmpty) {
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: Text(
-                              context.l10n.category_noListHint,
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: context.colors.onSurfaceVariant,
-                              ),
-                            ),
-                          ),
-                        );
-                      }
-                      return Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: categories.map((cat) {
-                          final isSelected = selectedIds.contains(cat.id);
-                          final isDisabled = !isSelected && isMaxReached;
-                          return Opacity(
-                            opacity: isDisabled ? 0.4 : 1.0,
-                            child: CategoryChip(
-                              category: cat,
-                              isSelected: isSelected,
-                              onTap: isDisabled
-                                  ? null
-                                  : () {
-                                      setSheetState(() {
-                                        if (isSelected) {
-                                          selectedIds.remove(cat.id);
-                                        } else {
-                                          selectedIds.add(cat.id);
-                                        }
-                                      });
-                                    },
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    },
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(20),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
-                    error: (e, s) => Text(context.l10n.category_loadError),
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: selectedIds.isEmpty
-                          ? null
-                          : () async {
-                              Navigator.pop(sheetContext);
-                              final success = await updateBookCategories(
-                                ref,
-                                widget.bookId,
-                                selectedIds.toList(),
-                              );
-                              if (success && mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(context.l10n.category_updated),
-                                    behavior: SnackBarBehavior.floating,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius:
-                                          BorderRadius.circular(AppShapes.small),
-                                    ),
-                                  ),
-                                );
-                              }
-                            },
-                      child: Text(context.l10n.common_save),
-                    ),
-                  ),
-                ],
+/// 책 정보 섹션
+class _BookInfoSection extends ConsumerWidget {
+  final Book book;
+  final VoidCallback onEditCategories;
+
+  const _BookInfoSection({
+    required this.book,
+    required this.onEditCategories,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // 제목
+            Text(
+              book.title,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: context.colors.onSurface,
               ),
             ),
-          );
-        },
+            const SizedBox(height: AppSpacing.sm),
+
+            // 저자
+            Text(
+              book.author,
+              style: TextStyle(
+                fontSize: 16,
+                color: context.colors.onSurfaceVariant,
+              ),
+            ),
+
+            // 출판사
+            if (book.publisher != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                book.publisher!,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: context.colors.outline,
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+
+            // 카테고리 섹션
+            _CategorySection(
+              book: book,
+              onEdit: onEditCategories,
+            ),
+
+            const SizedBox(height: AppSpacing.lg),
+            Divider(color: context.colors.outlineVariant),
+            const SizedBox(height: AppSpacing.lg),
+
+            // 노트 헤더
+            Text(
+              context.l10n.library_collectedNotes,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: context.colors.onSurface,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildCategorySection(Book book) {
+/// 카테고리 섹션
+class _CategorySection extends ConsumerWidget {
+  final Book book;
+  final VoidCallback onEdit;
+
+  const _CategorySection({
+    required this.book,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     return Row(
@@ -439,7 +329,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
 
               if (bookCategories.isEmpty) {
                 return GestureDetector(
-                  onTap: _showCategoryEditSheet,
+                  onTap: onEdit,
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 10,
@@ -486,7 +376,7 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
         // 카테고리가 있을 때만 수정 버튼 표시
         if (book.categoryIds.isNotEmpty)
           IconButton(
-            onPressed: _showCategoryEditSheet,
+            onPressed: onEdit,
             icon: Icon(
               Icons.edit_outlined,
               size: 20,
@@ -497,465 +387,102 @@ class _BookDetailScreenState extends ConsumerState<BookDetailScreen> {
       ],
     );
   }
+}
 
-  void _showDeleteDialog() {
-    final book = ref.read(bookProvider(widget.bookId));
-    if (book == null) return;
+/// 노트 목록 섹션
+class _NotesSection extends StatelessWidget {
+  final AsyncValue<List<dynamic>> notesAsync;
 
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          context.l10n.book_delete,
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: context.colors.onSurface,
-          ),
-        ),
-        content: Text(
-          context.l10n.book_deleteConfirm(book.title),
-          style: TextStyle(
-            fontSize: 15,
-            color: context.colors.onSurfaceVariant,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: Text(context.l10n.common_cancel),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(dialogContext);
-              final success = await deleteBook(ref, widget.bookId);
-              if (success && mounted) {
-                context.pop();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(context.l10n.book_deleted),
-                    behavior: SnackBarBehavior.floating,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(AppShapes.small),
-                    ),
-                  ),
-                );
-              }
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: context.colors.error,
-            ),
-            child: Text(context.l10n.common_delete),
-          ),
-        ],
-      ),
-    );
-  }
+  const _NotesSection({required this.notesAsync});
 
   @override
   Widget build(BuildContext context) {
-    final book = ref.watch(bookProvider(widget.bookId));
-    final notesAsync = ref.watch(notesByBookProvider(widget.bookId));
+    return notesAsync.when(
+      data: (notes) {
+        if (notes.isEmpty) {
+          return SliverFillRemaining(
+            hasScrollBody: false,
+            child: _buildEmptyState(context),
+          );
+        }
 
-    if (book == null) {
-      return Scaffold(
-        appBar: AppBar(),
-        body: Center(child: Text(context.l10n.book_notFound)),
-      );
-    }
-
-    final surfaceColor = Theme.of(context).colorScheme.surface;
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // 앱바 with 책 표지
-          SliverAppBar(
-            expandedHeight: 200,
-            pinned: true,
-            backgroundColor: surfaceColor,
-            leading: IconButton(
-              icon: Container(
-                width: 36,
-                height: 36,
-                decoration: BoxDecoration(
-                  color: surfaceColor.withValues(alpha: 0.8),
-                  borderRadius: BorderRadius.circular(18),
-                ),
-                child: Icon(
-                  Icons.arrow_back_rounded,
-                  size: 20,
-                  color: context.colors.onSurface,
-                ),
-              ),
-              onPressed: () => context.pop(),
-            ),
-            actions: [
-              IconButton(
-                icon: Container(
-                  width: 36,
-                  height: 36,
-                  decoration: BoxDecoration(
-                    color: surfaceColor.withValues(alpha: 0.8),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: Icon(
-                    Icons.delete_outline_rounded,
-                    size: 20,
-                    color: context.colors.onSurface,
-                  ),
-                ),
-                onPressed: _showDeleteDialog,
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: book.coverImage != null
-                  ? CachedNetworkImage(
-                      imageUrl: book.coverImage!,
-                      fit: BoxFit.cover,
-                      color: Colors.black.withValues(alpha: 0.3),
-                      colorBlendMode: BlendMode.darken,
-                    )
-                  : Container(
-                      color: context.colors.primaryContainer,
-                    ),
-            ),
-          ),
-
-          // 책 정보
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    book.title,
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w700,
-                      color: context.colors.onSurface,
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    book.author,
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                  ),
-                  if (book.publisher != null) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      book.publisher!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: context.colors.outline,
-                      ),
-                    ),
-                  ],
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // 카테고리 섹션
-                  _buildCategorySection(book),
-
-                  const SizedBox(height: AppSpacing.lg),
-                  Divider(color: context.colors.outlineVariant),
-                  const SizedBox(height: AppSpacing.lg),
-
-                  // 노트 헤더
-                  Row(
-                    children: [
-                      Text(
-                        context.l10n.library_collectedNotes,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: context.colors.onSurface,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // 노트 목록
-          notesAsync.when(
-            data: (notes) {
-              if (notes.isEmpty) {
-                return SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: context.surfaceContainerHigh,
-                            borderRadius: BorderRadius.circular(40),
-                          ),
-                          child: Icon(
-                            Icons.format_quote_rounded,
-                            size: 40,
-                            color: context.colors.outline,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.xl),
-                        Text(
-                          context.l10n.home_noNotes,
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                            color: context.colors.onSurface,
-                          ),
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        Text(
-                          context.l10n.note_collectHint,
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: context.colors.onSurfaceVariant,
-                          ),
-                        ),
-                      ],
-                    ),
+        return SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          sliver: SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                final note = notes[index];
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: NoteCard(
+                    note: note,
+                    showSummary: false,
+                    onTap: () => context.push('/notes/${note.id}'),
                   ),
                 );
-              }
-
-              return SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 20),
-                sliver: SliverList(
-                  delegate: SliverChildBuilderDelegate(
-                    (context, index) {
-                      final note = notes[index];
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: NoteCard(
-                          note: note,
-                          showSummary: false, // 항상 원문 표시
-                          onTap: () => context.push('/notes/${note.id}'),
-                        ),
-                      );
-                    },
-                    childCount: notes.length,
-                  ),
-                ),
-              );
-            },
-            loading: () => SliverFillRemaining(
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: context.colors.primary,
-                  strokeWidth: 2,
-                ),
-              ),
-            ),
-            error: (error, _) => SliverFillRemaining(
-              child: Center(
-                child: Text(
-                  getUserFriendlyErrorMessage(context, error),
-                  style: TextStyle(color: context.colors.onSurfaceVariant),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              },
+              childCount: notes.length,
             ),
           ),
-
-          // 하단 여백
-          const SliverToBoxAdapter(
-            child: SizedBox(height: 80),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _pickImage,
-        icon: const Icon(Icons.camera_alt),
-        label: Text(context.l10n.note_collect),
-      ),
-    );
-  }
-}
-
-/// 노트 저장 다이얼로그
-class _SaveNoteDialog extends ConsumerStatefulWidget {
-  final String bookId;
-  final String extractedText;
-  final VoidCallback onSaved;
-
-  const _SaveNoteDialog({
-    required this.bookId,
-    required this.extractedText,
-    required this.onSaved,
-  });
-
-  @override
-  ConsumerState<_SaveNoteDialog> createState() => _SaveNoteDialogState();
-}
-
-class _SaveNoteDialogState extends ConsumerState<_SaveNoteDialog> {
-  late TextEditingController _contentController;
-  final _pageController = TextEditingController();
-  final _memoController = TextEditingController();
-  bool _isSaving = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _contentController = TextEditingController(text: widget.extractedText);
-  }
-
-  @override
-  void dispose() {
-    _contentController.dispose();
-    _pageController.dispose();
-    _memoController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    setState(() => _isSaving = true);
-
-    final note = await addNote(
-      ref,
-      bookId: widget.bookId,
-      content: _contentController.text,
-      pageNumber:
-          _pageController.text.isNotEmpty ? int.tryParse(_pageController.text) : null,
-      memo: _memoController.text.isNotEmpty ? _memoController.text : null,
-    );
-
-    setState(() => _isSaving = false);
-
-    if (note != null) {
-      widget.onSaved();
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.l10n.note_saved)),
         );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(context.l10n.note_saveSentence),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // 추출된 텍스트 (수정 가능)
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.format_quote_rounded,
-                      size: 16,
-                      color: context.colors.onSurfaceVariant,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      context.l10n.ocr_extractedText,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: context.colors.onSurfaceVariant,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      context.l10n.ocr_canEdit,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: context.colors.outline,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                TextField(
-                  controller: _contentController,
-                  maxLines: null,
-                  minLines: 3,
-                  style: TextStyle(
-                    fontSize: 15,
-                    height: 1.6,
-                    color: context.colors.onSurface,
-                  ),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: context.surfaceContainerLow,
-                    contentPadding: const EdgeInsets.all(AppSpacing.lg),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(AppShapes.medium),
-                      borderSide: BorderSide.none,
-                    ),
-                    hintText: context.l10n.ocr_editExtracted,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-
-            // 페이지 번호
-            TextField(
-              controller: _pageController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: context.l10n.note_pageNumber,
-                prefixIcon: const Icon(Icons.bookmark_outline),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // 메모
-            TextField(
-              controller: _memoController,
-              maxLines: 2,
-              decoration: InputDecoration(
-                labelText: context.l10n.note_memoOptional,
-                prefixIcon: const Icon(Icons.edit_note),
-              ),
-            ),
-          ],
+      },
+      loading: () => SliverFillRemaining(
+        child: Center(
+          child: CircularProgressIndicator(
+            color: context.colors.primary,
+            strokeWidth: 2,
+          ),
         ),
       ),
-      actionsOverflowButtonSpacing: 0,
-      actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-      actions: [
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: _isSaving ? null : () => Navigator.pop(context),
-                child: Text(context.l10n.common_cancel),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: _isSaving ? null : _save,
-                child: _isSaving
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Text(context.l10n.common_save),
-              ),
-            ),
-          ],
+      error: (error, _) => SliverFillRemaining(
+        child: Center(
+          child: Text(
+            getUserFriendlyErrorMessage(context, error),
+            style: TextStyle(color: context.colors.onSurfaceVariant),
+            textAlign: TextAlign.center,
+          ),
         ),
-      ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: context.surfaceContainerHigh,
+              borderRadius: BorderRadius.circular(40),
+            ),
+            child: Icon(
+              Icons.format_quote_rounded,
+              size: 40,
+              color: context.colors.outline,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          Text(
+            context.l10n.home_noNotes,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: context.colors.onSurface,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            context.l10n.note_collectHint,
+            style: TextStyle(
+              fontSize: 14,
+              color: context.colors.onSurfaceVariant,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
