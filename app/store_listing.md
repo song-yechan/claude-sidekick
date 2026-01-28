@@ -1,12 +1,17 @@
 # Bookscribe 스토어 등록 정보
 
 ## 앱 이름
-**Bookscribe** (북스크라이브)
+**Bookscribe - 독서 노트** (북스크라이브)
+
+---
+
+## 부제목 (Subtitle, 30자 이내) ⭐ 신규
+책 문장 촬영 • OCR 독서 기록
 
 ---
 
 ## 짧은 설명 (80자 이내)
-책 속 문장을 촬영하고 AI로 요약하여 나만의 독서 기록을 만드세요.
+책 속 문장을 촬영하면 텍스트로 변환! 나만의 독서 노트를 만드세요.
 
 ---
 
@@ -14,91 +19,131 @@
 
 ### 한국어 (Korean)
 
-📚 **Bookscribe - 스마트한 독서 기록의 시작**
+**마음에 드는 문장, 사진 한 장으로 영원히 기록하세요**
 
-책을 읽다가 마음에 드는 문장을 발견했나요?
-Bookscribe로 촬영하면 텍스트로 변환하고, AI가 핵심을 요약해드립니다.
+책을 읽다 밑줄 치고 싶은 문장을 발견했나요?
+Bookscribe로 촬영하면 텍스트로 자동 변환됩니다.
+더 이상 손으로 옮겨 적을 필요 없어요.
 
-**주요 기능**
+---
 
-📷 **문장 스캔**
-- 책 페이지를 촬영하면 자동으로 텍스트 추출
-- OCR 기술로 정확한 문장 인식
+**핵심 기능**
 
-🤖 **AI 요약**
-- 긴 문장도 핵심만 쏙쏙
-- 나중에 빠르게 복습할 수 있는 요약본 제공
+**📷 문장 스캔 (OCR)**
+책 페이지를 촬영하면 텍스트 자동 추출
+한글, 영문 모두 정확하게 인식
+원하는 영역만 선택해서 깔끔하게 저장
 
-📖 **책 관리**
-- ISBN 검색으로 간편하게 책 등록
-- 표지, 저자, 출판사 정보 자동 입력
+**📖 스마트 책 관리**
+ISBN, 제목, 저자로 간편 검색
+표지, 출판사, 페이지 수 자동 입력
+카테고리로 내 서재 정리
 
-🏷️ **카테고리 & 태그**
-- 나만의 카테고리로 책 분류
-- 태그로 문장 정리
+**📊 독서 습관 시각화**
+GitHub 스타일 잔디 캘린더
+연간 독서 활동 한눈에 확인
+등록한 책 수, 수집한 문장 수 실시간 통계
 
-📊 **독서 활동 캘린더**
-- GitHub 스타일의 활동 캘린더
-- 매일의 독서 습관을 한눈에 확인
+**🤖 AI 요약 (선택)**
+긴 문장의 핵심만 쏙쏙
+빠른 복습을 위한 요약본
 
-☁️ **클라우드 동기화**
-- 모든 기기에서 내 기록에 접근
-- 소중한 문장들을 안전하게 보관
+**☁️ 클라우드 동기화**
+모든 기기에서 내 기록 접근
+소중한 문장들 안전하게 보관
 
-**이런 분께 추천합니다**
-- 독서 기록을 체계적으로 관리하고 싶은 분
-- 좋은 문장을 수집하는 것을 좋아하는 분
-- 읽은 책의 핵심 내용을 빠르게 복습하고 싶은 분
-- 독서 습관을 만들고 싶은 분
+---
 
-지금 바로 Bookscribe와 함께 더 풍요로운 독서 생활을 시작하세요!
+**이런 분께 완벽해요**
+
+✓ 독서하며 좋은 문장을 수집하는 분
+✓ 손으로 옮겨 적기 귀찮은 분
+✓ 독서 기록을 체계적으로 관리하고 싶은 분
+✓ 독서 습관을 만들고 싶은 분
+✓ 읽은 책 내용을 빠르게 복습하고 싶은 분
+
+---
+
+Bookscribe로 독서의 가치를 기록하세요.
 
 ---
 
 ### English
 
-📚 **Bookscribe - Smart Reading Notes**
+**Capture your favorite passages with just one photo**
 
-Found a meaningful passage while reading?
-Capture it with Bookscribe - we'll extract the text and AI will summarize the key points.
+Found a quote worth remembering while reading?
+Snap a photo with Bookscribe and it converts to text automatically.
+No more copying by hand.
+
+---
 
 **Key Features**
 
-📷 **Text Scanning**
-- Capture book pages and extract text automatically
-- Accurate text recognition with OCR technology
+**📷 Text Scanning (OCR)**
+Photograph book pages, text extracted automatically
+Accurate recognition for all languages
+Select specific areas for clean results
 
-🤖 **AI Summary**
-- Get the essence of long passages
-- Quick review summaries for later
+**📖 Smart Book Management**
+Search by ISBN, title, or author
+Auto-fill cover, publisher, page count
+Organize your library with categories
 
-📖 **Book Management**
-- Easy book registration with ISBN search
-- Auto-fill cover, author, and publisher info
+**📊 Reading Habit Visualization**
+GitHub-style activity calendar
+View your annual reading at a glance
+Real-time stats: books added, quotes collected
 
-🏷️ **Categories & Tags**
-- Organize books with custom categories
-- Tag your favorite passages
+**🤖 AI Summary (Optional)**
+Get the essence of long passages
+Quick summaries for easy review
 
-📊 **Reading Activity Calendar**
-- GitHub-style activity calendar
-- Track your daily reading habits at a glance
-
-☁️ **Cloud Sync**
-- Access your notes from any device
-- Keep your precious quotes safe
-
-Start your enriched reading journey with Bookscribe today!
+**☁️ Cloud Sync**
+Access your notes from any device
+Keep your precious quotes safe
 
 ---
 
-## 키워드 (검색용)
+**Perfect for you if...**
 
-### 한국어
-독서, 책, 기록, 노트, 문장, 메모, OCR, 스캔, AI, 요약, 독서앱, 책관리, 독서일기, 북로그, 인용구
+✓ You love collecting meaningful quotes
+✓ You're tired of copying text by hand
+✓ You want to organize your reading systematically
+✓ You want to build a reading habit
+✓ You need quick access to book highlights
+
+---
+
+Capture the value of your reading with Bookscribe.
+
+---
+
+## 키워드 (검색용) - 100자 제한
+
+### 한국어 (우선순위 순)
+독서노트,책,문장수집,OCR,독서기록,스캔,하이라이트,발췌,독서앱,책관리,독서일기,북로그,인용구,밑줄,독서습관
 
 ### English
-reading, books, notes, quotes, OCR, scan, AI, summary, book tracker, reading log, book management
+reading notes,book quotes,OCR,text scan,book tracker,highlight,excerpt,reading log,book management,reading habit
+
+---
+
+## 키워드 전략 노트
+
+**핵심 검색어 (높은 검색량)**
+- 독서 노트 / reading notes
+- 책 문장 / book quotes
+- 독서 기록 / book tracker
+
+**기능 키워드 (경쟁 낮음)**
+- OCR 스캔
+- 문장 수집
+- 하이라이트
+
+**습관 키워드 (의도 명확)**
+- 독서 습관
+- 독서 일기
 
 ---
 
