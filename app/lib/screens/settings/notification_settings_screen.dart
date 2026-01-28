@@ -284,7 +284,7 @@ class _NotificationToggleTile extends StatelessWidget {
       trailing: Switch.adaptive(
         value: value,
         onChanged: onChanged,
-        activeColor: context.colors.primary,
+        activeTrackColor: context.colors.primary,
       ),
     );
   }

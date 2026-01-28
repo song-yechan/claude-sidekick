@@ -11,7 +11,7 @@
 /// - OCR 이미지 처리 (ocrProvider)
 library;
 
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/note.dart';
 import '../services/note_service.dart';
@@ -35,20 +35,20 @@ final notesProvider = FutureProvider<List<Note>>((ref) async {
   final authState = ref.watch(authProvider);
   final noteService = ref.watch(noteServiceProvider);
 
-  print('📝 notesProvider - user: ${authState.user?.id}');
+  if (kDebugMode) print('📝 notesProvider - user: ${authState.user?.id}');
 
   // 로그인되지 않은 경우 빈 목록 반환
   if (authState.user == null) {
-    print('📝 notesProvider - user is null, returning empty list');
+    if (kDebugMode) print('📝 notesProvider - user is null, returning empty list');
     return [];
   }
 
   try {
     final notes = await noteService.getNotes(authState.user!.id);
-    print('📝 notesProvider - fetched ${notes.length} notes');
+    if (kDebugMode) print('📝 notesProvider - fetched ${notes.length} notes');
     return notes;
   } catch (e) {
-    print('📝 notesProvider - error: $e');
+    if (kDebugMode) print('📝 notesProvider - error: $e');
     rethrow;
   }
 });
@@ -84,19 +84,19 @@ final noteCountsByDateProvider =
   final authState = ref.watch(authProvider);
   final noteService = ref.watch(noteServiceProvider);
 
-  print('📅 noteCountsByDateProvider - user: ${authState.user?.id}, year: $year');
+  if (kDebugMode) print('📅 noteCountsByDateProvider - user: ${authState.user?.id}, year: $year');
 
   if (authState.user == null) {
-    print('📅 noteCountsByDateProvider - user is null');
+    if (kDebugMode) print('📅 noteCountsByDateProvider - user is null');
     return {};
   }
 
   try {
     final counts = await noteService.getNoteCountsByDate(authState.user!.id, year);
-    print('📅 noteCountsByDateProvider - fetched ${counts.length} entries');
+    if (kDebugMode) print('📅 noteCountsByDateProvider - fetched ${counts.length} entries');
     return counts;
   } catch (e) {
-    print('📅 noteCountsByDateProvider - error: $e');
+    if (kDebugMode) print('📅 noteCountsByDateProvider - error: $e');
     rethrow;
   }
 });
@@ -154,7 +154,7 @@ class OcrNotifier extends StateNotifier<OcrState> {
         extractedText: result.originalText,
       );
     } catch (e) {
-      print('📷 OCR Error: $e');
+      if (kDebugMode) print('📷 OCR Error: $e');
       state = OcrState(error: e.toString());
     }
   }

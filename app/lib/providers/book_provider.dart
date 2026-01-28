@@ -9,6 +9,7 @@
 /// - 카테고리별 책 필터링 (booksByCategoryProvider)
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/book.dart';
 import '../services/book_service.dart';
@@ -32,20 +33,20 @@ final booksProvider = FutureProvider<List<Book>>((ref) async {
   final authState = ref.watch(authProvider);
   final bookService = ref.watch(bookServiceProvider);
 
-  print('📚 booksProvider - user: ${authState.user?.id}');
+  if (kDebugMode) print('📚 booksProvider - user: ${authState.user?.id}');
 
   // 로그인되지 않은 경우 빈 목록 반환
   if (authState.user == null) {
-    print('📚 booksProvider - user is null, returning empty list');
+    if (kDebugMode) print('📚 booksProvider - user is null, returning empty list');
     return [];
   }
 
   try {
     final books = await bookService.getBooks(authState.user!.id);
-    print('📚 booksProvider - fetched ${books.length} books');
+    if (kDebugMode) print('📚 booksProvider - fetched ${books.length} books');
     return books;
   } catch (e) {
-    print('📚 booksProvider - error: $e');
+    if (kDebugMode) print('📚 booksProvider - error: $e');
     rethrow;
   }
 });

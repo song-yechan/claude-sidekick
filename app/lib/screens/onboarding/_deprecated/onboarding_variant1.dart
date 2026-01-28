@@ -95,7 +95,7 @@ class _OnboardingVariant1State extends ConsumerState<OnboardingVariant1> {
                           width: 160,
                           height: 160,
                           decoration: BoxDecoration(
-                            color: page.color.withOpacity(0.1),
+                            color: page.color.withValues(alpha: 0.1),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(

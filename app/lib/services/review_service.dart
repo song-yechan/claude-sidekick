@@ -8,6 +8,7 @@
 /// - 노트 3개 이상 작성 시
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -107,12 +108,12 @@ class ReviewService implements IReviewService {
   Future<void> _requestReviewIfEligible() async {
     final canRequest = await canRequestReview();
     if (!canRequest) {
-      print('📝 ReviewService: 리뷰 요청 조건 미충족');
+      if (kDebugMode) print('📝 ReviewService: 리뷰 요청 조건 미충족');
       return;
     }
 
     try {
-      print('📝 ReviewService: 인앱 리뷰 요청 중...');
+      if (kDebugMode) print('📝 ReviewService: 인앱 리뷰 요청 중...');
       await _inAppReview.requestReview();
 
       // 리뷰 요청 이력 저장
@@ -121,9 +122,9 @@ class ReviewService implements IReviewService {
       await prefs.setString(
           _ReviewKeys.lastReviewRequestDate, DateTime.now().toIso8601String());
 
-      print('📝 ReviewService: 인앱 리뷰 요청 완료');
+      if (kDebugMode) print('📝 ReviewService: 인앱 리뷰 요청 완료');
     } catch (e) {
-      print('📝 ReviewService: 인앱 리뷰 요청 실패 - $e');
+      if (kDebugMode) print('📝 ReviewService: 인앱 리뷰 요청 실패 - $e');
     }
   }
 }

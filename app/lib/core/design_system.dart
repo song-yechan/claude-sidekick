@@ -44,13 +44,13 @@ abstract final class DSShadows {
     return [
       // Ambient (주변광)
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.3 : 0.04),
+        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.04),
         blurRadius: 8,
         offset: const Offset(0, 2),
       ),
       // Direct (직광)
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.2 : 0.08),
+        color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
         blurRadius: 3,
         offset: const Offset(0, 1),
       ),
@@ -62,12 +62,12 @@ abstract final class DSShadows {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.4 : 0.06),
+        color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.06),
         blurRadius: 16,
         offset: const Offset(0, 4),
       ),
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.25 : 0.1),
+        color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.1),
         blurRadius: 6,
         offset: const Offset(0, 2),
       ),
@@ -79,12 +79,12 @@ abstract final class DSShadows {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return [
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.5 : 0.08),
+        color: Colors.black.withValues(alpha: isDark ? 0.5 : 0.08),
         blurRadius: 24,
         offset: const Offset(0, 8),
       ),
       BoxShadow(
-        color: (isDark ? Colors.black : Colors.black).withOpacity(isDark ? 0.3 : 0.12),
+        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.12),
         blurRadius: 8,
         offset: const Offset(0, 4),
       ),

@@ -36,6 +36,7 @@ class AuthService implements IAuthService {
   /// [password] 비밀번호 (최소 6자 이상)
   ///
   /// 반환값: 회원가입 결과를 담은 AuthResponse
+  @override
   Future<AuthResponse> signUp({
     required String email,
     required String password,
@@ -52,6 +53,7 @@ class AuthService implements IAuthService {
   /// [password] 비밀번호
   ///
   /// 반환값: 로그인 결과를 담은 AuthResponse
+  @override
   Future<AuthResponse> signIn({
     required String email,
     required String password,
@@ -63,6 +65,7 @@ class AuthService implements IAuthService {
   }
 
   /// 현재 세션을 종료하고 로그아웃합니다.
+  @override
   Future<void> signOut() async {
     await supabase.auth.signOut();
   }
@@ -70,6 +73,7 @@ class AuthService implements IAuthService {
   /// 현재 저장된 세션 정보를 가져옵니다.
   ///
   /// 반환값: 현재 세션 또는 null (로그인되지 않은 경우)
+  @override
   Future<Session?> getSession() async {
     return supabase.auth.currentSession;
   }

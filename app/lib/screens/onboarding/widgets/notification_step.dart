@@ -216,7 +216,7 @@ class _NotificationToggle extends StatelessWidget {
             Switch.adaptive(
               value: enabled,
               onChanged: onToggle,
-              activeColor: context.colors.primary,
+              activeTrackColor: context.colors.primary,
             ),
           ],
         ),

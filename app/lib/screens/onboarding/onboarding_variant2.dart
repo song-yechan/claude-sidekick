@@ -80,7 +80,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           _buildLanguageDropdown(context),
           const SizedBox(width: AppSpacing.xs),
           TextButton(
-            onPressed: () => _complete(context),
+            onPressed: _complete,
             child: Text(
               context.l10n.common_skip,
               style: TextStyle(
@@ -131,8 +131,8 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
           onTimeChange: (time) {
             setState(() => _notificationTime = time);
           },
-          onComplete: () => _completeWithNotification(context),
-          onSkip: () => _complete(context),
+          onComplete: _completeWithNotification,
+          onSkip: _complete,
         );
       default:
         return const SizedBox();
@@ -200,7 +200,7 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
     );
   }
 
-  Future<void> _completeWithNotification(BuildContext context) async {
+  Future<void> _completeWithNotification() async {
     if (_notificationEnabled) {
       // 알림 설정 저장
       final notifier = ref.read(notificationNotifierProvider.notifier);
@@ -209,10 +209,10 @@ class _OnboardingVariant2State extends ConsumerState<OnboardingVariant2> {
       await notifier.setNotificationTime(_notificationTime);
     }
     if (!mounted) return;
-    _complete(context);
+    _complete();
   }
 
-  void _complete(BuildContext context) {
+  void _complete() {
     // 사용자 선택값 저장과 함께 온보딩 완료
     ref.read(onboardingProvider.notifier).completeOnboarding(
       goals: _selectedGoals,

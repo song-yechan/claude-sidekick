@@ -124,8 +124,8 @@ class _StreakCardContent extends StatelessWidget {
           boxShadow: DSShadows.low(context),
           border: Border.all(
             color: isActiveToday
-                ? colors.primary.withOpacity(0.2)
-                : colors.outlineVariant.withOpacity(0.5),
+                ? colors.primary.withValues(alpha: 0.2)
+                : colors.outlineVariant.withValues(alpha: 0.5),
             width: 1,
           ),
         ),
@@ -167,7 +167,7 @@ class _StreakCardContent extends StatelessWidget {
                     Text(
                       context.l10n.streak_longestRecord(longestStreak),
                       style: context.textTheme.labelSmall?.copyWith(
-                        color: colors.onSurfaceVariant.withOpacity(0.7),
+                        color: colors.onSurfaceVariant.withValues(alpha: 0.7),
                       ).tabularFigures,
                     ),
                   ],
@@ -218,7 +218,7 @@ class _StreakCardEmpty extends StatelessWidget {
         borderRadius: BorderRadius.circular(AppShapes.large),
         boxShadow: DSShadows.low(context),
         border: Border.all(
-          color: colors.outlineVariant.withOpacity(0.5),
+          color: colors.outlineVariant.withValues(alpha: 0.5),
           width: 1,
         ),
       ),
@@ -312,13 +312,13 @@ class _StreakIcon extends StatelessWidget {
       height: 56,
       decoration: BoxDecoration(
         color: currentStreak > 0
-            ? iconColor.withOpacity(0.12)
+            ? iconColor.withValues(alpha: 0.12)
             : colors.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppShapes.medium),
         boxShadow: currentStreak > 0
             ? [
                 BoxShadow(
-                  color: iconColor.withOpacity(0.2),
+                  color: iconColor.withValues(alpha: 0.2),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -361,11 +361,11 @@ class _TodayCompleteBadge extends StatelessWidget {
       width: 36,
       height: 36,
       decoration: BoxDecoration(
-        color: colors.primary.withOpacity(0.15),
+        color: colors.primary.withValues(alpha: 0.15),
         shape: BoxShape.circle,
         boxShadow: [
           BoxShadow(
-            color: colors.primary.withOpacity(0.2),
+            color: colors.primary.withValues(alpha: 0.2),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

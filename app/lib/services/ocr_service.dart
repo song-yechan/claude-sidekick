@@ -8,7 +8,7 @@
 library;
 
 import 'dart:convert';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import '../core/supabase.dart';
 import '../core/airbridge_service.dart';
 
@@ -32,10 +32,10 @@ class OcrService implements IOcrService {
   /// 예외: OCR 처리 실패 시 Exception 발생
   @override
   Future<String> extractText(Uint8List imageBytes) async {
-    print('📷 OCR: Starting text extraction with Cloud Vision...');
+    if (kDebugMode) print('📷 OCR: Starting text extraction with Cloud Vision...');
 
     final base64Image = base64Encode(imageBytes);
-    print('📷 OCR: Image base64 length: ${base64Image.length}');
+    if (kDebugMode) print('📷 OCR: Image base64 length: ${base64Image.length}');
 
     final response = await supabase.functions.invoke(
       'ocr-image',
@@ -44,7 +44,7 @@ class OcrService implements IOcrService {
       },
     );
 
-    print('📷 OCR: Cloud Vision response status: ${response.status}');
+    if (kDebugMode) print('📷 OCR: Cloud Vision response status: ${response.status}');
 
     if (response.status >= 400) {
       final errorMsg = response.data?['error'] ?? response.data?['details'] ?? 'Unknown error';
@@ -56,7 +56,7 @@ class OcrService implements IOcrService {
     }
 
     final text = response.data['text'] as String? ?? '';
-    print('📷 OCR: Cloud Vision extracted ${text.length} chars');
+    if (kDebugMode) print('📷 OCR: Cloud Vision extracted ${text.length} chars');
 
     // Airbridge 이벤트 트래킹 (성공)
     AirbridgeService.trackOcrUsed(success: true);

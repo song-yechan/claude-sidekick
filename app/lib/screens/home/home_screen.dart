@@ -9,6 +9,7 @@
 /// - 최근 수집한 문장 목록
 library;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,14 +48,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    print('🏠 HomeScreen build called');
+    if (kDebugMode) print('🏠 HomeScreen build called');
     final authState = ref.watch(authProvider);
     final booksAsync = ref.watch(booksProvider);
     final notesAsync = ref.watch(notesProvider);
     final noteCountsAsync = ref.watch(noteCountsByDateProvider(_selectedYear));
-    print('🏠 HomeScreen - booksAsync: $booksAsync');
-    print('🏠 HomeScreen - notesAsync: $notesAsync');
-    print('🏠 HomeScreen - noteCountsAsync: $noteCountsAsync');
+    if (kDebugMode) {
+      print('🏠 HomeScreen - booksAsync: $booksAsync');
+      print('🏠 HomeScreen - notesAsync: $notesAsync');
+      print('🏠 HomeScreen - noteCountsAsync: $noteCountsAsync');
+    }
 
     return Scaffold(
       body: SafeArea(

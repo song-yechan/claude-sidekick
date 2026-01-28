@@ -128,7 +128,7 @@ class OnboardingVariant3 extends ConsumerWidget {
           width: 48,
           height: 48,
           decoration: BoxDecoration(
-            color: context.colors.primaryContainer.withOpacity(0.5),
+            color: context.colors.primaryContainer.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(AppShapes.medium),
           ),
           child: Icon(
