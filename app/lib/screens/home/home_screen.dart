@@ -14,6 +14,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
+import '../../core/design_system.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../providers/note_provider.dart';
@@ -348,11 +349,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   );
                 },
                 loading: () => Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Center(
-                    child: CircularProgressIndicator(
-                      color: context.colors.primary,
-                      strokeWidth: 2,
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: context.surfaceContainerLowest,
+                      borderRadius: BorderRadius.circular(AppShapes.large),
+                      border: Border.all(
+                        color: context.colors.outlineVariant.withValues(alpha: 0.5),
+                        width: 1,
+                      ),
+                    ),
+                    child: Column(
+                      children: List.generate(3, (index) => Padding(
+                        padding: const EdgeInsets.all(AppSpacing.lg),
+                        child: Row(
+                          children: [
+                            DSSkeleton(
+                              width: 40,
+                              height: 40,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            const SizedBox(width: AppSpacing.md),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  DSSkeleton(
+                                    width: double.infinity,
+                                    height: 14,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  DSSkeleton(
+                                    width: 100,
+                                    height: 12,
+                                    borderRadius: BorderRadius.circular(4),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      )),
                     ),
                   ),
                 ),

@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../../core/error_utils.dart';
+import '../../core/design_system.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/book/book_card.dart';
 
@@ -100,29 +101,41 @@ class LibraryScreen extends ConsumerWidget {
                     );
                   }
 
-                  return GridView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      childAspectRatio: 0.55,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                    ),
-                    itemCount: books.length,
-                    itemBuilder: (context, index) {
-                      final book = books[index];
-                      return BookCard(
-                        book: book,
-                        onTap: () => context.push('/books/${book.id}'),
-                      );
+                  return RefreshIndicator(
+                    onRefresh: () async {
+                      ref.invalidate(booksProvider);
+                      await ref.read(booksProvider.future);
                     },
+                    color: context.colors.primary,
+                    child: GridView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        childAspectRatio: 0.55,
+                        crossAxisSpacing: 12,
+                        mainAxisSpacing: 12,
+                      ),
+                      itemCount: books.length,
+                      itemBuilder: (context, index) {
+                        final book = books[index];
+                        return BookCard(
+                          book: book,
+                          onTap: () => context.push('/books/${book.id}'),
+                        );
+                      },
+                    ),
                   );
                 },
-                loading: () => Center(
-                  child: CircularProgressIndicator(
-                    color: context.colors.primary,
-                    strokeWidth: 2,
+                loading: () => GridView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 0.55,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
                   ),
+                  itemCount: 6,
+                  itemBuilder: (context, index) => _BookCardSkeleton(),
                 ),
                 error: (error, _) => Center(
                   child: Column(
@@ -171,6 +184,62 @@ class LibraryScreen extends ConsumerWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// 책 카드 스켈레톤 로딩 위젯
+class _BookCardSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: context.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppShapes.large),
+        border: Border.all(
+          color: context.colors.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // 책 표지 스켈레톤
+          Expanded(
+            flex: 4,
+            child: DSSkeleton(
+              width: double.infinity,
+              height: double.infinity,
+              borderRadius: BorderRadius.vertical(
+                top: Radius.circular(AppShapes.large - 1),
+              ),
+            ),
+          ),
+          // 텍스트 영역 스켈레톤
+          Expanded(
+            flex: 2,
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  DSSkeleton(
+                    width: double.infinity,
+                    height: 14,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  const SizedBox(height: 8),
+                  DSSkeleton(
+                    width: 80,
+                    height: 12,
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

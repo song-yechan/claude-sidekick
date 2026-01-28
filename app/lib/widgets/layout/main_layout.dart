@@ -197,7 +197,7 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
       ),
       child: SafeArea(
         child: SizedBox(
-          height: 56,
+          height: 64,
           child: Stack(
             children: [
               // 애니메이션 인디케이터
@@ -210,14 +210,14 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                   final currentPos = startPos + (endPos - startPos) * _indicatorAnimation.value;
 
                   return Positioned(
-                    left: currentPos + itemWidth * 0.2,
-                    top: 8,
+                    left: currentPos + itemWidth * 0.15,
+                    top: 6,
                     child: Container(
-                      width: itemWidth * 0.6,
-                      height: 40,
+                      width: itemWidth * 0.7,
+                      height: 52,
                       decoration: BoxDecoration(
                         color: context.colors.primaryContainer,
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                     ),
                   );
@@ -237,19 +237,33 @@ class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
                         splashColor: Colors.transparent,
                         highlightColor: Colors.transparent,
                         child: SizedBox(
-                          height: 56,
-                          child: Center(
-                            child: AnimatedSwitcher(
-                              duration: const Duration(milliseconds: 200),
-                              child: Icon(
-                                isSelected ? item.selectedIcon : item.icon,
-                                key: ValueKey(isSelected),
-                                size: 26,
-                                color: isSelected
-                                    ? context.colors.primary
-                                    : context.colors.onSurfaceVariant,
+                          height: 64,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: Icon(
+                                  isSelected ? item.selectedIcon : item.icon,
+                                  key: ValueKey(isSelected),
+                                  size: 22,
+                                  color: isSelected
+                                      ? context.colors.primary
+                                      : context.colors.onSurfaceVariant,
+                                ),
                               ),
-                            ),
+                              const SizedBox(height: 4),
+                              Text(
+                                item.label,
+                                style: TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                  color: isSelected
+                                      ? context.colors.primary
+                                      : context.colors.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),
