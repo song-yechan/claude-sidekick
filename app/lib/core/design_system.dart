@@ -147,7 +147,7 @@ class _DSInteractiveState extends State<DSInteractive>
       duration: DSAnimations.fast,
       vsync: this,
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.96).animate(
       CurvedAnimation(parent: _controller, curve: DSAnimations.defaultCurve),
     );
   }

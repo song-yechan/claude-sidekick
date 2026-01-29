@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme.dart';
 import '../../core/error_utils.dart';
+import '../../core/design_system.dart';
 import '../../providers/category_provider.dart';
 import '../../providers/book_provider.dart';
 import '../../widgets/category/category_chip.dart';
@@ -389,10 +390,12 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
                     },
                   );
                 },
-                loading: () => Center(
-                  child: CircularProgressIndicator(
-                    color: context.colors.primary,
-                    strokeWidth: 2,
+                loading: () => ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  itemCount: 5,
+                  itemBuilder: (context, index) => Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: _CategoryCardSkeleton(),
                   ),
                 ),
                 error: (error, _) => Center(
@@ -446,6 +449,60 @@ class _CategoriesScreenState extends ConsumerState<CategoriesScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: _showAddDialog,
         child: const Icon(Icons.add_rounded),
+      ),
+    );
+  }
+}
+
+/// 카테고리 카드 스켈레톤 로딩 위젯
+class _CategoryCardSkeleton extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.surfaceContainerLowest,
+        borderRadius: BorderRadius.circular(AppShapes.large),
+        border: Border.all(
+          color: context.colors.outlineVariant.withValues(alpha: 0.5),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          // 폴더 아이콘 스켈레톤
+          DSSkeleton(
+            width: 48,
+            height: 48,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          const SizedBox(width: AppSpacing.md),
+          // 텍스트 영역 스켈레톤
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                DSSkeleton(
+                  width: 120,
+                  height: 16,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                const SizedBox(height: 8),
+                DSSkeleton(
+                  width: 60,
+                  height: 12,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              ],
+            ),
+          ),
+          // 더보기 버튼 스켈레톤
+          DSSkeleton(
+            width: 24,
+            height: 24,
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ],
       ),
     );
   }

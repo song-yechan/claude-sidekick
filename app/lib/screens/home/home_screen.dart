@@ -33,18 +33,52 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen> with WidgetsBindingObserver {
   late int _selectedYear;
+  bool _hasRecalculatedStreak = false;
+  DateTime? _lastResumeTime;
 
   @override
   void initState() {
     super.initState();
     _selectedYear = DateTime.now().year;
+    WidgetsBinding.instance.addObserver(this);
 
-    // 앱 시작 시 스트릭 데이터 동기화
+    // 앱 시작 시 스트릭 데이터 동기화 (최초 1회)
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(streakNotifierProvider.notifier).recalculateStreak();
+      if (!_hasRecalculatedStreak) {
+        _hasRecalculatedStreak = true;
+        ref.read(streakNotifierProvider.notifier).recalculateStreak();
+      }
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // 백그라운드에서 복귀 시 debounce (5초 이내 재호출 방지)
+      final now = DateTime.now();
+      if (_lastResumeTime == null ||
+          now.difference(_lastResumeTime!).inSeconds > 5) {
+        _lastResumeTime = now;
+        // 가벼운 로드만 수행 (재계산 대신)
+        ref.read(streakNotifierProvider.notifier).loadStreak();
+      }
+    }
+  }
+
+  Future<void> _onRefresh() async {
+    // pull-to-refresh: 모든 데이터 새로고침
+    ref.invalidate(booksProvider);
+    ref.invalidate(notesProvider);
+    ref.invalidate(noteCountsByDateProvider(_selectedYear));
+    await ref.read(streakNotifierProvider.notifier).loadStreak();
   }
 
   @override
@@ -62,8 +96,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
+        child: RefreshIndicator(
+          onRefresh: _onRefresh,
+          color: context.colors.primary,
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // 헤더
@@ -407,6 +445,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const SizedBox(height: AppSpacing.xxl),
             ],
           ),
+        ),
         ),
       ),
     );
